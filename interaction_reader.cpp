@@ -21,7 +21,7 @@ using namespace Rcpp;
 IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filename, int number_gene)
   {
 
-  std::fstream out_2("./results/gene_interaction.tpo",std::fstream::out);
+  std::fstream out_2("./results/gene_interaction_topology.txt",std::fstream::out);
 
   std::string file_name = filename;
   file_name="./inputs/"+file_name;
@@ -75,15 +75,3 @@ IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filename
   return gene_interaction;
 
 }
-
-/*** R
-print("Hello from interaction_reader")
-
-gene_interaction <- matrix(c(0, 0, 0, 0), nrow = 2)
-filename="g2.tpo"
-number_gene=2
-
-gene_interaction<-interaction_reader(gene_interaction, filename, number_gene)
-
-
- */

@@ -41,16 +41,12 @@ int threshold_calculator_uniform(IntegerMatrix gene_interaction, NumericVector t
   Rcout<<"generating thresholds for uniform distribution..."<<"\n";
   double gene_isolated_median=(g_min+g_max)/(k_min+k_max);
   for(int i=0;i<number_gene;i++){threshold_gene[i]= gene_isolated_median;}
-  //for(int it1=0;it1<number_gene;it1++)for(int it2=0;it2<number_gene;it2++){gene_interaction2[it1][it2]=gene_interaction[it1][it2]; if(it1!=0) gene_interaction2[it1][it2]=0;}
-  //for(int i=0;i<number_gene;i++){for(int j=0;j<number_gene;j++)cout<<gene_interaction2[i][j]<<"\t";cout<<endl;}
-  //multiGeneCircuit_threshold(gene_interaction2, threshold_gene, rng1);
-  //return;
 
   int interactions_number[number_gene][possible_interactions]; for(int i=0;i<number_gene;i++)for(int j=0;j<possible_interactions;j++)interactions_number[i][j]=0;
   for(int it1=0;it1<number_gene;it1++){for(int it2=0;it2<number_gene;it2++)
   {int g_1=gene_interaction(it1,it2);
     interactions_number[it1][g_1]+=1;}}
-  //for(int i=0;i<number_gene;i++){for(int j=0;j<possible_interactions;j++)cout<<interactions_number[i][j]<<"\t";cout<<endl;}
+
   const long model_count_max2=std::max(model_count_max,threshold_max);
   for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
   {
@@ -76,7 +72,6 @@ int threshold_calculator_uniform(IntegerMatrix gene_interaction, NumericVector t
       {
         double g_b=g_min+(g_max-g_min)*u_distribution(u_generator);
         double k_b=k_min+(k_max-k_min)*u_distribution(u_generator);
-        //double BA0=exp(BA0_min+(BA0_max)*pcg32_double(rng1));
         double BA0=gene_isolated_median*(1-standard_deviation_factor*sqrt(3))+(2*sqrt(3)*standard_deviation_factor*gene_isolated_median)*u_distribution(u_generator);
 
         int n_ba=int(u_distribution(u_generator)*(n_max-n_min))+n_min;
@@ -85,14 +80,12 @@ int threshold_calculator_uniform(IntegerMatrix gene_interaction, NumericVector t
         Af[model_count] = Af[model_count]*hill_eval;
       }
     }
-    //Find the median of this array and select that as the median
-    // size_t size = sizeof(Af) / sizeof(Af[0]);
+
     std::sort(Af.begin(), Af.end());
-    //Rcout<<Af[int(float(model_count_max)*0.5)]<<"\n";
-    threshold_gene[gene_count1]=0.5*(Af[int(float(model_count_max)*0.5)]+Af[int(float(model_count_max+2)*0.5)]);
+    threshold_gene[gene_count1]=0.5*(Af[int(float(model_count_max2)*0.5)]+Af[int(float(model_count_max2+2)*0.5)]);
     Af.clear();
 
   }
   return 0;
-  //double A=exp(log(min_gene[gene_count1])+(log(max_gene[gene_count1])-log(min_gene[gene_count1]))*pcg32_double(rng1));
+
 }

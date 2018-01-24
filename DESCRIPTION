@@ -8,3 +8,6 @@ Description: sRACIPE implements a randomization-based method for gene circuit mo
 License: MIT License
 Encoding: UTF-8
 LazyData: true
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

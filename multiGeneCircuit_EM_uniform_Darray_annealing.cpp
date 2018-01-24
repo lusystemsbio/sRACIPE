@@ -51,13 +51,12 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
                                                   double D_max,  double D_shot_scaling,
                                                   int GENE_NOISE_SCALING, int file_writing_interval,
                                                   int D_levels, double D_scaling,
-                                                  int output_precision, int ANNEALING, int CONSTANT_NOISE)
+                                                  int output_precision, int ANNEALING, int CONSTANT_NOISE, int INITIAL_CONDITIONS)
 
 {
   Rcout<<"Running time evolution simulations for "<<std::to_string(number_gene)<<" genes..."<<"\n";
-  // std::ifstream infile1("/Users/koharv/Documents/Work/Data/g2Aact_median.txt");
-  // if(!infile1) {
-  //   Rcout << "Cannot open noise file.\n";  }
+  if(INITIAL_CONDITIONS>1) file_writing_interval=1;
+
   double D=D_max; // setting noise to maximum noise level
   double Darray[number_gene]; //array to scale the noise level in each gene
 
@@ -78,22 +77,17 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
     Rcout<<"Using same noise level for each gene"<<"\n";
 
   }
-  // double g_median=0.0; int g_med_count=0;
-  // while (infile1 >> g_median)
-  // {
-  //   Darray[g_med_count]=g_median;
-  //   g_med_count++;
-  // }
-
 
   //Create output file if not there already
 
 
-  std::fstream out_0("./results/multiGeneCircuit_EM_g"+std::to_string(number_gene)+"Annealing"+std::to_string(ANNEALING)+"_parameters.prs",std::ios::app);
+  std::fstream out_0("./results/multiGeneCircuit_EM_g"+std::to_string(number_gene)+"Annealing"+std::to_string(ANNEALING)+"_parameters.txt",std::ios::app);
   if(!out_0) {     Rcout << "Cannot open output file for writing parameters.\n";  }
 
+  std::fstream out_ic("./results/multiGeneCircuit_EM_g"+std::to_string(number_gene)+"Annealing"+std::to_string(ANNEALING)+"_IC.txt",std::ios::app);
+  if(!out_ic) {     Rcout << "Cannot open output file for writing parameters.\n";  }
 
-  std::fstream out_1("./results/multiGeneCircuit_g"+std::to_string(number_gene)+"Annealing"+std::to_string(ANNEALING)+".out",std::ios::app);
+  std::fstream out_1("./results/multiGeneCircuit_g"+std::to_string(number_gene)+"Annealing"+std::to_string(ANNEALING)+"_output.txt",std::ios::app);
   if(!out_1) {     Rcout << "Cannot open output file.\n";  }
 
 
@@ -177,18 +171,37 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
           }
           else
           {
-            // threshold_gene_log[gene_count1][gene_count2]=exp(log(threshold_gene[gene_count2]/sqrt(median_range))+(log(median_range))*pcg32_double(rng1));//threshold_gene[gene_count1][gene_count2][0]+exp((log((threshold_gene[gene_count1][gene_count2][0]+threshold_gene[gene_count1][gene_count2][1]))-log(threshold_gene[gene_count1][gene_count2][0]))*pcg32_double(rng1));
-            //////////////////////////////////////////////////////////////
-            // Check by using random threshold
-            //threshold_gene_log[gene_count1][gene_count2]=threshold_gene[gene_count1][gene_count2][0]+(threshold_gene[gene_count1][gene_count2][1]-threshold_gene[gene_count1][gene_count2][0])*pcg32_double(rng1);
+            
             threshold_gene_log[gene_count1][gene_count2]=(1-standard_deviation_factor*sqrt(3))*threshold_gene[gene_count2]+(2*sqrt(3)*standard_deviation_factor*threshold_gene[gene_count2])*u_distribution(u_generator);
           }
         }
       }
-
       ///////////////////////////////////////////////////////////////////////////////////////
 
-      //Initial condition selection
+      //Writing parameters to file
+      ///////////////////////////////////////////////////////////////////////////////////////
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+      {out_0<<std::setprecision(output_precision)<<g_gene[gene_count1]<<"\t";} //production rate of each gene
+
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+      {out_0<<std::setprecision(output_precision)<<k_gene[gene_count1]<<"\t";} // degradation rate of each gene
+
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      {if(threshold_gene_log[gene_count1][gene_count2]>0)
+        out_0<<std::setprecision(output_precision)<<threshold_gene_log[gene_count1][gene_count2]<<"\t";}
+      // above--thresholds for the inteaction links, thresholds for inward links for genes are written, starting from gene 1 (thresholds for all inward links of gene 1 and so on)
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      {if(n_gene[gene_count1][gene_count2]>0)
+        out_0<<std::setprecision(1)<<n_gene[gene_count1][gene_count2]<<"\t";}
+      // above--n for the inteaction links, n for inward links for genes are written, starting from gene 1
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      {if(lambda_gene[gene_count1][gene_count2]>0)
+        out_0<<std::setprecision(output_precision)<<lambda_gene[gene_count1][gene_count2]<<"\t";}
+      // above--lambda for the inteaction links, lambda for inward links for genes are written, starting from gene 1
+      out_0<<"\n";
+      ///////////////////////////////////////////////////////////////////////////////////////
+
+      //Initial condition range selection
       ///////////////////////////////////////////////////////////////////////////////////////
       double max_gene[number_gene];for(int gene_count1=0;gene_count1<number_gene;gene_count1++){max_gene[gene_count1]=g_gene[gene_count1]/k_gene[gene_count1];}
 
@@ -228,54 +241,40 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
       }
 
 
-      double expression_gene[number_gene]; //array for current gene expression
-      double expression_gene0[number_gene]; //array for initial gene expression
 
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++){expression_gene0[gene_count1]=exp(log(min_gene[gene_count1])+(log(max_gene[gene_count1])-log(min_gene[gene_count1]))*u_distribution(u_generator));
-        expression_gene[gene_count1]=expression_gene0[gene_count1];}
-      //////////////////////////////////////////////////////////////
-      // Check by using random initial conditions
-      //for(int gene_count1=0;gene_count1<number_gene;gene_count1++){expression_gene[gene_count1]=500.0*pcg32_double(rng1);}
-      //for(int gene_count1=0;gene_count1<number_gene;gene_count1++){expression_gene[gene_count1]=exp(log(0.02)+(log(1000)-log(0.02))*(pcg32_double(rng1)));expression_gene0[gene_count1]=expression_gene[gene_count1];}
+
 
       ///////////////////////////////////////////////////////////////////////////////////////
 
-      //Writing parameters to file
+      //Initial condition  selection
+      ///////////////////////////////////////////////////////////////////////////////////////
+for(int ic_count=0;ic_count<INITIAL_CONDITIONS;ic_count++){
+  double expression_gene[number_gene]; //array for current gene expression
+  double expression_gene0[number_gene]; //array for initial gene expression
+
+      for(int gene_count1=0;gene_count1<number_gene;gene_count1++){expression_gene0[gene_count1]=exp(log(min_gene[gene_count1])+(log(max_gene[gene_count1])-log(min_gene[gene_count1]))*u_distribution(u_generator));
+        expression_gene[gene_count1]=expression_gene0[gene_count1];}
+    
+
+      ///////////////////////////////////////////////////////////////////////////////////////
+
+      //Writing initial condition to file
       ///////////////////////////////////////////////////////////////////////////////////////
 
 
       //Rcout<<"Written"<<"\n";
 
       for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-      {out_0<<std::setprecision(output_precision)<<expression_gene0[gene_count1]<<"\t";} //initial condition of each gene
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-      {out_0<<std::setprecision(output_precision)<<g_gene[gene_count1]<<"\t";} //production rate of each gene
+      {out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count1]<<"\t";} //initial condition of each gene
 
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-      {out_0<<std::setprecision(output_precision)<<k_gene[gene_count1]<<"\t";} // degradation rate of each gene
 
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-      {if(threshold_gene_log[gene_count1][gene_count2]>0)
-        out_0<<std::setprecision(output_precision)<<threshold_gene_log[gene_count1][gene_count2]<<"\t";}
-      // above--thresholds for the inteaction links, thresholds for inward links for genes are written, starting from gene 1 (thresholds for all inward links of gene 1 and so on)
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-      {if(n_gene[gene_count1][gene_count2]>0)
-        out_0<<std::setprecision(1)<<n_gene[gene_count1][gene_count2]<<"\t";}
-      // above--n for the inteaction links, n for inward links for genes are written, starting from gene 1
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-      {if(lambda_gene[gene_count1][gene_count2]>0)
-        out_0<<std::setprecision(output_precision)<<lambda_gene[gene_count1][gene_count2]<<"\t";}
-      // above--lambda for the inteaction links, lambda for inward links for genes are written, starting from gene 1
 
-      out_0<<"\n";
 
       ///////////////////////////////////////////////////////////////////////////////////////
 
       //Time Evolution
       ///////////////////////////////////////////////////////////////////////////////////////
-      //for(int gene_count1=0;gene_count1<number_gene;gene_count1++){out_0<<std::setprecision(output_precision)<<expression_gene[gene_count1]<<"\t";}
-
-
+    
       for(int file_count=0;file_count<D_levels;file_count++)
       {
 
@@ -345,31 +344,31 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
         }while(i<tot_time);
         if(file_count==D_levels-2){D=0;}
         else {D=D*D_scaling;}
-
+if(file_writing_interval==1){
+   //Rcout<<"IC";
+        for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+        {
+          out_1<<std::setprecision(output_precision)<<expression_gene[gene_count1]<<"\t";
+        }
+        out_1<<"\n";
+} else {
 
         for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
         {
-          //out_0<<std::setprecision(output_precision)<<expression_gene[gene_count1]<<"\t";
           expression_gene_final[model_count][file_count][gene_count1]=expression_gene[gene_count1];
         }
-        //out_0<<endl;
-        /* if(model_count%(int(model_count_max/100))==0)
-         {
-         cout<<(model_count/(model_count_max/100));
-         cout<<endl;
-         }*/
+}
+
       }
 
 
-      //out_1.close();
-      // int y= fcloseall();
     }
     ///////////////////////////////////////////////////////////////////////////////////////
 
     //Writing to file
     ///////////////////////////////////////////////////////////////////////////////////////
 
-
+if(file_writing_interval>1){
     for(int fwi_count=0;fwi_count<file_writing_interval;fwi_count++)
     {
       for(int file_count=0;file_count<D_levels;file_count++)
@@ -384,10 +383,13 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
       out_1<<"\n";
 
     }
+}
+    }
+    out_ic<<"\n";
   }
   out_1.close();
   out_0.close();
-  Rcout<<"Simulations completed\n";
+  Rcout<<"Simulations completed successfully. Data files are in results folder.\n";
   return 0;
 }
 

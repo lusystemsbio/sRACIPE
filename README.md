@@ -13,4 +13,13 @@ Installing R package from GitHub
 	library(devtools)
 3) Install sRACIPE from GitHub:
 	install_github("lusystemsbio/sRACIPE")
+
+sRACIPE is a self contained package and includes all the dependencies in the packrat folder.
+Packrat can be installed using install.packages("packrat").
+
+Using the package: 
+In the working directory, create an "input" folder which should contain the topology file "*.tpo".
+Call the sRACIPE_stochastic() function. 
+Results for various noise levels will be in the results folder in the same directory.
+Vignettes and information on other functions will be updated later.
  
