@@ -1,1 +1,3 @@
+useDynLib(sRACIPEv03)
 exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, sourceCpp)

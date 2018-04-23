@@ -1,44 +1,34 @@
-#include <Rcpp.h>
-#include <iostream>
-#include <random>
+#include"header.h"
 
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <cmath>
-#include <ctime>
-#include <iomanip>
-#include <vector>
-#include <algorithm>
-#include <sstream>
-#include <string>
 
 using namespace Rcpp;
 
-unsigned u_seed = std::chrono::system_clock::now().time_since_epoch().count();
-unsigned g_seed = std::chrono::system_clock::now().time_since_epoch().count()*M_PI_4;
+
+extern unsigned u_seed;// = std::chrono::system_clock::now().time_since_epoch().count();
+//unsigned g_seed1 = std::chrono::system_clock::now().time_since_epoch().count()*M_PI_4;
 
 
-std::mt19937_64 u_generator (u_seed);
-std::mt19937_64 g_generator (g_seed);
+extern std::mt19937_64 u_generator;
+//std::mt19937_64 g_generator1 (g_seed1);
 
-std::uniform_real_distribution<double> u_distribution(0.0,1.0);
-std::normal_distribution<double> g_distribution(0.0,1.0);
+//uniformly distributed random number generator1 in (0,1) range
+extern std::uniform_real_distribution<double> u_distribution;
 
-double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab)
-{
-  return lambda_ab+(1-lambda_ab)*1/(1+pow((A/AB0),n_ab));
-}
+// Gaussian distributed random number generator1 with mean 0 and 1 standard deviation
+//std::normal_distribution<double> g_distribution1(0.0,1.0);
 
-//////////////////////////////////////////////////////////////
+
+extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab);
 // [[Rcpp::export]]
-//////////////////////////////////////////////////////////////
+
 int threshold_calculator_uniform(IntegerMatrix gene_interaction, NumericVector threshold_gene, double g_min, double g_max,
                                            double k_min, double k_max, int possible_interactions,  long model_count_max, long threshold_max, double h, double lambda_min,
                                            double lambda_max, int n_min, int n_max, double median_range, double standard_deviation_factor)
 {
+
+
   int number_gene=gene_interaction.nrow();
-  Rcout<<"generating thresholds for uniform distribution..."<<"\n";
+  Rcout<<"generating thresholds for uniform distribution1..."<<"\n";
   double gene_isolated_median=(g_min+g_max)/(k_min+k_max);
   for(int i=0;i<number_gene;i++){threshold_gene[i]= gene_isolated_median;}
 

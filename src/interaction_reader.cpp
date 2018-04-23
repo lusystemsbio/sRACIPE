@@ -18,13 +18,13 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 
-IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filename, int number_gene)
+IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filepath, String filename, int number_gene)
   {
 
-  std::fstream out_2("./results/gene_interaction_topology.txt",std::fstream::out);
-
   std::string file_name = filename;
-  file_name="./inputs/"+file_name;
+  std::fstream out_2("./results/gene_interaction_topology_" + file_name + ".txt",std::fstream::out);
+  file_name = filepath;
+  //file_name="./inputs/"+file_name;
   std::ifstream infile ( file_name, std::ifstream::in);
   if(!infile) {
     Rcout << "Cannot open input file.\n";
@@ -56,11 +56,12 @@ IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filename
     i++;
   }
 
-  out_2<<"gene"<<"\t";
+  out_2<<"gene"<<"\n";
   for (int i=0; i<gene_names.size(); i++)
   {
-    out_2 <<gene_names[i] << "\t";
+    out_2 <<gene_names[i] << "\n";
   }
+      /*
   out_2<<"\n";
     for (int i=0; i<gene_names.size(); i++)
   {
@@ -70,6 +71,7 @@ IntegerMatrix interaction_reader(IntegerMatrix gene_interaction, String filename
     out_2<<"\n";
 
   }
+       */
   Rcout<<gene_names.size()<<"\n";
 
   return gene_interaction;
