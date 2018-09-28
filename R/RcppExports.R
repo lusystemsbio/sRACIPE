@@ -13,6 +13,10 @@ multiGeneCircuit_RK_adaptive_deterministic <- function(gene_interaction, thresho
     .Call('_sRACIPEv03_multiGeneCircuit_RK_adaptive_deterministic', PACKAGE = 'sRACIPEv03', gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, median_range, standard_deviation_factor, number_gene, output_precision, INITIAL_CONDITIONS, RK_TOLERANCE, filename)
 }
 
+multiGeneCircuit_RK_deterministic_knockout <- function(gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, median_range, standard_deviation_factor, number_gene, output_precision, INITIAL_CONDITIONS, filename, knockout = NA_integer_) {
+    .Call('_sRACIPEv03_multiGeneCircuit_RK_deterministic_knockout', PACKAGE = 'sRACIPEv03', gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, median_range, standard_deviation_factor, number_gene, output_precision, INITIAL_CONDITIONS, filename, knockout)
+}
+
 multiGeneCircuit_RK_deterministic <- function(gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, median_range, standard_deviation_factor, number_gene, output_precision, INITIAL_CONDITIONS, filename) {
     .Call('_sRACIPEv03_multiGeneCircuit_RK_deterministic', PACKAGE = 'sRACIPEv03', gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, median_range, standard_deviation_factor, number_gene, output_precision, INITIAL_CONDITIONS, filename)
 }

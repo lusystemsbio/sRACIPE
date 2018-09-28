@@ -66,7 +66,8 @@ plot_data_deterministic = function(data_file=output_file, plot_filename=plot_fil
 
   pdf(paste("results/",plot_filename,"_deterministic.pdf",sep = ""))
   density_plot(pca_data,bin_count,plot_color)
-  heatmap(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'complete'))
+  #heatmap(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'complete'))
+  heatmap(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2))
   density_plot(tsne_data,bin_count, plot_color)
   dev.off()
   #results_directory <- ifelse(!dir.exists(file.path(working_directory, "results")), dir.create(file.path(working_directory, "results")), file.path(working_directory, "results"))
@@ -148,6 +149,79 @@ plot_data_stochastic = function(output_file, plot_filename=filename,  topology_d
 
 }
 
+plot_data_knockout_single = function(output_file, output_file_knockout, plot_filename=filename,  topology_df=topology, KNOCKOUT = NA_character_, config = configuration, bin_count=40){
+  message("Plotting the single knockout results")
+  library(reshape2)
+  library(ggplot2)
+  library(Rtsne)
+  library(gplots)
+  library(MASS)
+  library(RColorBrewer)
+
+  rf <- colorRampPalette(rev(brewer.pal(11,'Spectral')))
+  plot_color <- rf(32)
+
+  if(missing(bin_count)) bin_count <- 40
+  if(missing(plot_filename)) output_filename <- "plots"
+
+  working_directory <- getwd()
+  name_genes <- read.table(paste(working_directory,"/results/gene_interaction_topology_",topology$filename,".txt",sep=""), header = T, stringsAsFactors = F)
+  name_genes <- t(as.matrix(name_genes))
+  data_simulation <- read.table(output_file, header = F)
+  name_models <- seq(1:nrow(data_simulation))
+  row.names(data_simulation) <- name_models
+  colnames(data_simulation) <- name_genes
+  knockout_number <- as.integer(which(name_genes==KNOCKOUT))
+
+  data_simulation <- log2(data_simulation)
+
+
+  data_simulation <- data_simulation[,-knockout_number]
+
+  col.means <- colMeans(data_simulation)
+  col.sds <- apply(data_simulation, 2, sd)
+  data_simulation <- sweep(data_simulation,2,col.means,FUN = "-")
+  data_simulation <- sweep(data_simulation,2,col.sds,FUN = "/")
+
+
+  data_simulation_knockout <- read.table(output_file_knockout, header = F)
+  name_models <- seq(1:nrow(data_simulation_knockout))
+  row.names(data_simulation_knockout) <- name_models
+  colnames(data_simulation_knockout) <- name_genes
+
+  data_simulation_knockout <- data_simulation_knockout[,-knockout_number]
+
+  data_simulation_knockout <- log2(data_simulation_knockout)
+  data_simulation_knockout <- sweep(data_simulation_knockout,2,col.means,FUN = "-")
+  data_simulation_knockout <- sweep(data_simulation_knockout,2,col.sds,FUN = "/")
+
+
+  pca = prcomp(data_simulation, scale. = FALSE, center = FALSE)
+  pca_data <- data.frame(x=pca$x[,1],y=pca$x[,2])
+
+  pdf(paste("results/",plot_filename,KNOCKOUT,"_knockout.pdf",sep = ""))
+  density_plot(pca_data,bin_count,plot_color)
+
+    pca_data_knockout <- scale(data_simulation_knockout, pca$center, pca$scale) %*% pca$rotation
+    pca_data_knockout <- data.frame(x=pca_data_knockout[,1],y=pca_data_knockout[,2])
+    density_plot(pca_data_knockout,bin_count,plot_color)
+    #col_count <- as.integer(65536/dim(data_simulation)[2])
+    #heatmap_data <- t(data_simulation[1:col_count,])
+    #dist <- as.dist((1-cor(t(heatmap_data), method = "spear"))/2)
+    #cluster <- hclust(dist,method = 'ward.D2')
+    #dendrogram <- as.dendrogram(cluster)
+    full <- heatmap.2(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
+
+    heatmap.2(t(data_simulation_knockout[,rev(full$rowInd)]), Rowv=NA, dendrogram = "column", breaks=full$breaks, col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
+
+   # heatmap.2(t(data_simulation_knockout), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
+
+  dev.off()
+
+  message("Plots in the pdf file in the results folder.")
+
+}
+
 density_plot = function(plot_data,bin_count, plot_color){
   colnames(plot_data) <- c("x", "y")
 
@@ -181,11 +255,14 @@ plot_network = function(topology = topology){
 
   nodes <- data.frame(id = node_list, label = node_list, font.size =50, value=c(rep(1,length(node_list))))
   edge_col <- data.frame(c(1,2),c("blue","darkred"))
+  arrow_type <- data.frame(c(1,2),c("arrow","circle"))
+  colnames(arrow_type) <- c("type", "color")
   colnames(edge_col) <- c("type", "color")
   edges <- data.frame(from = c(topology$topology[,1]), to = c(topology$topology[,2])
                       #   , arrows = c(c(topology$topology$Target), c(topology$topology$Target))
-                      , arrows = "to"
-                      , width = 2
+                      #, arrows = "to"
+                      , arrows.to.type	=arrow_type$color[c(as.numeric(topology$topology[,3]))]
+                      , width = 3
                       , color = edge_col$color[c(as.numeric(topology$topology[,3]))]
   )
 

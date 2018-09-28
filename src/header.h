@@ -1,3 +1,5 @@
+#ifndef HEADER_H
+#define HEADER_H
 
 #include <Rcpp.h>
 #include <iostream>
@@ -13,13 +15,14 @@
 #include <sstream>
 #include <string>
 
-
-// Using system time for seeds of gaussian and uniform random number generators
-
-
+// All definitions in threshold_generator.cpp
 
 //uniformly distributed random number generator in (0,1) range
 // Shifted hill function
-extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab); //defined in multiGeneCircuit_RK_detereministic
-extern std::mt19937_64 u_generator; //defined in multiGeneCircuit_RK_deterministic
-extern std::uniform_real_distribution<double> u_distribution; //defined in multiGeneCircuit_RK_detereministic
+extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab);
+extern std::mt19937_64 u_generator;
+extern std::uniform_real_distribution<double> u_distribution;
+extern std::mt19937_64 g_generator;
+extern std::normal_distribution<double> g_distribution;
+
+#endif

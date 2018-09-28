@@ -2,24 +2,25 @@
 using namespace Rcpp;
 
 
-extern unsigned u_seed = std::chrono::system_clock::now().time_since_epoch().count();
+// extern unsigned u_seed = 3654734;//std::chrono::system_clock::now().time_since_epoch().count();
 //extern unsigned g_seed = std::chrono::system_clock::now().time_since_epoch().count()*M_PI_4;
 
-extern std::mt19937_64 u_generator (u_seed);
+//extern std::mt19937_64 u_generator;// (u_seed);
 // std::mt19937_64 g_generator (g_seed);
 // Shifted hill function
 
-extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab)
-{
-  return lambda_ab+(1-lambda_ab)*1/(1+pow((A/AB0),n_ab));
-}
+//extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab)
+//{
+//  return lambda_ab+(1-lambda_ab)*1/(1+pow((A/AB0),n_ab));
+//}
 
 
 //uniformly distributed random number generator in (0,1) range
-extern std::uniform_real_distribution<double> u_distribution(0.0,1.0);
+//extern std::uniform_real_distribution<double> u_distribution(0.0,1.0);
 
 // Gaussian distributed random number generator with mean 0 and 1 standard deviation
  //std::normal_distribution<double> g_distribution(0.0,1.0);
+
 
 // [[Rcpp::export]]
 

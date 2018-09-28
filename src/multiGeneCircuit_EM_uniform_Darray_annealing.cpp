@@ -4,21 +4,21 @@
 
 using namespace Rcpp;
 
-extern unsigned u_seed;//2 = std::chrono::system_clock::now().time_since_epoch().count();
-unsigned g_seed = std::chrono::system_clock::now().time_since_epoch().count()*M_PI_4;
+//extern unsigned u_seed;//2 = std::chrono::system_clock::now().time_since_epoch().count();
+//unsigned g_seed = 123;//std::chrono::system_clock::now().time_since_epoch().count()*M_PI_4;
 
-extern std::mt19937_64 u_generator;// (u_seed2);
-std::mt19937_64 g_generator (g_seed);
+//extern std::mt19937_64 u_generator;// (u_seed2);
+//std::mt19937_64 g_generator (g_seed);
 
 //uniformly distributed random number generator2 in (0,1) range
-extern std::uniform_real_distribution<double> u_distribution;
+//extern std::uniform_real_distribution<double> u_distribution;
 
 // Gaussian distributed random number generator2 with mean 0 and 1 standard deviation
-std::normal_distribution<double> g_distribution(0.0,1.0);
+//std::normal_distribution<double> g_distribution(0.0,1.0);
 
 
 // Shifted hill function
-extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab);
+//extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab);
 
 
 
@@ -39,9 +39,11 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
                                                  int output_precision, int ANNEALING, int CONSTANT_NOISE, int INITIAL_CONDITIONS, String filename)
 
 {
+  try {
   std::string file_name= filename;
   Rcout<<"Running time evolution simulations for "<<std::to_string(number_gene)<<" genes..."<<"\n";
-  if(INITIAL_CONDITIONS>1) file_writing_interval=1;
+//  if(INITIAL_CONDITIONS>1)
+    file_writing_interval=1;
   D_max=D_max/sqrt(number_gene); //Scale the maximum noise by the number of genes.
   double D=D_max; // setting noise to maximum noise level
   double Darray[number_gene]; //array to scale the noise level in each gene
@@ -96,8 +98,9 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
 
 
   //File writing is minimized to speed up the program. Output is written to file after every FILE_WRITING_INTERVAL times.
+  // Not needed...will be removed later
   int super_count_max=int(model_count_max/file_writing_interval);
-  Rcout<<"Super Count="<<super_count_max<<"\n";
+//  Rcout<<"Super Count="<<super_count_max<<"\n";
   model_count_max=file_writing_interval;
   for(int super_count=0;super_count<super_count_max;super_count++)
   {
@@ -252,7 +255,7 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
 
         //Rcout<<"Written"<<"\n";
 
-       // for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+        // for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
         //{out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count1]<<"\t";} //initial condition of each gene
 
 
@@ -262,6 +265,8 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
 
         //Time Evolution
         ///////////////////////////////////////////////////////////////////////////////////////
+        for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+        {out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count1]<<"\t";} //initial condition of each gene
 
         for(int file_count=0;file_count<D_levels;file_count++)
         {
@@ -273,11 +278,9 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
             { expression_gene[gene_count_temp]=expression_gene0[gene_count_temp];
 
               expression_gene_h[gene_count_temp]=expression_gene0[gene_count_temp];
-             // out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count_temp]<<"\t";
-              }
+              // out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count_temp]<<"\t";
+            }
           }
-          for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-            {out_ic<<std::setprecision(output_precision)<<expression_gene0[gene_count1]<<"\t";} //initial condition of each gene
           //Rcout<<"D="<<D<<"\n";
           double i=0.0;
           do
@@ -332,56 +335,67 @@ int multiGeneCircuit_EM_uniform_Darray_annealing(IntegerMatrix gene_interaction,
 
 
           }while(i<tot_time);
+          // Rcout<< "Noise Level" << file_count<<"\t"<<D<<"\n";
           if(file_count==D_levels-2){D=0;}
           else {D=D*D_scaling;}
-          if(file_writing_interval==1){
+           // if(file_writing_interval==1)
+            {
             //Rcout<<"IC";
             for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
             {
               out_1<<std::setprecision(output_precision)<<expression_gene[gene_count1]<<"\t";
             }
-            out_1<<"\n";
+            // out_1<<"\n";
           }
-          else {
-
-            for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-            {
-              expression_gene_final[model_count][file_count][gene_count1]=expression_gene[gene_count1];
-            }
-          }
+          // else
+          //   {
+          //
+          //   for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+          //   {
+          //     expression_gene_final[model_count][file_count][gene_count1]=expression_gene[gene_count1];
+          //   }
+          // }
 
         }
-        out_ic<<"\n";
 
+       out_ic<<"\n";
+        out_1<<"\n";
       }
+
     }
     ///////////////////////////////////////////////////////////////////////////////////////
 
     //Writing to file
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    if(file_writing_interval>1){
-      for(int fwi_count=0;fwi_count<file_writing_interval;fwi_count++)
-      {
-        for(int file_count=0;file_count<D_levels;file_count++)
-        {
-
-          for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-          {
-            out_1<<std::setprecision(output_precision)<<expression_gene_final[fwi_count][file_count][gene_count1]<<"\t";
-
-          }
-        }
-        out_1<<"\n";
-
-      }
-    }
+    // if(file_writing_interval>1){
+    //   for(int fwi_count=0;fwi_count<file_writing_interval;fwi_count++)
+    //   {
+    //     for(int file_count=0;file_count<D_levels;file_count++)
+    //     {
+    //
+    //       for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    //       {
+    //         out_1<<std::setprecision(output_precision)<<expression_gene_final[fwi_count][file_count][gene_count1]<<"\t";
+    //
+    //       }
+    //     }
+    //     out_1<<"\n";
+    //
+    //   }
+    // }
 
 
   }
   out_1.close();
   out_0.close();
   Rcout<<"Simulations completed successfully. Data files are in results folder.\n";
+
+  }
+  catch (Rcpp::internal::InterruptedException& e)
+  {
+    Rcout << "Caught an interrupt!" << std::endl;
+  }
   return 0;
 }
 
