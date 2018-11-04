@@ -1,4 +1,5 @@
-# sRACIPE ![](/www/racipe.png)
+![](/www/racipe.png)
+# sRACIPE 
 
 *Stochastic analysis for Random Circuit Perturbation*
 
