@@ -1,9 +1,7 @@
 # sRACIPE
 Stochastic analysis for Random Circuit Perturbation
 
-sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variations on any gene regulatory circuit (GRC) using only its topology. 
-
-sRACIPE provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variations. We define a distinct cellular state as one of the clusters of steady state gene expression profiles from random models and evaluate how gene expression noise affects the formation and expression patterns of clusters. The stochastic analysis can quantify the relative stability of the steady states for systems allowing multiple states. 
+sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology, and simulates an ensemble of models with random kinetic parameters at multiple noise levels. Statistical analysis of the generated gene expressions reveals the basin of attraction and stability of various phenotypic states and their changes associated with intrinsic and extrinsic noises. sRACIPE provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation.   
 
 Installing R package from GitHub
 
@@ -18,8 +16,6 @@ sRACIPE is a self contained package and includes all the dependencies in the pac
 Packrat can be installed using install.packages("packrat").
 
 Using the package: 
-In the working directory, create an "inputs" folder which should contain the topology file "*.tpo".
-Call the sRACIPE_stochastic() function. 
-Results for various noise levels will be in the results folder in the same directory.
-Vignettes and information on other functions will be updated later.
+Please refer to the vignettes and manual pages. 
+
  

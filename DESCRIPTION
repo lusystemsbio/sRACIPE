@@ -1,10 +1,10 @@
 Package: sRACIPE
 Type: Package
-Title: sRACIPE is a systems biology tool to analyze gene regulatory circuits. 
+Title: sRACIPE is a systems biology tool to study the role of noise and parameter variation in gene regulatory circuits. 
 Version: 0.99.0
 Author: Vivek Kohar
 Maintainer: Vivek Kohar <vivek.kohar@gmail.com>
-Description: sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variations on any gene regulatory circuit (GRC) using only its topology. sRACIPE (sRACIPE) provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variations. We define a distinct cellular state as one of the clusters of steady state gene expression profiles from random models and evaluate how gene expression noise affects the formation and expression patterns of clusters. The stochastic analysis can quantify the relative stability of the steady states for systems allowing multiple states. 
+Description: sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology. sRACIPE (sRACIPE) provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation. We define a distinct cellular state as one of the clusters of steady state gene expression profiles from random models and evaluate how gene expression noise affects the formation and expression patterns of clusters. The stochastic analysis can quantify the relative stability of the steady states for systems allowing multiple states. 
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: false
