@@ -22,6 +22,7 @@ sRACIPE is a self contained package and includes all the dependencies in the pac
 Packrat can be installed using install.packages("packrat").
 
 *Using the package:* 
+
 Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://github.com/lusystemsbio/sRACIPE/blob/master/man/Using_sRACIPE.html) and vignettes. 
 
  
