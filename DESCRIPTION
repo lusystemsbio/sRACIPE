@@ -12,4 +12,5 @@ Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp
+Imports: visNetwork, reshape2, ggplot2, Rtsne, gplots, MASS, RColorBrewer, htmlwidgets
 biocViews: ResearchField, SystemsBiology, MathematicalBiology
