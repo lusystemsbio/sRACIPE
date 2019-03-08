@@ -22,4 +22,4 @@ Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://githu
 
 # Webserver
 
-For quick exploration of circuits, one can simulate and visualize them in the browser using our webserver [GeneEx](shinyapps.jax.org/5c965c4b284ca029b4aa98483f3da3c5/).
+For quick exploration of circuits, one can simulate and visualize them in the browser using our webserver [GeneEx](https://shinyapps.jax.org/5c965c4b284ca029b4aa98483f3da3c5/).
