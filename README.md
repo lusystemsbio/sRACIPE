@@ -18,9 +18,6 @@ library(devtools)
 3) Install sRACIPE from GitHub:
 install_github("lusystemsbio/sRACIPE")
 
-sRACIPE is a self contained package and includes all the dependencies in the packrat folder.
-Packrat can be installed using install.packages("packrat").
-
 *Using the package:* 
 
 Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://github.com/TheJacksonLaboratory/sRACIPE_dev/blob/master/vignettes/sRACIPE.html) and vignettes. 
