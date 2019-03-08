@@ -1,16 +1,17 @@
 Package: sRACIPE
 Type: Package
-Title: sRACIPE is a systems biology tool to study the role of noise and parameter variation in gene regulatory circuits. 
-Version: 0.99.0
+Title: Systems biology tool to simulate gene regulatory circuits 
+Version: 0.99.1
 Author: Vivek Kohar
 Maintainer: Vivek Kohar <vivek.kohar@gmail.com>
-Description: sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology. sRACIPE (sRACIPE) provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation. We define a distinct cellular state as one of the clusters of steady state gene expression profiles from random models and evaluate how gene expression noise affects the formation and expression patterns of clusters. The stochastic analysis can quantify the relative stability of the steady states for systems allowing multiple states. 
-License: Artistic-2.0
+Description: sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology, and simulates an ensemble of models with random kinetic parameters at multiple noise levels. Statistical analysis of the generated gene expressions reveals the basin of attraction and stability of various phenotypic states and their changes associated with intrinsic and extrinsic noises. sRACIPE provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation. 
+License: Custom
 Encoding: UTF-8
-LazyData: false
+LazyData: true
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp
-Imports: visNetwork, reshape2, ggplot2, Rtsne, gplots, MASS, RColorBrewer, htmlwidgets
 biocViews: ResearchField, SystemsBiology, MathematicalBiology
+Imports: ggplot2, reshape2, MASS, RColorBrewer, gridExtra,visNetwork, gplots, umap, htmlwidgets
+RoxygenNote: 6.1.1

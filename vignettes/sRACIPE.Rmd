@@ -1,0 +1,251 @@
+---
+title: "Using sRACIPE"
+output:
+  html_document: default
+  pdf_document: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 7, fig.height = 5)
+```
+
+## Introduction
+
+This document illustrates the use of sRACIPE to simulate any 
+circuit/network/topology (used interchangeably) and analyze the generated data. 
+For simplicity, we will start with the toggle switch with mutual inhibition and 
+self activation of both genes as a test case.
+
+## Load the Circuit
+As a first step, set the directory to the desired folder where you want to 
+keep the input topology file and the results. In the working directory 
+("man" in this example), create a folder "inputs" and place the 
+topology (network/circuit) file in that folder or load the topology as a dataframe. 
+The typical format of the topology 
+file is a 3 column file where the first column is name of the source gene, 
+second column is name of the target gene and last column is 
+the interaction type (1 - activation, 2-inhibition). 
+The first line should contain the header (Source Target Interaction). 
+We will work with the a demo circuit from the package.
+
+```{r eval=TRUE}
+library(sRACIPE)
+
+# Load a demo circuit
+data("demoCircuit")
+demoCircuit
+
+```
+
+## Simulate the circuit
+To simulate the demo circuit, we will first save it to inputs folder and use the
+new file as the input to simulateGRC function. We will use a reduced number of 
+models (using numModels) for demonstration. The simulations will return a list 
+containing the geneNames (names of genes in the circuit), fileName (the name 
+of circuit along with a random string that is used to save the temporary 
+simulation data), topology (the circuit information), config (the simulation
+parameters), geneExpression (simulated gene expression), params (parameters for
+each model), ic (initial conditions for each model) and normalized (whether the
+data has been normalizd or not). 
+
+```{r}
+# Save the demo circuit to a file in the inputs folder.
+write.table(demoCircuit, file = "inputs/demoCircuit.txt", quote = FALSE,
+            row.names = FALSE)
+# Use the file "demoCircuit.txt" as the input circuit
+
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo", numModels = 500, 
+                             plots = FALSE)
+names(rSet)
+```
+
+## Plotting the simulated data
+
+We can plot the simulated data using the plotData function or using plots=TRUE
+in simulateGRC. The data will be normalized before plotting. By default, two 
+clusters are identified and models colored according to hierarchical clustering.
+
+```{r eval=TRUE}
+rSet <- sRACIPE::plotData(rSet = rSet, plotToFile = FALSE)
+
+```
+
+## Knockdown Analysis
+The simulations can be used to perform in-silico perturbation analysis. 
+For example, here we will limit a gene's production rate to mimic its knockdown
+and show how that changes the relative proportion of models in different 
+clusters.
+
+```{r}
+kd <- sRACIPE::knockdownAnalysis(rSet, plotToFile = FALSE)
+```
+## Over expression analysis
+
+Similarly over expression can be done.
+
+
+```{r}
+kd <- sRACIPE::overExprAnalysis(rSet, plotToFile = FALSE)
+```
+
+
+## Plot the network 
+
+The network can be plotted in an interactive viewer / html file in the results  folder.
+
+```{r eval=TRUE}
+sRACIPE::plotCircuit(rSet, plotToFile = FALSE)
+```
+
+
+##  Stochastic simulations 
+
+One can perform stochastic simulations similarly by specifying additional 
+parameters to the simulateGRC function, namely, nNoise (the number of noise
+levels at which the stochastic simulations should be carried out), initialNoise 
+(the starting noise level) and noiseScalingFactor (the multiplicative factor by
+which noise should be reduced for multiple noise levels). 
+For annealing, use anneal=TRUE alongwith the above mentioned parameters.
+For simulations at one
+noise level only, use nNoise = 1 and set initialNoise parameter to the specific 
+noise. 
+
+Now the returned list will contain an additional element named 
+stochasticSimulations which is a list of dataframes. Each dataframe contains the
+simulations for one noise level (the name of the dataframe).
+
+```{r eval=TRUE}
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo", numModels = 500, 
+                             initialNoise = 15, noiseScalingFactor = 0.1,
+                             nNoise = 2,
+                             plots = TRUE, plotToFile = FALSE)
+
+```
+
+Here, calling the simulateGRC function simulated the circuit at zero noise level
+as well as the two (nNoise) other noise levels 15 (initialNoise), 1.5 
+(initialNoise*noiseScalingFactor). The first three plots (hierarchical 
+clustering heatmap, Umap, PCA) correspond to deterministic data and the last
+two plots contain the data from stochastic simulations projected on the 
+principal components of the deterministic simulations.
+
+```{r eval=TRUE}
+names(rSet)
+names(rSet$stochasticSimulations)
+```
+
+Note that the rSet list now contains stochasticSimulations as well as 
+additional elements like umap, pca, assignedClusters. These are 
+added when the data is plotted. As mentioned previously, the stochasticSimulations 
+contains two dataframes named "15" and "1.5" which correspond to noise levels. 
+
+
+For annealing simulations, one can set anneal=TRUE in the simulateGRC function.
+With anneal=FALSE (constant noise), simulations at different noise levels are 
+independent of each other. These are useful if one is primarily interested in 
+the gene expressions at different noise levels and at zero noise 
+(used for normalizing the data). With annealing, the steady state solutions
+at higher noise levels are used as the intial conditions for lower noise levels 
+such that each model converges to its most stable state when the noise is zero.
+
+
+Using annealing, ideally the number of noise levels should be very large 
+and noiseScalingFactor close to 1 as we want to reduce the noise very slowly. 
+In practice, we found nNoise ~ 30 and initialNoise ~50/sqrt(number_gene) 
+as good starting values. Constant noise and annealing noise simulations pca 
+plots can be used for better approximations of these parameters. 
+The initialNoise should be such that there is a single cluster at this 
+high noise level (essentially the gene expression values are random and circuit 
+topology has little effect). Next, noiseScalingFactor  should be adjusted such 
+that there are sufficient noise levels when this single cluster splits into 
+multiple clusters observed in deterministic simulations. 
+
+With annealing,
+the models converge to their most stable steady state 
+at zero noise. Thus, the number of models is more stable clusters
+will increase and number in less 
+stable clusters will decrease. Note that for non zero noise, the stable states
+can be different from the stable states at zero noise. In our illustrative 
+example shown abpve, the previous two stable states of a toggle circuit are no 
+longer stable at high noise ("15") and instead the previously unstable high high
+state is stable now. Briefly, noise can change the stable states and zero noise
+simulations using annealing can  
+gives us an idea about the relative stability of states 
+when there are multiple stable states. 
+
+## Parameter Analysis
+One can also investigate the effect of parameter values on the gene expressions.
+One utility function, plotParamBifur, plots the gene expressions with parameter
+values to understand how increasing or decreasing the parameter value will 
+affect the gene expression patterns.
+
+```{r eval=TRUE}
+sRACIPE::plotParamBifur(rSet,"K_B", plotToFile = FALSE)
+```
+
+Further, one can modify the parameters and/or initial conditions
+and simulate the circuit with
+modified parameters and/or initial conditions using the parameters 
+genParams = FALSE and/or genIC = FALSE. 
+
+
+```{r eval=FALSE}
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo", integrate = FALSE,
+                             plots = FALSE)
+params <- rSet$params
+modifiedParams <- someModification(params) # someModification is a user defined
+# function to modify the parameters
+
+rSet$params <- modifiedParams
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo", integrate = TRUE,
+                             plots = FALSE, genParams = FALSE)
+
+```
+
+
+## Stochastic Bifurcation 
+One can also investigate how the gene expression change with changes in noise 
+levels. Here, we reduce the numModels at each noise level and increase the
+number of noise levels.
+
+```{r eval=TRUE}
+numModels = 100
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo", nNoise = 50,
+                             numModels = numModels, noiseScalingFactor = 0.93,
+                             plots = FALSE)
+rSet <- sRACIPE::normalizeGE(rSet)
+noise <- as.numeric(names(rSet$stochasticSimulations))
+len <- lapply(rSet$stochasticSimulations, function(x) dim(x)[1])
+noise <- rep(noise,len)
+allData <- lapply(rSet$stochasticSimulations, as.matrix)
+allData <- Reduce(rbind, rSet$stochasticSimulations)
+noise <- rep(noise,ncol(allData))
+allData <- reshape2::melt(allData)
+allData$noise <- noise
+colnames(allData) <- c("Gene", "Expression", "Noise")
+library(ggplot2)
+p <- ggplot2::ggplot(data = allData, aes(x = Noise, y = Expression, color = Gene)) 
+p + geom_jitter( shape = 1, width = 1.5) + theme_bw()
+```
+
+
+## KnockOut Simulations
+
+Knockout of a gene is implemented by changing the production rate and initial 
+condition of the gene to zero. The knockOut parameter in the function 
+simulateGRC can be used to perform these knockout simulations. If simulations 
+are to be carried out for knockouts of different genes, the genes should be 
+specified as a list where each list element will contain the names of the gene 
+to be knocked out. For example, knockout = list("gene1", "gene2", 
+c("gene3", "gene4"), "gene5") will knockout gene1, gene2, gene5 one by one
+and knockout gene3 and gene4 simultaneously.
+knockOut = "all", each gene is knocked out one by one and the results are 
+returned as an element knockOutSimulations which, similar to 
+stochasticSimulations, is a list of dataframes containing the gene expressions
+obtained by knockout one or more genes. Enabling plots=TRUE will plot the 
+results. As the expression of knockout gene is zero, we compute PCA with 
+unperturbed genes for both the unperturbed simulations as well as the
+perturbed simulations. So for each knockout, we have two plots containing the
+scatter plot of unperturbed simulations and perturbed simulations on the PCs of
+unperturbed simulations (excluding the gene to be perturbed).
+

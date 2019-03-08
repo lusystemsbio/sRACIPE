@@ -1,26 +1,15 @@
-rm(list = ls())
+# Load the package
 library(sRACIPE)
-working_directory <- getwd()
-config_file = "inputs/sRACIPE.cfg"
-configuration <- sRACIPE_load_configuration(config_file = config_file)
 
-topology_file <- "inputs/test.tpo"
-topology <- sRACIPE_load_topology(topology_file = topology_file)
+# Call the simulate function. It will simulate the circuit and plot the
+# simulated data. The results will be saved in the results folder in the
+# working directory. Use different arguments to modify the simulation parameters.
 
-output_file <- sRACIPE_RK_deterministic(topology_file = topology_file)
+rSet <- sRACIPE::simulateGRC(circuit = "inputs/test.tpo")
 
-plot_data_deterministic(output_file, plot_filename = topology$filename)
+# Perform in-silico knockdown analysis and plot the results.
+sRACIPE::knockdownAnalysis(rSet = rSet)
 
-# Works for data generated using sRACIPE_RK_deterministic, sRACIPE_RK_adaptive_deterministic
 
-# To use adaptive time step methjod
-#output_file <- sRACIPE_RK_adaptive_deterministic(topology_file = topology_file)
-
-# For stochastic simulations
-#output_file <- sRACIPE_stochastic(topology_file = topology_file)
-
-#plot_data_stochastic(output_file, plot_filename=topology$filename, topology_df=topology, config = configuration, bin_count=40)
-
-## Works for data generated using sRACIPE_stochastic, sRACIPE_stochastic_multiprint
-
-#plot_network(topology)
+# Perform in-silico knockdown analysis and plot the results.
+sRACIPE::overExprAnalysis(rSet = rSet)

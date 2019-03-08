@@ -1,0 +1,17 @@
+citHeader("To cite the sRACIPE package in publications use:")
+
+citEntry(entry="article",
+  author   = "Vivek Kohar, Mingyang Lu",
+  title    = "Role of noise and parametric variation in the dynamics of gene regulatory circuits",
+  journal  = "npj Systems Biology and Applications",
+  year     = 2018,
+  volume   = 4,
+  pages    = "40",
+  url      = "https://www.nature.com/articles/s41540-018-0076-x",
+  textVersion=
+    paste("Kohar, V. and Lu, M.,",
+          "Role of noise and parametric variation in the dynamics of gene regulatory circuits,",
+          "npj Systems Biology and Applicationsvolume 4, Article number: 40 (2018)",
+          sep=" ")
+)
+

@@ -12,15 +12,17 @@ If you use sRACIPE, please consider citing our paper [Role of noise and parametr
 *Installing R package from GitHub*
 
 1) Install devtools package. In R, type: 
-	install.packages("devtools")
+install.packages("devtools")
 2) Load the devtools package:
-	library(devtools)
+library(devtools)
 3) Install sRACIPE from GitHub:
-	install_github("lusystemsbio/sRACIPE")
+install_github("TheJacksonLaboratory/sRACIPE_dev")
 
+sRACIPE is a self contained package and includes all the dependencies in the packrat folder.
+Packrat can be installed using install.packages("packrat").
 
 *Using the package:* 
 
-Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://github.com/lusystemsbio/sRACIPE/blob/master/man/Using_sRACIPE.html) and vignettes. 
+Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://github.com/TheJacksonLaboratory/sRACIPE_dev/blob/master/vignettes/sRACIPE.html) and vignettes. 
 
- 
+

@@ -1,270 +1,801 @@
-load_data = function(data_simulation = data_simulation, topology_df=topology){
-  working_directory <- getwd()
-  name_genes <- read.table(paste(working_directory,"/results/gene_interaction_topology_",topology$filename,".txt",sep=""), header = T, stringsAsFactors = F)
-  name_genes <- t(as.matrix(name_genes))
-  data_simulation <- log2(data_simulation)
-  data_simulation <- scale(data_simulation)
-  name_models <- seq(1:nrow(data_simulation))
-  row.names(data_simulation) <- name_models
-  colnames(data_simulation) <- name_genes
-  return(data_simulation)
-}
+#' @export
+#' @title Normalize the gene expression data
+#' @description Normalize the sRACIPE simulated gene expression data
+#' @param rSet List. List returned by the function \code{\link{simulateGRC}}
+#' containing the circuit, simulated gene expressions etc.
+#'
+#' @section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
 
-plot_interactive_heatmap = function(data_file=output_file, plot_filename=plot_filename,  topology_df=topology){
-  working_directory <- getwd()
-  message("Plotting the interactive heatmap")
-  data_simulation <- read.table(output_file, header = F)
-  data_simulation <- load_data(data_simulation, topology)
+normalizeGE = function(rSet = rSet) {
+  geneExpression <- rSet$geneExpression
+  geneExpression <- log2(geneExpression)
+  means <- colMeans(geneExpression)
+  sds <-  apply(geneExpression, 2, sd)
+  geneExpression <- scale(geneExpression)
+  rSet$geneExpression <- data.frame(geneExpression)
 
-  if(missing(plot_filename)) plot_filename <- "heatmap"
+ if("stochasticSimulations" %in% names(rSet)){
+  stochasticSimulations <- rSet$stochasticSimulations
 
-  library(reshape2)
-  library(ggplot2)
-  library(Rtsne)
-  library(gplots)
-  library(MASS)
-  library(RColorBrewer)
-  library(htmlwidgets)
-  library(d3heatmap)
+  stochasticSimulations <- lapply(stochasticSimulations,log2)
+  stochasticSimulations <-
+  lapply(stochasticSimulations, function(x) x[is.finite(rowMeans(x)),])
 
-  rf <- colorRampPalette(rev(brewer.pal(11,'Spectral')))
-  plot_color <- rf(32)
+  stochasticSimulations <- lapply(stochasticSimulations, function(x) sweep(x, 2, means, FUN = "-"))
+  stochasticSimulations <- lapply(stochasticSimulations, function(x) sweep(x, 2, sds, FUN = "/"))
 
-  results_directory <- ifelse(!dir.exists(file.path(working_directory, "results")), dir.create(file.path(working_directory, "results")), file.path(working_directory, "results"))
-  setwd(results_directory)
-  hmap_file <- paste(plot_filename,"_heatmap.html", sep = "")
-  hmap <- d3heatmap(t(data_simulation), col=plot_color)
-  saveWidget(hmap,hmap_file)
-  setwd(working_directory)
-  message("Heatmaps html file is in the results folder.")
-}
-plot_data_deterministic = function(data_file=output_file, plot_filename=plot_filename,  topology_df=topology, bin_count=40){
-  working_directory <- getwd()
-  message("Plotting the results")
-  data_simulation <- read.table(output_file, header = F)
-  data_simulation <- load_data(data_simulation, topology)
-
-  if(missing(bin_count)) bin_count <- 40
-  if(missing(plot_filename)) plot_filename <- "plots"
-
-  library(reshape2)
-  library(ggplot2)
-  library(Rtsne)
-  library(gplots)
-  library(MASS)
-  library(RColorBrewer)
-  #library(htmlwidgets)
-  #library(d3heatmap)
-  rf <- colorRampPalette(rev(brewer.pal(11,'Spectral')))
-  plot_color <- rf(32)
-
-  tsne_out <- Rtsne(as.matrix(data_simulation), check_duplicates = FALSE) # Run TSNE
-  tsne_data <- data.frame(x = tsne_out$Y[,1], y = tsne_out$Y[,2])
-
-  pca1 = prcomp(data_simulation, scale. = FALSE)
-  pca_data <- data.frame(x=pca1$x[,1],y=pca1$x[,2])
-
-  pdf(paste("results/",plot_filename,"_deterministic.pdf",sep = ""))
-  density_plot(pca_data,bin_count,plot_color)
-  #heatmap(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'complete'))
-  heatmap(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2))
-  density_plot(tsne_data,bin_count, plot_color)
-  dev.off()
-  #results_directory <- ifelse(!dir.exists(file.path(working_directory, "results")), dir.create(file.path(working_directory, "results")), file.path(working_directory, "results"))
-  #setwd(results_directory)
-  #hmap_file <- paste(plot_filename,"_heatmap.html", sep = "")
-  #hmap <- d3heatmap(t(data_simulation), col=plot_color)
-  #saveWidget(hmap,hmap_file)
-  #setwd(working_directory)
-  data <- list(data_simulation,pca1,tsne_out,pca_data,tsne_data)
-  message("Plots in the pdf file in the results folder.")
-
-}
-
-plot_data_stochastic = function(output_file, plot_filename=filename,  topology_df=topology, config = configuration, bin_count=40){
-  message("Plotting the stochastic results")
-  library(reshape2)
-  library(ggplot2)
-  library(Rtsne)
-  library(gplots)
-  library(MASS)
-  library(RColorBrewer)
-
-  rf <- colorRampPalette(rev(brewer.pal(11,'Spectral')))
-  plot_color <- rf(32)
-
-  if(missing(bin_count)) bin_count <- 40
-  if(missing(plot_filename)) output_filename <- "plots"
-
-  working_directory <- getwd()
-  name_genes <- read.table(paste(working_directory,"/results/gene_interaction_topology_",topology$filename,".txt",sep=""), header = T, stringsAsFactors = F)
-
- data_simulation_all <- as.data.frame(read.table(output_file, header = F))
- col_start <- topology$number_gene*(configuration$NOISE_LEVELS-1)+1
- col_end <- topology$number_gene*(configuration$NOISE_LEVELS)
- data_simulation <- as.data.frame(data_simulation_all[,col_start:col_end])
- data_simulation <- log2(data_simulation)
- data_simulation <- data_simulation[is.finite(rowMeans(data_simulation)), ]
-
- means <- colMeans(data_simulation)
- sds <- apply(data_simulation, 2, sd)
- data_simulation <- sweep(data_simulation,2,means,FUN = "-")
- data_simulation <- sweep(data_simulation,2,sds,FUN = "/")
-
- name_models <- seq(1:nrow(data_simulation))
- name_genes <- t(as.matrix(name_genes))
- row.names(data_simulation) <- name_models
- colnames(data_simulation) <- name_genes
-
-
- pca = prcomp(data_simulation, scale. = FALSE, center = FALSE)
- #pca_data <- data.frame(x=pca$x[,1],y=pca$x[,2])
-
- pdf(paste("results/",plot_filename,"_stochastic_pca.pdf",sep = ""))
-
- for(i in 1:configuration$NOISE_LEVELS)
- {
-   col_start <- (topology$number_gene)*(configuration$NOISE_LEVELS-i)+1
-   col_end <- (topology$number_gene)*(configuration$NOISE_LEVELS-i+1)
-   data_simulation <- as.data.frame(data_simulation_all[,col_start:col_end])
-   data_simulation <- log2(data_simulation)
-   data_simulation <- data_simulation[is.finite(rowMeans(data_simulation)), ]
-
-   data_simulation <- sweep(data_simulation,2,means,FUN = "-")
-   data_simulation <- sweep(data_simulation,2,sds,FUN = "/")
-
-   name_models <- seq(1:nrow(data_simulation))
-   row.names(data_simulation) <- name_models
-   colnames(data_simulation) <- name_genes
-
-   pca_data <- scale(data_simulation, pca$center, pca$scale) %*% pca$rotation
-   pca_data <- data.frame(x=pca_data[,1],y=pca_data[,2])
-   density_plot(pca_data,bin_count,plot_color)
+  rSet$stochasticSimulations <- stochasticSimulations
  }
 
+  if("knockOutSimulations" %in% names(rSet)){
+    knockOutSimulations <- rSet$knockOutSimulations
+    for(ko in 1:length(knockOutSimulations)){
+      simData <- knockOutSimulations[[ko]]
+      tmpGene <- names(knockOutSimulations[ko])
+      tmpMeans <- means
+      tmpMeans[which(names(simData) == tmpGene)] <- 0
+      tmpSds <- sds
+      tmpSds[which(names(simData) == tmpGene)] <- 1
 
-  dev.off()
+      simData <- log2(simData)
+      simData[,which(names(simData) == tmpGene)] <- 0
+      simData <- sweep(simData, 2, tmpMeans, FUN = "-")
+      simData <- sweep(simData, 2, tmpSds, FUN = "/")
+      knockOutSimulations[[ko]] <- simData
+    }
+    rSet$knockOutSimulations <- knockOutSimulations
+  }
 
-  message("Plots in the pdf file in the results folder.")
+  rSet$normalized <- TRUE
 
+  return(rSet)
 }
 
-plot_data_knockout_single = function(output_file, output_file_knockout, plot_filename=filename,  topology_df=topology, KNOCKOUT = NA_character_, config = configuration, bin_count=40){
-  message("Plotting the single knockout results")
-  library(reshape2)
-  library(ggplot2)
-  library(Rtsne)
-  library(gplots)
-  library(MASS)
-  library(RColorBrewer)
 
-  rf <- colorRampPalette(rev(brewer.pal(11,'Spectral')))
+#' @export
+#' @title Parameter bifurcation plots
+#' @description Plot the expression of the genes against parameter values
+#' to understand the effect of parameters on the gene expressions.
+#' @param rSet List. The list generated by \code{\link{simulateGRC}} function.
+#' @param paramName character. The name of the parameter to be plotted.
+#' @param data (optional) dataframe. Default rSet geneExpression. The data
+#' to be plotted. For example, use rSet$stochasticSimulations$[noise] to plot
+#' the stochastic data.
+#' @param paramValue (optional) Dataframe. The parameter values if rSet$params
+#' is not to be used.
+#' @param assignedClusters (optional) Dataframe. The cluster assignment of data.
+#'
+
+plotParamBifur <- function(rSet = rSet, paramName, data = NULL,
+                           paramValue = NULL, assignedClusters = NULL,
+                           plotToFile = TRUE){
+  if(missing(paramValue)){
+    paramValue <- rSet$params
+    paramValue <- paramValue[,paramName]
+  }
+  if(missing(data)){
+    data = rSet$geneExpression
+  }
+  paramValue <- rep(paramValue, ncol(data))
+  data <- reshape2::melt(data)
+  colnames(data) <- c("Gene", "Expression")
+  if(missing(assignedClusters)){
+    if(is.null(rSet$assignedClusters)){
+      assignedClusters <- data$Gene
+    } else {
+    assignedClusters <- rSet$assignedClusters
+    assignedClusters <- as.factor(rep(assignedClusters, ncol(data)))
+
+    }
+  } else {
+    assignedClusters <- as.factor(rep(assignedClusters, ncol(data)))
+  }
+  if(plotToFile){
+    fileName <- paste0("results/",rSet$fileName,"_",paramName,"_BifurPlot.pdf")
+    pdf(fileName, onefile = TRUE)
+  }
+  Cluster <- assignedClusters
+    p <- ggplot(data, aes(x = paramValue, y=Expression, color = Gene,
+                   shape = Cluster) ) +
+    geom_point() +
+    theme_bw() +
+    labs(x=paramName) +
+    theme(text = element_text(size=20))
+    gridExtra::grid.arrange(p)
+
+    if(plotToFile){
+      dev.off()
+    }
+}
+
+
+#' @export
+#' @title Plot sRACIPE data
+#' @description Plots heatmap, pca, umap of the data simulated using sRACIPE
+#' @param  rSet List A list returned by \code{\link{simulateGRC}} function
+#' @param plotToFile (optional) logical. Default \code{TRUE}. Whether to save
+#' plots to a file.
+#' @param nClusters (optional) Integer. Default 2. Expected number of clusters
+#' in the simulated data. Hierarchical clustering will be used to cluster the
+#' data and the the models will be colored in UMAP and PCA plots according to
+#' these clustering results. The clusters can be also supplied using
+#' \code{assignedClusters}.
+#' @param pcaPlot (optional) logical. Default \code{TRUE}. Whether to plot PCA
+#' embedding.
+#' @param umapPlot (optional) logical. Default \code{TRUE}. Whether to plot
+#' UMAP embedding
+#' @param networkPlot (optional) logical. Default \code{TRUE}. Whether to plot
+#' the network.
+#' @param clustMethod (optional) character. Default \code{"ward.D2"}. Clustering
+#' method for heatmap. See \code{\link[gplots]{heatmap.2}}
+#' @param col (optional) Color palette
+#' @param distType (optional) Distance type.  Used only if specified
+#' explicitly. Otherwise, 1-cor is used. See \code{\link[stats]{dist}},
+#' \code{\link[stats]{hclust}}
+#' @param assignedClusters vector integer or character. Default NULL.
+#' Cluster assignment of models.
+#' @param corMethod (optional) character. Default \code{"spearman"}. Correlation
+#' method for distance function.
+#'
+#' @section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
+
+plotData <- function(rSet = rSet, plotToFile = TRUE, nClusters = 2,
+                     pcaPlot = TRUE, umapPlot = TRUE,networkPlot = TRUE,
+                     clustMethod = "ward.D2", col = col, distType = "euclidean",
+                     assignedClusters = NULL, corMethod = "spearman", ...) {
+  if(missing(col)){
+    col <-  colorRampPalette(rev( RColorBrewer::brewer.pal(11, 'Spectral')))
+  }
+  col2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+            "#D55E00", "#CC79A7")
+  p <- list()
+  stoch <- list()
+  stochCounter <- 1
+  i=1;
+  koPlot <- list()
+  koPlotCounter = 1
+  if(!rSet$normalized) {rSet <- normalizeGE(rSet)}
+
+
+  if(missing(distType)){
+    corRow <- stats::cor((rSet$geneExpression), method = corMethod)
+    distanceRow <- stats::as.dist((1 - corRow) / 2)
+    corCol <- stats::cor(t(rSet$geneExpression), method = corMethod)
+    distanceCol <- stats::as.dist((1 - corCol) / 2)
+  }
+  else{
+    # distType = "manhattan"
+    distanceRow <- stats::dist(t(rSet$geneExpression), method = distType)
+    distanceCol <- stats::dist((rSet$geneExpression), method = distType)
+    }
+  clustersRow <- stats::hclust(distanceRow, method = clustMethod)
+  ddRow <- as.dendrogram(clustersRow)
+
+
+  clustersCol <- stats::hclust(distanceCol, method = clustMethod)
+  ddCol <- stats::as.dendrogram(clustersCol)
+  if(is.null(assignedClusters)){
+  clustCut <- stats::cutree(clustersCol, nClusters)
+  clustColors <- col2[clustCut]
+  assignedClusters <- clustCut
+  }
+
+  if(!missing(assignedClusters)){
+    clustNames <- unique(assignedClusters)
+    nClusters <- length(clustNames)
+    clustColors <- numeric(length(assignedClusters))
+    for(tmp1 in 1:length(clustColors)){
+      clustColors[tmp1] <- which(clustNames == assignedClusters[tmp1] )
+    }
+    clustColors <- col2[clustColors]
+  }
+  names(clustColors) <- assignedClusters
+
+  if(plotToFile){
+    fileName <- paste0("results/",rSet$fileName,"_heatmap.pdf")
+
+    pdf(fileName, onefile = TRUE)
+  }
+  gplots::heatmap.2(t(rSet$geneExpression),
+              Rowv = ddRow,
+              Colv = ddCol,
+              trace = "none",
+              col = col,
+              ColSideColors = clustColors
+    )
+
+if(plotToFile){
+  dev.off()
+}
+
+
+    if(umapPlot){
+      umapGE <- umap::umap(rSet$geneExpression)
+      p[[i]] <-
+        ggplot2::ggplot(data = as.data.frame(umapGE$layout)) +
+        geom_point(aes(x = V1, y=V2), color = clustColors, shape = 1) +
+        labs(x = "Umap1", y="Umap2") +
+        theme(text = element_text(size=30),
+              panel.background = element_rect(fill = "white", color = "black"),
+              panel.grid.major = element_line(color="gray", size=0.25))
+            #  panel.border = element_rect(color = "black"))
+    }
+    i <- i+1
+    if(pcaPlot){
+
+      pca1 = summary(prcomp((rSet$geneExpression), scale. = FALSE))
+      p[[i]] <-
+        ggplot2::ggplot(data = as.data.frame(pca1$x)) +
+        geom_point(aes(x = PC1, y=PC2), color = clustColors, shape = 1) +
+          labs(x = paste0("PC1(",100*pca1$importance[2,1],"%)"),
+               y=paste0("PC2(",100*pca1$importance[2,2],"%)")) +
+          theme(text = element_text(size=30),
+                panel.background = element_rect(fill = "white", color = "black"),
+                panel.grid.major = element_line(color="gray", size=0.25))
+      if(!is.null(rSet$stochasticSimulations)){
+      stochasticPca <- rSet$stochasticSimulations
+      for(j in 1:length(stochasticPca)){
+      stochasticPca[[j]] <-
+        scale(stochasticPca[[j]], pca1$center, pca1$scale) %*% pca1$rotation
+
+      stoch[[j]] <-
+        ggplot2::ggplot(data = as.data.frame(stochasticPca[[j]])) +
+        geom_point(aes(x = PC1, y=PC2), shape = 1) +
+        labs(x = paste0("PC1(",100*pca1$importance[2,1],"%)"),
+             y=paste0("PC2(",100*pca1$importance[2,2],"%)"),
+             title = names(rSet$stochasticSimulations)[j]) +
+        theme(text = element_text(size=30),
+              panel.background = element_rect(fill = "white", color = "black"),
+              panel.grid.major = element_line(color="gray", size=0.25))
+      }
+
+      }
+      if(!is.null(rSet$knockOutSimulations)){
+        knockOutSimulations <- rSet$knockOutSimulations
+        for(ko in 1:length(knockOutSimulations)){
+
+          simData <- knockOutSimulations[[ko]]
+          geneExpression <- rSet$geneExpression
+          tmpGene <- names(knockOutSimulations[ko])
+          simData <- simData[, -which(names(simData) == tmpGene)]
+          geneExpression <- geneExpression[, -which(names(geneExpression) == tmpGene)]
+          pcaKo <- summary(prcomp((geneExpression), scale. = FALSE))
+          koPlot[[koPlotCounter]] <-
+            ggplot2::ggplot(data = as.data.frame(pcaKo$x)) +
+            geom_point(aes(x = PC1, y=PC2), color = clustColors, shape = 1) +
+            labs(x = paste0("PC1(",100*pcaKo$importance[2,1],"%)"),
+                 y=paste0("PC2(",100*pcaKo$importance[2,2],"%)")) +
+            theme(text = element_text(size=30),
+                  panel.background = element_rect(fill = "white", color = "black"),
+                  panel.grid.major = element_line(color="gray", size=0.25))
+          koPlotCounter <- koPlotCounter + 1
+
+          simDataPca <-
+            scale(simData, pcaKo$center, pcaKo$scale) %*% pcaKo$rotation
+          koPlot[[koPlotCounter]] <-
+            ggplot2::ggplot(data = as.data.frame(simDataPca)) +
+            geom_point(aes(x = PC1, y=PC2), shape = 1) +
+            labs(x = paste0("PC1(",100*pcaKo$importance[2,1],"%)"),
+                 y=paste0("PC2(",100*pcaKo$importance[2,2],"%)"),
+                 title = names(knockOutSimulations[ko])) +
+            theme(text = element_text(size=30),
+                  panel.background = element_rect(fill = "white", color = "black"),
+                  panel.grid.major = element_line(color="gray", size=0.25))
+          koPlotCounter <- koPlotCounter + 1
+
+        }
+
+      }
+    }
+
+  if(plotToFile){
+      fileName <- paste0("results/",rSet$fileName,"_plots.pdf")
+      pdf(fileName, onefile = TRUE)
+    }
+    for (i in seq(length(p))) {
+      gridExtra::grid.arrange(p[[i]])
+   #   do.call("grid.arrange", p[[i]])
+    }
+
+    if(plotToFile){
+      message("Plots in the pdf file in the results folder.")
+      dev.off()
+    }
+    if(!is.null(rSet$stochasticSimulations)){
+    if(plotToFile){
+      fileName <- paste0("results/",rSet$fileName,"_stochasticPlots.pdf")
+      pdf(fileName, onefile = TRUE)
+    }
+    for (i in seq(length(stoch))) {
+      gridExtra::grid.arrange(stoch[[i]])
+      #   do.call("grid.arrange", p[[i]])
+    }
+    if(plotToFile){
+      dev.off()
+    }
+    }
+
+    if(!is.null(rSet$knockOutSimulations)){
+      if(plotToFile){
+        fileName <- paste0("results/",rSet$fileName,"_KO_Plots.pdf")
+        pdf(fileName, onefile = TRUE)
+      }
+      for (i in seq(length(koPlot)/2)) {
+        gridExtra::grid.arrange(koPlot[[2*i-1]],koPlot[[2*i]], nrow = 2)
+        #   do.call("grid.arrange", p[[i]])
+      }
+      if(plotToFile){
+        dev.off()
+      }
+    }
+
+
+    if(networkPlot){
+      plot_network(rSet$topology, plotToFile = plotToFile)
+    }
+rSet$umap <- umapGE
+rSet$pca <- pca1
+rSet$assignedClusters <- assignedClusters
+return(rSet)
+}
+
+
+
+#' @export
+#' @title Perform in-silico over expression analysis
+#'
+#' @description Calculates the fraction of models in different clusters
+#' with full parameter
+#' range and on a subset of models with high production rate of a specific gene
+#'  representing the over expression of the specific gene.
+#'
+#' @param rSet (optional) List. A list returned by \code{\link{simulateGRC}}
+#' function.
+#' @param topologyDf (optional) Deprecated.
+#' Topology (list) generated by sRACIPE_load_topology function
+#' @param dataFile (optional) Deprecated. Gene expression file (character).
+#' @param paramFile (optional) Deprecated. Parameter file (character).
+#' @param clusterOfInterest (optional) cluster number (integer) to be used for arranging
+#' the transcription factors
+#' @param overProduction (optional) Percentage to which production rate
+#' decreases on knockdown. Uses a default value of 10 percent.
+#' @param nClusters (optional) Number of clusters in the data. Uses a default
+#' value of 2.
+#' @param plotFilename (optional) Name of the output file.
+#' Uses the topology name as default.
+#' @param cluster assignments of the models
+#' @return List containing fraction of models in different clusters
+#'  in the original simulations and after knowcking down different genes.
+#' Additionaly, it generates two pdf files in the results folder. First is barplot
+#' showing the percentage of different clusters in the original simulations
+#' and after knocking down each gene. The second pdf contains the heatmap of
+#' clusters after marking the models with cluster assignments.
+#'
+#' @section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
+
+overExprAnalysis = function(topologyDf = topology,
+                             dataFile = output_file,
+                             paramFile = parameters_file,
+                            overProduction = 30,
+                             nClusters = 2,
+                             clusterOfInterest = 2,
+                             plotFilename = plot_filename,
+                             plotHeatmap = TRUE,
+                             plotBarPlot = TRUE,
+                             clusterCut = cluster_cut,
+                            plotToFile = TRUE) {
+  if(!is.null(rSet)){
+    topologyDf <- rSet$topology
+    dataFile <- paste0("tmp/",rSet$fileName, "_geneExpression.txt")
+    paramFile <- paste0("tmp/",rSet$fileName, "_params.txt")
+    data_simulation <- rSet$geneExpression
+    names_genes <- rSet$geneNames
+    params <- rSet$params
+
+  }
+  else{
+    # Read the gene expression  and parameters files
+    working_directory <- getwd()
+    data_simulation <- read.table(dataFile, header = F)
+    data_simulation <- sRACIPE::load_data(data_simulation, topologyDf)
+    names_genes <- colnames(data_simulation)
+    params <-
+      read.table(paramFile,
+                 header = F,
+                 stringsAsFactors = F)
+  }
+
+  params <- params[, 1:ncol(data_simulation)]
+
+  if (missing(plotFilename))
+    plotFilename <- topologyDf$filename
+  filename <-
+    (paste("results/", plotFilename, "_overExpr.pdf", sep = ""))
+
+  #library(htmlwidgets)
+  #library(d3heatmap)
+  rf <- colorRampPalette(rev(brewer.pal(11, 'Spectral')))
   plot_color <- rf(32)
+  plot_color2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+                   "#D55E00", "#CC79A7")
+  data_simulation <- t(data_simulation)
 
-  if(missing(bin_count)) bin_count <- 40
-  if(missing(plot_filename)) output_filename <- "plots"
+  # Find cluster assignments
+  if(missing(clusterCut)){
+    ref_cor <- cor((data_simulation), method = "spearman")
+    distance <- as.dist((1 - ref_cor) / 2)
+    clusters <- hclust(distance, method = "ward.D2")
+    cluster_cut <- cutree(clusters, nClusters)
+  }
+  else {
+    cluster_cut <- clusterCut
+  }
+  # List to hold the cluster percentages for each gene knockdown and REF-reference or no knockdown
+  knockdownsName <- c("WT", names_genes)
+  perturbationKd <- as.list(knockdownsName)
+  names(perturbationKd) <- knockdownsName
+  # No knockdown cluster ratios
+  perturbationKd[[1]] <-
+    table((cluster_cut)) / sum(table((cluster_cut)))
+  clusterNames <- as.character(seq(1:nClusters))
 
-  working_directory <- getwd()
-  name_genes <- read.table(paste(working_directory,"/results/gene_interaction_topology_",topology$filename,".txt",sep=""), header = T, stringsAsFactors = F)
-  name_genes <- t(as.matrix(name_genes))
-  data_simulation <- read.table(output_file, header = F)
-  name_models <- seq(1:nrow(data_simulation))
-  row.names(data_simulation) <- name_models
-  colnames(data_simulation) <- name_genes
-  knockout_number <- as.integer(which(name_genes==KNOCKOUT))
+  #knockdown cluster ratios
+  for (i in 1:(length(knockdownsName) - 1)) {
+    perturbationKd[[i + 1]] <-
+      table(cluster_cut[params[, i] > (max(params[, i]) - overProduction * 0.01 * (max(params[, i]) - min(params[, i])))]) /
+      sum(table(cluster_cut[params[, i] > (max(params[, i]) - overProduction * 0.01 * (max(params[, i])-min(params[, i])))]))
 
-  data_simulation <- log2(data_simulation)
+    # check if any cluster is missing after knockdown
+    if (nrow(perturbationKd[[i + 1]]) < nClusters) {
+      missingClusters <-
+        clusterNames[!((clusterNames %in% names(perturbationKd[[i + 1]])))]
+      # add 1 model of each missing cluster
+      table(c(cluster_cut[params[, i] < (min(params[, i]) + overProduction * 0.01 * (max(params[, i])-min(params[, i])))], missingClusters)) /
+        sum(table(c(cluster_cut[params[, i] < (min(params[, i]) + overProduction * 0.01 * (max(params[, i])-min(params[, i])))], missingClusters)))
+    }
+  }
 
+  if (plotBarPlot) {
+    # Restructure dataframe for plotting
+    meltPKd <- reshape2::melt(perturbationKd)
+    meltPKd$Var1 <- factor(meltPKd$Var1)
+    names(meltPKd) <- c("Cluster",  "value", "L1")
+    # convert ratio to percentages
+    meltPKd$value <- 100 * meltPKd$value
+    # sort transcription factors based on increasing ratio of last cluster
+    if(missing(clusterOfInterest)) clusterOfInterest <- nClusters
+    meltPKd$L1 <-
+      factor(meltPKd$L1, levels = meltPKd$L1[(order(meltPKd$value[meltPKd$Cluster == as.character(clusterOfInterest)])) *
+                                               (nClusters)])
+    # plot the histogram
+    if(plotToFile){
+      pdf(paste("results/", plotFilename, "_overExprBarplot.pdf", sep = ""))
+    }
+   p <- ggplot2::ggplot(data = meltPKd, aes(x = L1, y = value, fill = Cluster)) +
+      geom_bar(stat = "identity") +
+      coord_flip() +
+      labs(title = "TF Over Expression Analysis") +
+      xlab("Transcription Factor") +
+      ylab("Cluster Percentage") +
+      scale_fill_manual(values = plot_color2) +
+      theme(axis.text.x = element_text(angle = 0, hjust = 1),
+            text = element_text(size = 12))
+   gridExtra::grid.arrange(p)
+   if(plotToFile){
+    dev.off()
+}
+  }
 
-  data_simulation <- data_simulation[,-knockout_number]
-
-  col.means <- colMeans(data_simulation)
-  col.sds <- apply(data_simulation, 2, sd)
-  data_simulation <- sweep(data_simulation,2,col.means,FUN = "-")
-  data_simulation <- sweep(data_simulation,2,col.sds,FUN = "/")
-
-
-  data_simulation_knockout <- read.table(output_file_knockout, header = F)
-  name_models <- seq(1:nrow(data_simulation_knockout))
-  row.names(data_simulation_knockout) <- name_models
-  colnames(data_simulation_knockout) <- name_genes
-
-  data_simulation_knockout <- data_simulation_knockout[,-knockout_number]
-
-  data_simulation_knockout <- log2(data_simulation_knockout)
-  data_simulation_knockout <- sweep(data_simulation_knockout,2,col.means,FUN = "-")
-  data_simulation_knockout <- sweep(data_simulation_knockout,2,col.sds,FUN = "/")
-
-
-  pca = prcomp(data_simulation, scale. = FALSE, center = FALSE)
-  pca_data <- data.frame(x=pca$x[,1],y=pca$x[,2])
-
-  pdf(paste("results/",plot_filename,KNOCKOUT,"_knockout.pdf",sep = ""))
-  density_plot(pca_data,bin_count,plot_color)
-
-    pca_data_knockout <- scale(data_simulation_knockout, pca$center, pca$scale) %*% pca$rotation
-    pca_data_knockout <- data.frame(x=pca_data_knockout[,1],y=pca_data_knockout[,2])
-    density_plot(pca_data_knockout,bin_count,plot_color)
-    #col_count <- as.integer(65536/dim(data_simulation)[2])
-    #heatmap_data <- t(data_simulation[1:col_count,])
-    #dist <- as.dist((1-cor(t(heatmap_data), method = "spear"))/2)
-    #cluster <- hclust(dist,method = 'ward.D2')
-    #dendrogram <- as.dendrogram(cluster)
-    full <- heatmap.2(t(data_simulation), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
-
-    heatmap.2(t(data_simulation_knockout[,rev(full$rowInd)]), Rowv=NA, dendrogram = "column", breaks=full$breaks, col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
-
-   # heatmap.2(t(data_simulation_knockout), col=plot_color, hclustfun = function(x) hclust(x,method = 'ward.D2'), distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2), trace = "none")
-
-  dev.off()
-
-  message("Plots in the pdf file in the results folder.")
-
+  if (plotHeatmap) {
+    if(plotToFile){
+    pdf(paste("results/", plotFilename, "_heatmap.pdf", sep = ""))
+    }
+    gplots::heatmap.2((data_simulation),
+              col = plot_color,
+              hclustfun = function(x)
+                hclust(x, method = 'ward.D2'),
+              distfun = function(x)
+                as.dist((1 - cor(t(
+                  x
+                ), method = "spear")) / 2),
+              trace = "none",
+              ColSideColors = plot_color2[cluster_cut]
+    )
+    if(plotToFile){
+    dev.off()
+    }
+  }
+  return(perturbationKd)
 }
 
-density_plot = function(plot_data,bin_count, plot_color){
-  colnames(plot_data) <- c("x", "y")
+#' @export
+#' @title Perform in-silico knockdown analysis
+#'
+#' @description  Calculate the fraction of models in different clusters with full parameter
+#' range and on a subset of models with low production rate of a specific gene
+#'  representing the knockdown of the specific gene.
+#' @param rSet (optional) List. A list returned by \code{\link{simulateGRC}}
+#' function.
+#' @param topologyDf (optional) Deprecated.
+#' Topology (list) generated by sRACIPE_load_topology function
+#' @param dataFile (optional) Deprecated. Gene expression file (character).
+#' @param paramFile (optional) Deprecated. Parameter file (character).
+#' @param clusterOfInterest (optional) cluster number (integer) to be used for arranging
+#' the transcription factors
+#' @param reduceProduction (optional) Percentage to which production rate
+#' decreases on knockdown. Uses a default value of 10 percent.
+#' @param nClusters (optional) Number of clusters in the data. Uses a default
+#' value of 2.
+#' @param plotFilename (optional) Name of the output file.
+#' Uses the topology name as default.
+#' @param cluster assignments of the models
+#' @return List containing fraction of models in different clusters
+#'  in the original simulations and after knowcking down different genes.
+#' Additionaly, it generates two pdf files in the results folder. First is barplot
+#' showing the percentage of different clusters in the original simulations
+#' and after knocking down each gene. The second pdf contains the heatmap of
+#' clusters after marking the models with cluster assignments.
+#'
+#'@section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
 
-  h1 <- hist(plot_data$x, breaks=bin_count, plot=F)
-  h2 <- hist(plot_data$y, breaks=bin_count, plot=F)
+knockdownAnalysis = function(rSet = NULL, topologyDf = NULL,
+                             dataFile = NULL,
+                             paramFile = NULL,
+                             reduceProduction = 30,
+                             nClusters = 2,
+                             clusterOfInterest = 2,
+                             plotFilename = plot_filename,
+                             plotHeatmap = TRUE,
+                             plotBarPlot = TRUE,
+                             clusterCut = cluster_cut,
+                             plotToFile = TRUE) {
+  if(!is.null(rSet)){
+    topologyDf <- rSet$topology
+    dataFile <- paste0("tmp/",rSet$fileName, "_geneExpression.txt")
+    paramFile <- paste0("tmp/",rSet$fileName, "_params.txt")
+    data_simulation <- rSet$geneExpression
+    names_genes <- rSet$geneNames
+    params <- rSet$params
+
+  }
+  else{
+  # Read the gene expression  and parameters files
+  working_directory <- getwd()
+  data_simulation <- read.table(dataFile, header = F)
+  data_simulation <- sRACIPE::load_data(data_simulation, topologyDf)
+  names_genes <- colnames(data_simulation)
+  params <-
+    read.table(paramFile,
+               header = F,
+               stringsAsFactors = F)
+  }
+  params <- params[, 1:ncol(data_simulation)]
+
+  if (missing(plotFilename))
+    plotFilename <- topologyDf$filename
+  filename <-
+    (paste("results/", plotFilename, "_knockdown.pdf", sep = ""))
+
+  #library(htmlwidgets)
+  #library(d3heatmap)
+  rf <- colorRampPalette(rev(brewer.pal(11, 'Spectral')))
+  plot_color <- rf(32)
+  plot_color2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+                           "#D55E00", "#CC79A7")
+
+  data_simulation <- t(data_simulation)
+
+  # Find cluster assignments
+if(missing(clusterCut)){
+  ref_cor <- cor((data_simulation), method = "spearman")
+  distance <- as.dist((1 - ref_cor) / 2)
+  clusters <- hclust(distance, method = "ward.D2")
+  cluster_cut <- cutree(clusters, nClusters)
+}
+  else {
+    cluster_cut <- clusterCut
+  }
+  # List to hold the cluster percentages for each gene knockdown and REF-reference or no knockdown
+  knockdownsName <- c("WT", names_genes)
+  perturbationKd <- as.list(knockdownsName)
+  names(perturbationKd) <- knockdownsName
+  # No knockdown cluster ratios
+  perturbationKd[[1]] <-
+    table((cluster_cut)) / sum(table((cluster_cut)))
+  clusterNames <- as.character(seq(1:nClusters))
+
+  #knockdown cluster ratios
+  for (i in 1:(length(knockdownsName) - 1)) {
+    perturbationKd[[i + 1]] <-
+      table(cluster_cut[params[, i] < (min(params[, i]) + reduceProduction * 0.01 * (max(params[, i]) - min(params[, i])))]) /
+      sum(table(cluster_cut[params[, i] < (min(params[, i]) + reduceProduction * 0.01 * (max(params[, i])-min(params[, i])))]))
+
+    # check if any cluster is missing after knockdown
+    if (nrow(perturbationKd[[i + 1]]) < nClusters) {
+      missingClusters <-
+        clusterNames[!((clusterNames %in% names(perturbationKd[[i + 1]])))]
+      # add 1 model of each missing cluster
+      table(c(cluster_cut[params[, i] < (min(params[, i]) + reduceProduction * 0.01 * (max(params[, i])-min(params[, i])))], missingClusters)) /
+        sum(table(c(cluster_cut[params[, i] < (min(params[, i]) + reduceProduction * 0.01 * (max(params[, i])-min(params[, i])))], missingClusters)))
+    }
+  }
+
+  if (plotBarPlot) {
+    # Restructure dataframe for plotting
+    meltPKd <- reshape2::melt(perturbationKd)
+    meltPKd$Var1 <- factor(meltPKd$Var1)
+    names(meltPKd) <- c("Cluster",  "value", "L1")
+    # convert ratio to percentages
+    meltPKd$value <- 100 * meltPKd$value
+    # sort transcription factors based on increasing ratio of last cluster
+    if(missing(clusterOfInterest)) clusterOfInterest <- nClusters
+    meltPKd$L1 <-
+      factor(meltPKd$L1, levels = meltPKd$L1[(order(meltPKd$value[meltPKd$Cluster == as.character(clusterOfInterest)])) *
+                                               (nClusters)])
+    # plot the histogram
+
+    p <- ggplot2::ggplot(data = meltPKd, aes(x = L1, y = value, fill = Cluster)) +
+      geom_bar(stat = "identity") +
+      coord_flip() +
+      labs(title = "TF Knockout Analysis") +
+      xlab("Transcription Factor") +
+      ylab("Cluster Percentage") +
+      scale_fill_manual(values = plot_color2) +
+      theme(axis.text.x = element_text(angle = 0, hjust = 1),
+            text = element_text(size = 12))
+    if(plotToFile){
+      fileName <- paste("results/", plotFilename, "_kdBarplot.pdf", sep = "")
+      pdf(fileName, onefile = TRUE)
+    }
+    gridExtra::grid.arrange(p)
+if(plotToFile){
+  dev.off()
+}
+
+
+  }
+
+  if (plotHeatmap) {
+    if(plotToFile){
+    pdf(paste("results/", plotFilename, "_heatmap.pdf", sep = ""))
+    }
+    gplots::heatmap.2((data_simulation),
+              col = plot_color,
+              hclustfun = function(x)
+                hclust(x, method = 'ward.D2'),
+              distfun = function(x)
+                as.dist((1 - cor(t(
+                  x
+                ), method = "spear")) / 2),
+              trace = "none",
+              ColSideColors = plot_color2[cluster_cut]
+    )
+    if(plotToFile){
+    dev.off()
+    }
+  }
+  return(perturbationKd)
+}
+
+#' @export
+#' @title Density Plot
+#' @description Plot the density of points as an image alongwith histograms on
+#' the sides.
+#' @param plotData Dataframe containing the data.
+#' @param binCount (optional) Integer. Default 40. The number of bins to be used for
+#' dividing the data along an axis.
+#' @param plotColor (optional) The color palette.
+#'
+#' @section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
+
+densityPlot = function(plotData, binCount=40, plotColor=NULL) {
+  colnames(plotData) <- c("x", "y")
+if(is.null(plotColor)){
+  rf <- colorRampPalette(rev(RColorBrewer::brewer.pal(11, 'Spectral')))
+  plotColor <- rf(32)
+}
+  h1 <- hist(plotData$x, breaks = binCount, plot = F)
+  h2 <- hist(plotData$y, breaks = binCount, plot = F)
   top <- max(h1$counts, h2$counts)
-  k <- kde2d(plot_data$x, plot_data$y, n=bin_count)
+  k <- MASS::kde2d(plotData$x, plotData$y, n = binCount)
 
   # margins
   oldpar <- par()
-  par(mar=c(3,3,1,1))
-  layout(matrix(c(2,0,1,3),2,2,byrow=T),c(3,1), c(1,3))
-  image(k, col=plot_color) #plot the image
-  par(mar=c(0,2,1,0))
-  barplot(h1$counts, axes=F, ylim=c(0, top), space=0, col='red')
-  par(mar=c(2,0,0.5,1))
-  barplot(h2$counts, axes=F, xlim=c(0, top), space=0, col='red', horiz=T)
+  par(mar = c(3, 3, 1, 1))
+  layout(matrix(c(2, 0, 1, 3), 2, 2, byrow = T), c(3, 1), c(1, 3))
+  image(k, col = plotColor) #plot the image
+  par(mar = c(0, 2, 1, 0))
+  barplot(
+    h1$counts,
+    axes = F,
+    ylim = c(0, top),
+    space = 0,
+    col = 'red'
+  )
+  par(mar = c(2, 0, 0.5, 1))
+  barplot(
+    h2$counts,
+    axes = F,
+    xlim = c(0, top),
+    space = 0,
+    col = 'red',
+    horiz = T
+  )
 }
 
-plot_network = function(topology = topology){
-  library(visNetwork)
+#' @export
+#' @title Plot Gene Regulatory Circuit
+#' @description  Plot Gene Regulatory Circuit to a file or output device.
+#' @param rSet List A list returned by \code{\link{simulateGRC}} function
+#' @param plotToFile (optional) logical. Default \code{TRUE}. Whether to save
+#' plots to a file.
+#'
+#' @section Related Functions:
+#'
+#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
+#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
+#' \code{\link{calcHeatmapSimilarity}}
+plotCircuit <- function(rSet = rSet, plotToFile = TRUE){
+  topology <- rSet$topology
 
-  working_directory <- getwd()
-  #  setwd(paste(working_directory,"/results",sep = ""))
+  if(plotToFile){
+    if (!dir.exists(file.path(getwd(), "results")))
+      dir.create(file.path(getwd(), "results"))
 
+    net_file <- paste(getwd(),
+                      "/results/network_",
+                      topology$filename,
+                      ".html",
+                      sep = "")
+    # setwd(net_file)
+  }
+  node_list <-
+    unique(c(topology$topology[, 1], topology$topology[, 2]))
 
-  net_file <- paste(working_directory,"/results/network_",topology$filename,".html",sep="")
-  # setwd(net_file)
-
-  node_list <- unique(c(topology$topology[,1], topology$topology[,2]))
-
-  nodes <- data.frame(id = node_list, label = node_list, font.size =50, value=c(rep(1,length(node_list))))
-  edge_col <- data.frame(c(1,2),c("blue","darkred"))
-  arrow_type <- data.frame(c(1,2),c("arrow","circle"))
+  nodes <-
+    data.frame(
+      id = node_list,
+      label = node_list,
+      font.size = 50,
+      value = c(rep(1, length(node_list)))
+    )
+  edge_col <- data.frame(c(1, 2), c("blue", "darkred"))
+  arrow_type <- data.frame(c(1, 2), c("arrow", "circle"))
   colnames(arrow_type) <- c("type", "color")
   colnames(edge_col) <- c("type", "color")
-  edges <- data.frame(from = c(topology$topology[,1]), to = c(topology$topology[,2])
-                      #   , arrows = c(c(topology$topology$Target), c(topology$topology$Target))
-                      #, arrows = "to"
-                      , arrows.to.type	=arrow_type$color[c(as.numeric(topology$topology[,3]))]
-                      , width = 3
-                      , color = edge_col$color[c(as.numeric(topology$topology[,3]))]
-  )
+  edges <-
+    data.frame(
+      from = c(topology$topology[, 1]),
+      to = c(topology$topology[, 2])
+      #   , arrows = c(c(topology$topology$Target), c(topology$topology$Target))
+      #, arrows = "to"
+      ,
+      arrows.to.type	= arrow_type$color[c(as.numeric(topology$topology[, 3]))]
+      ,
+      width = 3
+      ,
+      color = edge_col$color[c(as.numeric(topology$topology[, 3]))]
+    )
 
   #visNetwork(nodes, edges, height = "500px", width = "100%")  %>%
   #visEdges(arrows = "to") %>%
@@ -272,14 +803,15 @@ plot_network = function(topology = topology){
   #visLayout(randomSeed = 123) %>%
   #visPhysics(solver = "forceAtlas2Based")
 
-  network <- visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
+  network <-
+    visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
     #visEdges(arrows = "to") %>%
-    visOptions(manipulation = TRUE) %>%
+    visOptions(manipulation = FALSE) %>%
     visLayout(randomSeed = 123) %>%
     #visNodes(scaling = list(label = list(enabled = T))) %>%
     visPhysics(solver = "forceAtlas2Based", stabilization = FALSE)
+  if(plotToFile){
+    visNetwork::visSave(network, file = net_file, selfcontained = FALSE)
+  } else {network}
 
-  visSave(network, file = net_file, selfcontained = F)
-  #visNetwork(gephi = "test")
 }
-
