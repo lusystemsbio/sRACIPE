@@ -332,7 +332,12 @@ if(missing(nNoise)){
   if(!missing(initialNoise) & !anneal)
     configuration$nNoise <- 2
 }
-  if(nNoise > 0) {
+  if(anneal){
+    if(missing(nNoise)) {configuration$nNoise <- 30L}
+
+  }
+
+  if(configuration$nNoise > 0) {
     if(stepper != "EM"){
       warnings("Defaulting to EM stepper for stochastic simulations")
       stepper <- "EM"
@@ -344,10 +349,7 @@ if(missing(nNoise)){
   if(stepper == "RK4"){ stepperInt <- 4L}
   if(stepper == "DP") {stepperInt <- 5L}
 
-  if(anneal){
-    if(missing(nNoise)) {configuration$nNoise <- 30L}
 
-  }
 
 configuration$stepper <- stepper
   rSet$fileName <- outFile
@@ -393,19 +395,20 @@ configuration$stepper <- stepper
     colnames(geneExpression) <- geneNames
     rSet$geneExpression <- geneExpression[
       ,(1+ncol(geneExpression) -length(geneNames)):ncol(geneExpression)]
+    names(rSet$geneExpression) <- geneNames
     }
-    if(nNoise > 0){
-      noiseLevels <- (initialNoise*noiseScalingFactor^seq(0,nNoise-1))
+    if(configuration$nNoise > 0){
+      noiseLevels <- (initialNoise*noiseScalingFactor^seq(0,configuration$nNoise-1))
       stochasticSimulations <- as.list(noiseLevels)
       names(stochasticSimulations) <- noiseLevels
-      for(i in 1:nNoise){
+      for(i in 1:configuration$nNoise){
         stochasticSimulations[[i]] <- geneExpression[
           , (1+(i-1)*(topology$number_gene)):(i*topology$number_gene)]
         colnames(stochasticSimulations[[i]]) <- geneNames
       }
       rSet$stochasticSimulations <- stochasticSimulations
       geneExpression <- geneExpression[
-        ,(1+(nNoise)*(topology$number_gene)):((nNoise+1)*topology$number_gene)]
+        ,(1+(configuration$nNoise)*(topology$number_gene)):((configuration$nNoise+1)*topology$number_gene)]
     }
 
 
