@@ -391,7 +391,8 @@ configuration$stepper <- stepper
     geFile <- paste0("tmp/",outFile,"_geneExpression.txt")
     geneExpression <- read.table(geFile, header = FALSE)
     colnames(geneExpression) <- geneNames
-    rSet$geneExpression <- geneExpression
+    rSet$geneExpression <- geneExpression[
+      ,(1+ncol(geneExpression) -length(geneNames)):ncol(geneExpression)]
     }
     if(nNoise > 0){
       noiseLevels <- (initialNoise*noiseScalingFactor^seq(0,nNoise-1))
