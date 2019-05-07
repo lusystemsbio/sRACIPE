@@ -6,92 +6,38 @@
 using namespace Rcpp;
 
 // generateThresholds
-int generateThresholds(const Rcpp::IntegerMatrix gene_interaction, Rcpp::NumericVector threshold_gene, const double g_min, const double g_max, const double k_min, const double k_max, const int possible_interactions, const long model_count_max, const long threshold_max, const double h, const double lambda_min, const double lambda_max, const int n_min, const int n_max, const double standard_deviation_factor);
-RcppExport SEXP _sRACIPE_generateThresholds(SEXP gene_interactionSEXP, SEXP threshold_geneSEXP, SEXP g_minSEXP, SEXP g_maxSEXP, SEXP k_minSEXP, SEXP k_maxSEXP, SEXP possible_interactionsSEXP, SEXP model_count_maxSEXP, SEXP threshold_maxSEXP, SEXP hSEXP, SEXP lambda_minSEXP, SEXP lambda_maxSEXP, SEXP n_minSEXP, SEXP n_maxSEXP, SEXP standard_deviation_factorSEXP) {
+size_t generateThresholds(const Rcpp::IntegerMatrix geneInteraction, Rcpp::NumericVector thresholdGene, Rcpp::List config);
+RcppExport SEXP _sRACIPE_generateThresholds(SEXP geneInteractionSEXP, SEXP thresholdGeneSEXP, SEXP configSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type gene_interaction(gene_interactionSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type threshold_gene(threshold_geneSEXP);
-    Rcpp::traits::input_parameter< const double >::type g_min(g_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type g_max(g_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type k_min(k_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type k_max(k_maxSEXP);
-    Rcpp::traits::input_parameter< const int >::type possible_interactions(possible_interactionsSEXP);
-    Rcpp::traits::input_parameter< const long >::type model_count_max(model_count_maxSEXP);
-    Rcpp::traits::input_parameter< const long >::type threshold_max(threshold_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< const double >::type lambda_min(lambda_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type lambda_max(lambda_maxSEXP);
-    Rcpp::traits::input_parameter< const int >::type n_min(n_minSEXP);
-    Rcpp::traits::input_parameter< const int >::type n_max(n_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type standard_deviation_factor(standard_deviation_factorSEXP);
-    rcpp_result_gen = Rcpp::wrap(generateThresholds(gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, possible_interactions, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, standard_deviation_factor));
-    return rcpp_result_gen;
-END_RCPP
-}
-// readTopology
-Rcpp::IntegerMatrix readTopology(Rcpp::IntegerMatrix gene_interaction, const Rcpp::String filepath, const Rcpp::String filename, Rcpp::StringVector geneNames);
-RcppExport SEXP _sRACIPE_readTopology(SEXP gene_interactionSEXP, SEXP filepathSEXP, SEXP filenameSEXP, SEXP geneNamesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type gene_interaction(gene_interactionSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::String >::type filepath(filepathSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::String >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::StringVector >::type geneNames(geneNamesSEXP);
-    rcpp_result_gen = Rcpp::wrap(readTopology(gene_interaction, filepath, filename, geneNames));
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type geneInteraction(geneInteractionSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type thresholdGene(thresholdGeneSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type config(configSEXP);
+    rcpp_result_gen = Rcpp::wrap(generateThresholds(geneInteraction, thresholdGene, config));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulateGRCCpp
-int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction, Rcpp::NumericVector threshold_gene, const double g_min, const double g_max, const double k_min, const double k_max, const int interaction_types, const long model_count_max, const long threshold_max, const double h, const double lambda_min, const double lambda_max, const int n_min, const int n_max, const double tot_time, const double sd_multiplier, const int number_gene, const double D_max, const double D_shot_scaling, const int scaled_noise, const int D_levels, const double D_scaling, const int output_precision, const bool ANNEALING, const int initial_conditions, const String filename, const double print_start, const double print_interval, const bool integrate, const bool genParams, const bool genIC, const int stepper, const double rk_tolerance);
-RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP gene_interactionSEXP, SEXP threshold_geneSEXP, SEXP g_minSEXP, SEXP g_maxSEXP, SEXP k_minSEXP, SEXP k_maxSEXP, SEXP interaction_typesSEXP, SEXP model_count_maxSEXP, SEXP threshold_maxSEXP, SEXP hSEXP, SEXP lambda_minSEXP, SEXP lambda_maxSEXP, SEXP n_minSEXP, SEXP n_maxSEXP, SEXP tot_timeSEXP, SEXP sd_multiplierSEXP, SEXP number_geneSEXP, SEXP D_maxSEXP, SEXP D_shot_scalingSEXP, SEXP scaled_noiseSEXP, SEXP D_levelsSEXP, SEXP D_scalingSEXP, SEXP output_precisionSEXP, SEXP ANNEALINGSEXP, SEXP initial_conditionsSEXP, SEXP filenameSEXP, SEXP print_startSEXP, SEXP print_intervalSEXP, SEXP integrateSEXP, SEXP genParamsSEXP, SEXP genICSEXP, SEXP stepperSEXP, SEXP rk_toleranceSEXP) {
+int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction, Rcpp::List config, String outFileGE, String outFileParams, String outFileIC, const int stepper);
+RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP geneInteractionSEXP, SEXP configSEXP, SEXP outFileGESEXP, SEXP outFileParamsSEXP, SEXP outFileICSEXP, SEXP stepperSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type gene_interaction(gene_interactionSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type threshold_gene(threshold_geneSEXP);
-    Rcpp::traits::input_parameter< const double >::type g_min(g_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type g_max(g_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type k_min(k_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type k_max(k_maxSEXP);
-    Rcpp::traits::input_parameter< const int >::type interaction_types(interaction_typesSEXP);
-    Rcpp::traits::input_parameter< const long >::type model_count_max(model_count_maxSEXP);
-    Rcpp::traits::input_parameter< const long >::type threshold_max(threshold_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< const double >::type lambda_min(lambda_minSEXP);
-    Rcpp::traits::input_parameter< const double >::type lambda_max(lambda_maxSEXP);
-    Rcpp::traits::input_parameter< const int >::type n_min(n_minSEXP);
-    Rcpp::traits::input_parameter< const int >::type n_max(n_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type tot_time(tot_timeSEXP);
-    Rcpp::traits::input_parameter< const double >::type sd_multiplier(sd_multiplierSEXP);
-    Rcpp::traits::input_parameter< const int >::type number_gene(number_geneSEXP);
-    Rcpp::traits::input_parameter< const double >::type D_max(D_maxSEXP);
-    Rcpp::traits::input_parameter< const double >::type D_shot_scaling(D_shot_scalingSEXP);
-    Rcpp::traits::input_parameter< const int >::type scaled_noise(scaled_noiseSEXP);
-    Rcpp::traits::input_parameter< const int >::type D_levels(D_levelsSEXP);
-    Rcpp::traits::input_parameter< const double >::type D_scaling(D_scalingSEXP);
-    Rcpp::traits::input_parameter< const int >::type output_precision(output_precisionSEXP);
-    Rcpp::traits::input_parameter< const bool >::type ANNEALING(ANNEALINGSEXP);
-    Rcpp::traits::input_parameter< const int >::type initial_conditions(initial_conditionsSEXP);
-    Rcpp::traits::input_parameter< const String >::type filename(filenameSEXP);
-    Rcpp::traits::input_parameter< const double >::type print_start(print_startSEXP);
-    Rcpp::traits::input_parameter< const double >::type print_interval(print_intervalSEXP);
-    Rcpp::traits::input_parameter< const bool >::type integrate(integrateSEXP);
-    Rcpp::traits::input_parameter< const bool >::type genParams(genParamsSEXP);
-    Rcpp::traits::input_parameter< const bool >::type genIC(genICSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type geneInteraction(geneInteractionSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type config(configSEXP);
+    Rcpp::traits::input_parameter< String >::type outFileGE(outFileGESEXP);
+    Rcpp::traits::input_parameter< String >::type outFileParams(outFileParamsSEXP);
+    Rcpp::traits::input_parameter< String >::type outFileIC(outFileICSEXP);
     Rcpp::traits::input_parameter< const int >::type stepper(stepperSEXP);
-    Rcpp::traits::input_parameter< const double >::type rk_tolerance(rk_toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(gene_interaction, threshold_gene, g_min, g_max, k_min, k_max, interaction_types, model_count_max, threshold_max, h, lambda_min, lambda_max, n_min, n_max, tot_time, sd_multiplier, number_gene, D_max, D_shot_scaling, scaled_noise, D_levels, D_scaling, output_precision, ANNEALING, initial_conditions, filename, print_start, print_interval, integrate, genParams, genIC, stepper, rk_tolerance));
+    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(geneInteraction, config, outFileGE, outFileParams, outFileIC, stepper));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_sRACIPE_generateThresholds", (DL_FUNC) &_sRACIPE_generateThresholds, 15},
-    {"_sRACIPE_readTopology", (DL_FUNC) &_sRACIPE_readTopology, 4},
-    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 33},
+    {"_sRACIPE_generateThresholds", (DL_FUNC) &_sRACIPE_generateThresholds, 3},
+    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 6},
     {NULL, NULL, 0}
 };
 

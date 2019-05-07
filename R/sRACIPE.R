@@ -16,34 +16,26 @@
 #'
 #' @section sRACIPE functions:
 #'
-#' \code{\link{simulateGRC}}
-#' Primary function to simulate a circuit. Contains options for plotting as well.
-#'
-#' \code{\link{knockdownAnalysis}}
+#' \code{\link{sracipeSimulate}}
+#' Primary function to simulate a circuit.
+#'  Contains options for plotting as well.
+#' \code{\link{sracipeKnockDown}}
 #' In-silico knockdown analysis of the circuit. Plots the relative changes in
 #' different cluster proportions.
 #'
-#' \code{\link{overExprAnalysis}}
-#' In-silico over expression analysis of the circuit.Plots the relative changes in
+#' \code{\link{sracipeOverExp}}
+#' In-silico over expression analysis of the circuit.
+#' Plots the relative changes in
 #' different cluster proportions.
 #'
-#' \code{\link{plotData}}
+#' \code{\link{sracipePlotData}}
 #' Plot the simulated data. Includes options to plot the hierarchichal
 #' clustering analysis, principal components, and uniform manifold
 #' approximation and projection. Can plot the stochastic as well as the
 #' knockout simulations.
 #'
-#'  \code{\link{calcHeatmapSimilarity}}
-#'  Compute the similarity between two datasets (experimental and simulated or
-#'  default simulations and perturbed simulations).
-#'
-#'  \code{\link{loadCircuit}}
-#' Load a circuit
-#'
-#'
-#' \code{\link{simulateGRC}},  \code{\link{knockdownAnalysis}},
-#' \code{\link{overExprAnalysis}},  \code{\link{plotData}},
-#' \code{\link{calcHeatmapSimilarity}}
+#' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
+#' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
 #'
 #' @import visNetwork reshape2 ggplot2 gplots MASS RColorBrewer
 #' @import htmlwidgets Rcpp

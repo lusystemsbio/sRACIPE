@@ -1,168 +1,164 @@
 #include "header.h"
 #include <Rcpp.h>
+#include <utility>
+
+// [[Rcpp::plugins("cpp11")]]
+
 
 
 using namespace Rcpp;
 
-
-
-void writeParameters(const int &number_gene, const int &output_precision,
-                     const std::vector<double> &g_gene,
-                      const std::vector<double> &k_gene,
-                      const std::vector<std::vector<int> > &n_gene,
-                      const std::vector<std::vector<double> > &lambda_gene,
-                      const std::vector<std::vector<double> > &threshold_gene_log,
-                      std::fstream &out_param)
+void writeParameters(const int &numberGene, const int &outputPrecision,
+                     const std::vector<double> &gGene,
+                      const std::vector<double> &kGene,
+                      const std::vector<std::vector<int> > &nGene,
+                      const std::vector<std::vector<double> > &lambdaGene,
+                      const std::vector<std::vector<double> > &threshGeneLog,
+                      std::ofstream &outParam)
 {
-  // out_param<<"Parameters"<<"\n";
+  // outParam<<"Parameters"<<"\n";
   /////////////////////////////////////////////////////////////////////////////
 
   //Writing parameters to file
   /////////////////////////////////////////////////////////////////////////////
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-  {out_param<<std::setprecision(output_precision)<<g_gene[gene_count1]<<"\t";}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {outParam<<std::setprecision(outputPrecision)<<gGene[geneCount1]<<"\t";}
   //production rate of each gene
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-  {out_param<<std::setprecision(output_precision)<<k_gene[gene_count1]<<"\t";}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {outParam<<std::setprecision(outputPrecision)<<kGene[geneCount1]<<"\t";}
   // degradation rate of each gene
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-  {if(threshold_gene_log[gene_count1][gene_count2]>0)
-    out_param<<std::setprecision(output_precision)
-    <<threshold_gene_log[gene_count1][gene_count2]<<"\t";}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+  {if(threshGeneLog[geneCount1][geneCount2]>0)
+    outParam<<std::setprecision(outputPrecision)
+    <<threshGeneLog[geneCount1][geneCount2]<<"\t";}
   // above--thresholds for the inteaction links, thresholds for
   // inward links for genes are written, starting from gene 1
   // (thresholds for all inward links of gene 1 and so on)
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-  {if(n_gene[gene_count1][gene_count2]>0)
-    out_param<<std::setprecision(1)<<n_gene[gene_count1][gene_count2]<<"\t";}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+  {if(nGene[geneCount1][geneCount2]>0)
+    outParam<<std::setprecision(1)<<nGene[geneCount1][geneCount2]<<"\t";}
   // above--n for the inteaction links,
   // n for inward links for genes are written, starting from gene 1
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-  {if(lambda_gene[gene_count1][gene_count2]>0)
-    out_param<<std::setprecision(output_precision)
-    <<lambda_gene[gene_count1][gene_count2]<<"\t";}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+  {if(lambdaGene[geneCount1][geneCount2]>0)
+    outParam<<std::setprecision(outputPrecision)
+    <<lambdaGene[geneCount1][geneCount2]<<"\t";}
   // above--lambda for the inteaction links, lambda for
   // inward links for genes are written, starting from gene 1
-  out_param<<"\n";
+  outParam<<"\n";
 
 }
 
-void readParameters(IntegerMatrix gene_interaction, const int &number_gene,
-                    std::vector<double> &g_gene,
-                     std::vector<double> &k_gene,
-                     std::vector<std::vector<int> > &n_gene,
-                     std::vector<std::vector<double> > &lambda_gene,
-                     std::vector<std::vector<double> > &threshold_gene_log,
-                     std::ifstream &in_parameters)
+void readParameters(IntegerMatrix geneInteraction, const int &numberGene,
+                    std::vector<double> &gGene,
+                     std::vector<double> &kGene,
+                     std::vector<std::vector<int> > &nGene,
+                     std::vector<std::vector<double> > &lambdaGene,
+                     std::vector<std::vector<double> > &threshGeneLog,
+                     std::ifstream &inParams)
 {
   /////////////////////////////////////////////////////////////////////////////
 
   //Reading parameters from file
   /////////////////////////////////////////////////////////////////////////////
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-  {    in_parameters >>  g_gene[gene_count1];}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {    inParams >>  gGene[geneCount1];}
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-  { in_parameters >>  k_gene[gene_count1]; }
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  { inParams >>  kGene[geneCount1]; }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      if(gene_interaction(gene_count1,gene_count2)!=0)
+      if(geneInteraction(geneCount1,geneCount2)!=0)
       {
-        in_parameters >>  threshold_gene_log[gene_count1][gene_count2];
-        //Rcout<<"Here"<< threshold_gene_log[gene_count1][gene_count2]<<"\n";
+        inParams >>  threshGeneLog[geneCount1][geneCount2];
+        //Rcout<<"Here"<< threshGeneLog[geneCount1][geneCount2]<<"\n";
       }
     }
   }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
   {double test;
-    if(gene_interaction(gene_count1,gene_count2)!=0) {
-      in_parameters >>  test;
-      n_gene[gene_count1][gene_count2] = std::round(test);}}
+    if(geneInteraction(geneCount1,geneCount2)!=0) {
+      inParams >>  test;
+      nGene[geneCount1][geneCount2] = std::round(test);}}
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
-  {if(gene_interaction(gene_count1,gene_count2)!=0)
-    in_parameters >>  lambda_gene[gene_count1][gene_count2];}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+  {if(geneInteraction(geneCount1,geneCount2)!=0)
+    inParams >>  lambdaGene[geneCount1][geneCount2];}
 
 }
 
-void selectParameters(Rcpp::IntegerMatrix gene_interaction,
-                      Rcpp::NumericVector threshold_gene,
-                      const double g_min, const double g_max,
-                      const double k_min, const double k_max,
-                      const int interaction_types,
-                       const long model_count_max,const long threshold_max,
-                       const double h, const double lambda_min,
-                       const double lambda_max, const int n_min, const int n_max,
-                       const double tot_time,
-                       const double sd_multiplier, int number_gene,
-                       const double D_max,  const double D_shot_scaling,
-                       const int scaled_noise,
-                       const int D_levels, const double D_scaling,
-                       const int output_precision, const bool ANNEALING,
-                       const int initial_conditions, String filename,
-                       std::vector<double> &g_gene,
-                       std::vector<double> &k_gene,
-                       std::vector<std::vector<int> > &n_gene,
-                       std::vector<std::vector<double> > &lambda_gene,
-                       std::vector<std::vector<double> > &threshold_gene_log,
-                       std::fstream &out_param)
+
+void selectParameters(Rcpp::IntegerMatrix geneInteraction,
+                      Rcpp::NumericVector thresholdGene,
+                      const double gMin, const double gMax,
+                      const double kMin, const double kMax,
+                      const int interactionTypes,
+                      const double lambdaMin,
+                       const double lambdaMax, const int nMin, const int nMax,
+                       const double sdFactor, int numberGene,
+                       std::vector<double> &gGene,
+                       std::vector<double> &kGene,
+                       std::vector<std::vector<int> > &nGene,
+                       std::vector<std::vector<double> > &lambdaGene,
+                       std::vector<std::vector<double> > &threshGeneLog
+                       )
 {
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-    g_gene[gene_count1]=g_min+(g_max-g_min)*u_distribution(u_generator);
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+    gGene[geneCount1]=gMin+(gMax-gMin)*u_distribution(u_generator);
     }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-    k_gene[gene_count1]=k_min+(k_max-k_min)*u_distribution(u_generator);
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+    kGene[geneCount1]=kMin+(kMax-kMin)*u_distribution(u_generator);
     }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++){
-      if(gene_interaction(gene_count1,gene_count2)==0){
-        n_gene[gene_count1][gene_count2]=0;
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++){
+      if(geneInteraction(geneCount1,geneCount2)==0){
+        nGene[geneCount1][geneCount2]=0;
       } else {
-        n_gene[gene_count1][gene_count2] =
-          int((n_max-n_min)*u_distribution(u_generator))+n_min;}
+        nGene[geneCount1][geneCount2] =
+          int((nMax-nMin)*u_distribution(u_generator))+nMin;}
     }
   }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      if(gene_interaction(gene_count1,gene_count2)==0)
+      if(geneInteraction(geneCount1,geneCount2)==0)
       {
-        lambda_gene[gene_count1][gene_count2]=0;
+        lambdaGene[geneCount1][geneCount2]=0;
       } else {
-        lambda_gene[gene_count1][gene_count2]=
-        (lambda_max-lambda_min)*u_distribution(u_generator)+lambda_min;}
+        lambdaGene[geneCount1][geneCount2]=
+        (lambdaMax-lambdaMin)*u_distribution(u_generator)+lambdaMin;}
     }
   }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      if(gene_interaction(gene_count1,gene_count2)==0)
+      if(geneInteraction(geneCount1,geneCount2)==0)
       {
-        threshold_gene_log[gene_count1][gene_count2]=0;
+        threshGeneLog[geneCount1][geneCount2]=0;
       }
       else
       {
 
-        threshold_gene_log[gene_count1][gene_count2] =
-          (1-sd_multiplier*sqrt(3))*threshold_gene[gene_count2] +
-          (2*sqrt(3)*sd_multiplier*threshold_gene[gene_count2])
+        threshGeneLog[geneCount1][geneCount2] =
+          (1-sdFactor*std::sqrt(3))*thresholdGene[geneCount2] +
+          (2*std::sqrt(3)*sdFactor*thresholdGene[geneCount2])
         *u_distribution(u_generator);
       }
     }
@@ -172,48 +168,48 @@ void selectParameters(Rcpp::IntegerMatrix gene_interaction,
 }
 
 
-void selectIcRange(const int number_gene, IntegerMatrix gene_interaction,
-                    const std::vector<double> &g_gene,
-                    const std::vector<double> &k_gene,
-                    const std::vector<std::vector<double> > &lambda_gene,
-                    std::vector<double> &max_gene,
-                    std::vector<double> &min_gene)
+void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
+                    const std::vector<double> &gGene,
+                    const std::vector<double> &kGene,
+                    const std::vector<std::vector<double> > &lambdaGene,
+                    std::vector<double> &maxGene,
+                    std::vector<double> &minGene)
 {
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-    max_gene[gene_count1]=g_gene[gene_count1]/k_gene[gene_count1];}
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+    maxGene[geneCount1]=gGene[geneCount1]/kGene[geneCount1];}
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    double min_gene_multiplier_final=1;
+    double minGene_multiplier_final=1;
 
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
       double gene_min_multiplier=1;
-      double gene_lambda=lambda_gene[gene_count1][gene_count2];
-      switch(gene_interaction(gene_count1,gene_count2))
+      double geneLambda=lambdaGene[geneCount1][geneCount2];
+      switch(geneInteraction(geneCount1,geneCount2))
       {
       case 0:
         gene_min_multiplier=1.0;
         break;
 
       case 2:
-        gene_lambda=1./gene_lambda;
-        gene_min_multiplier=gene_lambda;
+        geneLambda=1./geneLambda;
+        gene_min_multiplier=geneLambda;
         break;
 
       case 1:
-        gene_min_multiplier=1./gene_lambda;
+        gene_min_multiplier=1./geneLambda;
         break;
       default :
-        Rcout << "Invalid Interation code for Gene"<<gene_count1
-        <<" and gene"<<gene_count2<<" interaction"<<"\n";
+        Rcout << "Invalid Interation code for Gene"<<geneCount1
+        <<" and gene"<<geneCount2<<" interaction"<<"\n";
       }
 
-      min_gene_multiplier_final = min_gene_multiplier_final*gene_min_multiplier;
+      minGene_multiplier_final = minGene_multiplier_final*gene_min_multiplier;
     }
 
-    min_gene[gene_count1] =
-      g_gene[gene_count1]/k_gene[gene_count1]*min_gene_multiplier_final;
+    minGene[geneCount1] =
+      gGene[geneCount1]/kGene[geneCount1]*minGene_multiplier_final;
 
   }
 
@@ -222,49 +218,90 @@ void selectIcRange(const int number_gene, IntegerMatrix gene_interaction,
 
 // [[Rcpp::export]]
 
-int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
-                Rcpp::NumericVector threshold_gene,
-             const double g_min, const double g_max,
-             const double k_min, const double k_max,
-             const int interaction_types,
-             const long model_count_max,const long threshold_max,
-             const double h, const double lambda_min,
-             const double lambda_max, const int n_min, const int n_max,
-             const double tot_time,
-             const double sd_multiplier, const int number_gene,
-             const double D_max,  const double D_shot_scaling,
-             const int scaled_noise,
-             const int D_levels, const double D_scaling,
-             const int output_precision, const bool ANNEALING,
-             const int initial_conditions, const String filename,
-             const double print_start,
-                 const double print_interval,
-                 const bool integrate = true, const bool genParams = true,
-                 const bool genIC = true, const int stepper = 1,
-                 const double rk_tolerance = 0.001)
+int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
+                Rcpp::List config, String outFileGE, String outFileParams,
+                String outFileIC,
+              const int stepper = 1)
 
 {
+    unsigned int seed =  static_cast<unsigned int>
+    (Rcpp::sample(32000,1,true)(0));
+    std::mt19937_64 g_generator (seed);
+    
+  // Initialize the network
+  size_t numberGene = geneInteraction.ncol();
+  //vector containing tgtGene of nth interaction
 
-    std::string file_name= filename;
-//    Rcout<<"Running time evolution simulations for "
-//    <<std::to_string(number_gene)<<" genes..."<<"\n";
-    //  if(initial_conditions>1)
-    double D=D_max; // setting noise to maximum noise level
-    std::vector<double> Darray(number_gene);
+  NumericVector simulationParameters =
+    as<NumericVector>(config["simParams"]);
+  NumericVector stochasticParameters =
+    as<NumericVector>(config["stochParams"]);
+  NumericVector hyperParameters =
+    as<NumericVector>(config["hyperParams"]);
+  LogicalVector options = as<LogicalVector>(config["options"]);
+
+  size_t numModels = static_cast<size_t>(simulationParameters[0]);
+  double simulationTime = simulationParameters[1];
+  double h = simulationParameters[2];
+  double printStart = simulationParameters[3];
+  size_t nIC = static_cast<size_t> (simulationParameters[4]);
+  size_t outputPrecision = static_cast<size_t> (simulationParameters[5]);
+  double rkTolerance = simulationParameters[6];
+  // double paramRange = simulationParameters[7];
+  double printInterval = simulationParameters[8];
+
+  size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
+  double noiseScalingFactor = stochasticParameters[1];
+  double initialNoise = stochasticParameters[2];
+  double shotNoise = static_cast<double>(stochasticParameters[4]);
+
+  double gMin = hyperParameters[0];
+  double gMax = hyperParameters[1];
+  double kMin = hyperParameters[2];
+  double kMax = hyperParameters[3];
+  double lambdaMin = hyperParameters[4];
+  double lambdaMax = hyperParameters[5];
+  size_t nMin = static_cast<size_t>(hyperParameters[6]);
+  size_t nMax = static_cast<size_t>(hyperParameters[7]);
+  size_t interactionTypes = static_cast<size_t>(hyperParameters[8]);
+  // size_t thresholdModels = static_cast<size_t>(hyperParameters[9]);
+  double sdFactor = hyperParameters[10];
+
+  NumericVector thresholdGene = as<NumericVector>(config["thresholds"]);
+
+  bool anneal = options[0];
+  bool scaledNoise = options[1];
+  bool genIC = options[2];
+  bool genParams = options[3];
+  bool integrate = options[4];
+  // bool useBoost = options[5];
+  // bool useBoost = true;
+
+  // size_t maxSteps = static_cast<size_t>(simulationTime/h);
+
+  std::string fileNameGE = outFileGE;
+  std::string fileNameParam = outFileParams;
+  std::string fileNameIC = outFileIC;
+
+
+
+    double D=initialNoise; // setting noise to maximum noise level
+    std::vector<double> Darray(numberGene);
     //array to scale the noise level in each gene
     //Rcout<<"parameter_file"<<parameters_file<<"\n";
     // if(parameters_file) Rcout<<"If true"<<"\n";
     // Scale the noise level in each gene if scaled_noise = 1
-    if(scaled_noise==1){
+    if(scaledNoise){
 
-      for(int i=0; i<number_gene;i++)
+      for(size_t i=0; i<numberGene;i++)
       {
-        Darray[i]=threshold_gene[i];}
- //     Rcout<<"Using a noise level that is proportional to median expression of the gene"<<"\n";
+        Darray[i]=thresholdGene[i];}
+ //     Rcout<<"Using a noise level that is
+ // proportional to median expression of the gene"<<"\n";
 
     }
     else{
-      for(int i=0; i<number_gene;i++)
+      for(size_t i=0; i<numberGene;i++)
       {
         Darray[i]=1.0;
       }
@@ -273,98 +310,98 @@ int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
     }
 
     //Create output files if not there already
-    std::fstream out_GE("./tmp/" + file_name +"_geneExpression.txt",
-                        std::ios::out);
-    if(!out_GE) {     Rcout << "Cannot open output file.\n";  return 1;}
+    std::ofstream outGE(fileNameGE, std::ios::out);
+    if(!outGE.is_open()) {     Rcout << "Cannot open output file.\n";
+      return 1;}
 
-    std::ifstream in_parameters;
-    std::fstream out_param;
+    std::ifstream inParams;
+    std::ofstream outParam;
 
     if(genParams){
-      out_param.open("./tmp/" + file_name + "_parameters.txt",std::ios::out);
+      outParam.open(fileNameParam,std::ios::out);
     }
     else {
-      in_parameters.open("./tmp/" + file_name + "_parameters.txt",
+      inParams.open(fileNameParam,
                          std::ifstream::in);
-      if(!in_parameters) {     Rcout << "./tmp/" + file_name + "_parameters.txt"
+      if(!inParams.is_open()) {     Rcout <<fileNameParam
         << "Cannot open input file for reading parameters.\n";  return 1;
       }
     }
 
-    std::ifstream in_ic;
-    std::fstream out_ic;
+    std::ifstream inIC;
+    std::fstream outIC;
     if(genIC){
-      out_ic.open("./tmp/" + file_name + "_IC.txt",std::ios::out);
+      outIC.open(fileNameIC,std::ios::out);
     }
     else
     {
-      in_ic.open("./tmp/" + file_name + "_IC.txt",std::ifstream::in);
-      if(!in_ic) {
+      inIC.open(fileNameIC,std::ifstream::in);
+      if(!inIC.is_open()) {
         Rcout <<"Cannot open input file for reading initial conditions.\n";
         return 1;
         }
     }
+    //  containerType state;
+    std::vector<size_t> tgtGeneTmp;
+    //vector containing source and type of nth interaction
+    std::vector<std::pair<size_t,size_t> > intSrcTypeTmp;
 
-          for(long model_count=0;model_count<model_count_max;model_count++)
+  //  size_t  nInteractions = convertAdjMatToVector(geneInteraction,
+  //                                                tgtGeneTmp, intSrcTypeTmp);
+
+    for(size_t modelCount=0;modelCount<numModels;modelCount++)
       {
-            if((static_cast<long> (20*model_count) % model_count_max) == 0){
+            if((static_cast<size_t>(10*modelCount) % numModels) == 0){
               Rcout<<"====";
             }
 
             // Check for user interrupt and exit if there is any.
-        if (model_count % 100 == 0)
+        if (modelCount % 100 == 0)
           Rcpp::checkUserInterrupt();
 
         //Initialize production rate of genes
-        std::vector<double> g_gene(number_gene);
+        std::vector<double> gGene(numberGene);
 
         //Initialize degradation rate of genes
-        std::vector<double> k_gene(number_gene);
+        std::vector<double> kGene(numberGene);
 
         //Initialize hill coefficient for each interaction
         std::vector<std::vector<int> >
-          n_gene(number_gene, std::vector<int>(number_gene));
+          nGene(numberGene, std::vector<int>(numberGene));
 
         //Initialize fold change for each interaction
         std::vector<std::vector<double> >
-          lambda_gene(number_gene, std::vector<double>(number_gene));
+          lambdaGene(numberGene, std::vector<double>(numberGene));
 
         //Initialize threshold for each interaction
         std::vector<std::vector<double> >
-          threshold_gene_log(number_gene, std::vector<double>(number_gene));
+          threshGeneLog(numberGene, std::vector<double>(numberGene));
 
-        if(in_parameters.is_open())
+        if(inParams.is_open())
         {
-          readParameters( gene_interaction, number_gene, g_gene,
-                           k_gene, n_gene,
-                           lambda_gene,
-                           threshold_gene_log, in_parameters);
+          readParameters( geneInteraction, numberGene, gGene,
+                           kGene, nGene,
+                           lambdaGene,
+                           threshGeneLog, inParams);
         }
         else
         {
 
-          selectParameters( gene_interaction,  threshold_gene,
-                             g_min,  g_max,
-                             k_min,  k_max,  interaction_types,
-                             model_count_max, threshold_max,
-                             h,  lambda_min,
-                             lambda_max,  n_min,  n_max,
-                             tot_time,
-                             sd_multiplier,  number_gene,
-                             D_max,   D_shot_scaling,
-                             scaled_noise,
-                             D_levels,  D_scaling,
-                             output_precision,  ANNEALING,
-                             initial_conditions, filename, g_gene,
-                             k_gene, n_gene,
-                             lambda_gene,
-                             threshold_gene_log, out_param);
+          selectParameters( geneInteraction,  thresholdGene,
+                            gMin,  gMax,
+                            kMin,  kMax,  interactionTypes,
+                            lambdaMin,
+                            lambdaMax,  nMin,  nMax,
+                            sdFactor,  numberGene,
+                            gGene,
+                            kGene, nGene,
+                            lambdaGene,
+                            threshGeneLog);
 
-
-          writeParameters( number_gene, output_precision, g_gene,
-                           k_gene, n_gene,
-                           lambda_gene,
-                           threshold_gene_log, out_param);
+          writeParameters( numberGene, outputPrecision, gGene,
+                           kGene, nGene,
+                           lambdaGene,
+                           threshGeneLog, outParam);
         }
 
 
@@ -372,39 +409,39 @@ int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
 
         //Initial condition range selection
         /////////////////////////////////////////////////////////////////////
-        std::vector<double> max_gene(number_gene);
-        std::vector<double> min_gene(number_gene);
+        std::vector<double> maxGene(numberGene);
+        std::vector<double> minGene(numberGene);
         if(genIC)
         {
-          selectIcRange( number_gene,  gene_interaction, g_gene, k_gene,
-                         lambda_gene, max_gene, min_gene);
+          selectIcRange( numberGene,  geneInteraction, gGene, kGene,
+                         lambdaGene, maxGene, minGene);
         }
 
         ///////////////////////////////////////////////////////////////////////
 
         //Initial condition  selection
         ///////////////////////////////////////////////////////////////////////
-        for(int ic_count=0;ic_count<initial_conditions;ic_count++)
+        for(size_t icCount=0;icCount<nIC;icCount++)
         {
-          std::vector <double> expression_gene(number_gene);
+          std::vector <double> expressionGene(numberGene);
           //array for current gene expression
-          std::vector <double> expression_gene0(number_gene);
+          std::vector <double> expressionGene0(numberGene);
           //array for initial gene expression
           if(!genIC)
           {
-            for(size_t ic_counter=0;ic_counter <number_gene; ic_counter++)
+            for(size_t icCounter=0;icCounter <numberGene; icCounter++)
             {
-              in_ic >> expression_gene0[ic_counter];
+              inIC >> expressionGene0[icCounter];
             }
           }
 
           else
           {
-            for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+            for(size_t geneCount1=0;geneCount1<numberGene;geneCount1++)
             {
-              expression_gene0[gene_count1]=exp(log(min_gene[gene_count1]) +
-                (log(max_gene[gene_count1]) -
-                log(min_gene[gene_count1]))*u_distribution(u_generator));
+              expressionGene0[geneCount1]=exp(std::log(minGene[geneCount1]) +
+                (std::log(maxGene[geneCount1]) -
+                std::log(minGene[geneCount1]))*u_distribution(u_generator));
 
             }
 
@@ -413,12 +450,12 @@ int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
             //Writing initial condition to file
             //////////////////////////////////////////////////////////////////
 
-            for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+            for(size_t geneCount1=0;geneCount1<numberGene;geneCount1++)
             {
-              out_ic<<std::setprecision(output_precision)
-              <<expression_gene0[gene_count1]<<"\t";
+              outIC<<std::setprecision(outputPrecision)
+              <<expressionGene0[geneCount1]<<"\t";
             }
-            out_ic<<"\n";
+            outIC<<"\n";
 
           }
 
@@ -426,57 +463,59 @@ int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
 
           //Time Evolution
           ///////////////////////////////////////////////////////////////////
-          D=D_max; //Start with maximum noise level for each model
+          D=initialNoise; //Start with maximum noise level for each model
 
-          for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+          for(size_t geneCount1=0;geneCount1<numberGene;geneCount1++)
           {
-            expression_gene[gene_count1]=expression_gene0[gene_count1];
+            expressionGene[geneCount1]=expressionGene0[geneCount1];
           }
 
-          for(int file_count=0;file_count<D_levels;file_count++)
+          for(size_t fileCount=0;fileCount<nNoise;fileCount++)
           {
-            if(file_count==D_levels-1){D=0;}
+            if(fileCount==nNoise-1){D=0;}
 
 
 
-            if(ANNEALING) {}
+            if(anneal) {}
             else {
-              for(int gene_count_temp=0;gene_count_temp<number_gene;
-              gene_count_temp++) {
-                expression_gene[gene_count_temp] =
-                  expression_gene0[gene_count_temp];
+              for(size_t geneCount_temp=0;geneCount_temp<numberGene;
+              geneCount_temp++) {
+                expressionGene[geneCount_temp] =
+                  expressionGene0[geneCount_temp];
               }
             }
             if(integrate) {
+
+
             switch(stepper){
             case 1:
               // Euler Maruyama method
-              stepEM( expression_gene, out_GE, tot_time,
-                    number_gene, gene_interaction, g_gene, k_gene, n_gene,
-                    lambda_gene, threshold_gene_log, interaction_types,
-                    sd_multiplier, D_shot_scaling, Darray,
-                    output_precision, print_start, print_interval, D, h);
+              stepEM( expressionGene, outGE, simulationTime,
+                    numberGene, geneInteraction, gGene, kGene, nGene,
+                    lambdaGene, threshGeneLog, interactionTypes,
+                    sdFactor, shotNoise, Darray,
+                    outputPrecision, printStart, printInterval, D, h);
               break;
             case 4:
               //fourth order Runge-Kutta
 //              Rcout<<"RK4";
-              stepRK4( expression_gene, out_GE, tot_time, number_gene,
-                      gene_interaction, g_gene, k_gene, n_gene, lambda_gene,
-                       threshold_gene_log, interaction_types,
-                       sd_multiplier,
-                       output_precision,
-                       print_start,  print_interval, h);
+              stepRK4( expressionGene, outGE, simulationTime, numberGene,
+                      geneInteraction, gGene, kGene, nGene, lambdaGene,
+                       threshGeneLog, interactionTypes,
+                       sdFactor,
+                       outputPrecision,
+                       printStart,  printInterval, h);
               break;
 
             case 5:
 //              Rcout<<"DP";
               // adaptive Dormand Prince
-              stepDP( expression_gene,out_GE,tot_time,number_gene,
-                      gene_interaction,g_gene,k_gene,n_gene,lambda_gene,
-                      threshold_gene_log,interaction_types,
-                      sd_multiplier,
-                      output_precision,print_start, print_interval,h,
-                      rk_tolerance);
+              stepDP( expressionGene,outGE,simulationTime,numberGene,
+                      geneInteraction,gGene,kGene,nGene,lambdaGene,
+                      threshGeneLog,interactionTypes,
+                      sdFactor,
+                      outputPrecision,printStart, printInterval,h,
+                      rkTolerance);
               break;
 
             default:
@@ -485,21 +524,21 @@ int simulateGRCCpp(Rcpp::IntegerMatrix gene_interaction,
             }
             }
             //Rcout<<"D="<<D<<"\n";
-            // Rcout<< "Noise Level" << file_count<<"\t"<<D<<"\n";
-            D=D*D_scaling;
+            // Rcout<< "Noise Level" << fileCount<<"\t"<<D<<"\n";
+            D=D*noiseScalingFactor;
 
           }
 
-          out_GE<<"\n";
+          outGE<<"\n";
         }
       }
 
 
-    out_GE.close();
-    out_param.close();
-    out_ic.close();
-    if(in_ic.is_open()) in_ic.close();
-    if(in_parameters.is_open()) in_parameters.close();
+    outGE.close();
+    outParam.close();
+    outIC.close();
+    if(inIC.is_open()) inIC.close();
+    if(inParams.is_open()) inParams.close();
 
 // Rcout<<"Simulations completed successfully.\n";
 

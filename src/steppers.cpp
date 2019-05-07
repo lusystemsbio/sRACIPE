@@ -1,757 +1,532 @@
-#include"header.h"
+#include "header.h"
 #include <Rcpp.h>
 using namespace Rcpp;
 
-void stepEM( std::vector <double> &expression_gene,
-             std::fstream &out_GE,
-             const double &tot_time,
-             const int &number_gene,
-             IntegerMatrix gene_interaction,
-             const std::vector<double> &g_gene,
-             const std::vector<double> &k_gene,
-             const std::vector<std::vector<int> > &n_gene,
+
+
+
+void calcMultiplier(const int& geneCount1, const int& geneCount2,
+                    double& finalMultiplier,
+                    double& geneValue,
+                    IntegerMatrix geneInteraction,
+                    const int& geneN,
+                    double& geneLambda,
+                    const double& geneThreshold
+){
+
+    double geneActMultiplier=1;
+
+    switch(geneInteraction(geneCount1,geneCount2))
+    {
+    case 0:
+      geneActMultiplier=1.0;
+      break;
+
+    case 2:
+      geneLambda = 1./geneLambda;
+      geneActMultiplier = geneLambda+(1.-geneLambda)*
+        1./(1.+std::pow((geneValue/geneThreshold),geneN));
+      break;
+
+    case 1:
+      geneActMultiplier=(geneLambda+(1.-geneLambda)*
+        1./(1.+std::pow((geneValue/geneThreshold),geneN)))/geneLambda;
+      break;
+
+    default :
+      Rcout << "Invalid Interation code for Gene"<<geneCount1
+            <<" and gene"<<geneCount2<<" interaction"<<"\n";
+    }
+
+    finalMultiplier=finalMultiplier*geneActMultiplier;
+}
+
+void stepEM( std::vector <double> &exprxGene,
+             std::ofstream &outGE,
+             const double &totTime,
+             const int &numberGene,
+             IntegerMatrix geneInteraction,
+             const std::vector<double> &gGene,
+             const std::vector<double> &kGene,
+             const std::vector<std::vector<int> > &NGene,
              const std::vector<std::vector<double> > &lambda_gene,
              const std::vector<std::vector<double> > &threshold_gene_log,
              const int &possible_interactions,
              const double &standard_deviation_factor,
              const double &D_shot_scaling,
              const std::vector<double> &Darray,
-             const int &output_precision,
-             const double &print_start, const double &print_interval,
+             const int &outputPrecision,
+             const double &printStart, const double &printInterval,
              const double &D,
              const double &h){
 
-  double expression_gene_h[number_gene]; //array for temp gene expression values
-
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  double exprxGeneH[numberGene]; //array for temp gene expression values
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    expression_gene_h[gene_count1] = expression_gene[gene_count1];
+    exprxGeneH[geneCount1] = exprxGene[geneCount1];
   }
 
   double i=0.0;
-  int print_counter = 0;
+  int printCounter = 0;
   do
   {
     i+=h;
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2];
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier = gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                            geneValue, geneInteraction, geneN, geneLambda,
+                            geneThreshold);
       }
-      expression_gene_h[gene_count1] = expression_gene[gene_count1] +
-        h*(g_gene[gene_count1]*final_multiplier-k_gene[gene_count1]*
-        expression_gene[gene_count1]) +
-        D*sqrt(h)*g_distribution(g_generator)*Darray[gene_count1]+
+      exprxGeneH[geneCount1] = exprxGene[geneCount1] +
+        h*(gGene[geneCount1]*finalMultiplier-kGene[geneCount1]*
+        exprxGene[geneCount1]) +
+        D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
         D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
-        Darray[gene_count1]*expression_gene[gene_count1];
-      if(expression_gene_h[gene_count1]<0) expression_gene_h[gene_count1]=0;
+        Darray[geneCount1]*exprxGene[geneCount1];
+      if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
     }
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-      expression_gene[gene_count1]=expression_gene_h[gene_count1];}
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+      exprxGene[geneCount1]=exprxGeneH[geneCount1];}
 
-    if((i> (print_start + print_interval*print_counter)) &&
-       i <= (h+print_start + print_interval*print_counter))
+    if((i> (printStart + printInterval*printCounter)) &&
+       i <= (h+printStart + printInterval*printCounter))
     {
-      print_counter++;
+      printCounter++;
       //std::cout<<i<<"\n";
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
       {
-        out_GE<<std::setprecision(output_precision)
-        <<expression_gene[gene_count1]<<"\t";
+        outGE<<std::setprecision(outputPrecision)
+        <<exprxGene[geneCount1]<<"\t";
       }
-      //out_GE<<"\n";
+      //outGE<<"\n";
     }
-  }while(i<tot_time);
+  }while(i<totTime);
 
-  // for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  // for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   // {
-  //   out_GE<<std::setprecision(output_precision)<<expression_gene[gene_count1]<<"\t";
+  //   outGE<<std::setprecision(outputPrecision)<<exprxGene[geneCount1]<<"\t";
   // }
 
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 //Runge Kutta fourth order
-///////////////////////////////////////////////////////////////////////////////////////
-void stepRK4( std::vector <double> &expression_gene,
-             std::fstream &out_GE,
-             const double &tot_time,
-             const int &number_gene,
-             IntegerMatrix gene_interaction,
-             const std::vector<double> &g_gene,
-             const std::vector<double> &k_gene,
-             const std::vector<std::vector<int> > &n_gene,
+///////////////////////////////////////////////////////////////////////////////
+void stepRK4( std::vector <double> &exprxGene,
+             std::ofstream &outGE,
+             const double &totTime,
+             const int &numberGene,
+             IntegerMatrix geneInteraction,
+             const std::vector<double> &gGene,
+             const std::vector<double> &kGene,
+             const std::vector<std::vector<int> > &NGene,
              const std::vector<std::vector<double> > &lambda_gene,
              const std::vector<std::vector<double> > &threshold_gene_log,
              const int &possible_interactions,
              const double &standard_deviation_factor,
-             const int &output_precision,
-             const double &print_start, const double &print_interval,
+             const int &outputPrecision,
+             const double &printStart, const double &printInterval,
              const double &h){
 
-double expression_gene_h1[number_gene]; //array for temp gene expression values
-double expression_gene_h2[number_gene]; //array for temp gene expression values
-double expression_gene_h3[number_gene]; //array for temp gene expression values
-double expression_gene_h4[number_gene]; //array for temp gene expression values
+double exprxGeneH1[numberGene]; //array for temp gene expression values
+double exprxGeneH2[numberGene]; //array for temp gene expression values
+double exprxGeneH3[numberGene]; //array for temp gene expression values
+double exprxGeneH4[numberGene]; //array for temp gene expression values
 
-for(int gene_count_temp=0;gene_count_temp<number_gene;gene_count_temp++)
+for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
 {
-  expression_gene_h1[gene_count_temp]=expression_gene[gene_count_temp];
-  expression_gene_h2[gene_count_temp]=expression_gene[gene_count_temp];
-  expression_gene_h3[gene_count_temp]=expression_gene[gene_count_temp];
-  expression_gene_h4[gene_count_temp]=expression_gene[gene_count_temp];
+  exprxGeneH1[geneCountTmp]=exprxGene[geneCountTmp];
+  exprxGeneH2[geneCountTmp]=exprxGene[geneCountTmp];
+  exprxGeneH3[geneCountTmp]=exprxGene[geneCountTmp];
+  exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
 }
 double i=0.0;
-int print_counter = 0;
+int printCounter = 0;
 do
 {
   i+=h;
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    double final_multiplier=1;
+    double finalMultiplier=1;
 
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      double gene_value=expression_gene[gene_count2];
-      double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-      int gene_n=n_gene[gene_count1][gene_count2];
-      double gene_lambda=lambda_gene[gene_count1][gene_count2];
-      double gene_activation_multiplier=1;
-
-      switch(gene_interaction(gene_count1,gene_count2))
-      {
-      case 0:
-        gene_activation_multiplier=1.0;
-        break;
-
-      case 2:
-        gene_lambda=1./gene_lambda;
-        gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n));
-        break;
-
-      case 1:
-        gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-        break;
-
-      default :
-        Rcout << "Invalid Interation code for Gene"<<gene_count1
-        <<" and gene"<<gene_count2<<" interaction"<<"\n";
-      }
-
-      final_multiplier=final_multiplier*gene_activation_multiplier;
+      double geneValue=exprxGene[geneCount2];
+      double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+      int geneN=NGene[geneCount1][geneCount2];
+      double geneLambda=lambda_gene[geneCount1][geneCount2];
+      calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                     geneValue, geneInteraction, geneN, geneLambda,
+                     geneThreshold);
     }
 
 
-    expression_gene_h1[gene_count1]=h*(g_gene[gene_count1]*final_multiplier -
-      k_gene[gene_count1]*expression_gene[gene_count1]);
+    exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*finalMultiplier -
+      kGene[geneCount1]*exprxGene[geneCount1]);
   }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    double final_multiplier=1;
+    double finalMultiplier=1;
 
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      double gene_value=expression_gene[gene_count2] +
-        0.5*expression_gene_h1[gene_count2];
-      double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-      int gene_n=n_gene[gene_count1][gene_count2];
-      double gene_lambda=lambda_gene[gene_count1][gene_count2];
-      double gene_activation_multiplier=1;
-
-      switch(gene_interaction(gene_count1,gene_count2))
-      {
-      case 0:
-        gene_activation_multiplier=1.0;
-        break;
-
-      case 2:
-        gene_lambda=1./gene_lambda;
-        gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n));
-        break;
-
-      case 1:
-        gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-        break;
-
-      default :
-        Rcout << "Invalid Interation code for Gene"<<gene_count1
-        <<" and gene"<<gene_count2<<" interaction"<<"\n";
-      }
-
-      final_multiplier=final_multiplier*gene_activation_multiplier;
+      double geneValue=exprxGene[geneCount2] +
+        0.5*exprxGeneH1[geneCount2];
+      double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+      int geneN=NGene[geneCount1][geneCount2];
+      double geneLambda=lambda_gene[geneCount1][geneCount2];
+      calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                     geneValue, geneInteraction, geneN, geneLambda,
+                     geneThreshold);
     }
 
 
-    expression_gene_h2[gene_count1]=h*((g_gene[gene_count1])*
-      final_multiplier-k_gene[gene_count1]*(expression_gene[gene_count1] +
-      0.5*expression_gene_h1[gene_count1]));
+    exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
+      finalMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
+      0.5*exprxGeneH1[geneCount1]));
   }
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    double final_multiplier=1;
+    double finalMultiplier=1;
 
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      double gene_value=expression_gene[gene_count2] +
-        0.5*expression_gene_h2[gene_count2];
-      double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-      int gene_n=n_gene[gene_count1][gene_count2];
-      double gene_lambda=lambda_gene[gene_count1][gene_count2];
-      double gene_activation_multiplier=1;
-
-      switch(gene_interaction(gene_count1,gene_count2))
-      {
-      case 0:
-        gene_activation_multiplier=1.0;
-        break;
-
-      case 2:
-        gene_lambda=1./gene_lambda;
-        gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n));
-        break;
-
-      case 1:
-        gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-        break;
-
-      default :
-        Rcout << "Invalid Interation code for Gene"<<gene_count1
-        <<" and gene"<<gene_count2<<" interaction"<<"\n";
-      }
-
-      final_multiplier=final_multiplier*gene_activation_multiplier;
+      double geneValue=exprxGene[geneCount2] +
+        0.5*exprxGeneH2[geneCount2];
+      double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+      int geneN=NGene[geneCount1][geneCount2];
+      double geneLambda=lambda_gene[geneCount1][geneCount2];
+      calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                     geneValue, geneInteraction, geneN, geneLambda,
+                     geneThreshold);
     }
 
 
-    expression_gene_h3[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-      k_gene[gene_count1]*(expression_gene[gene_count1] +
-      0.5*expression_gene_h2[gene_count1]));
+    exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+      kGene[geneCount1]*(exprxGene[geneCount1] +
+      0.5*exprxGeneH2[geneCount1]));
   }
 
 
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
-    double final_multiplier=1;
+    double finalMultiplier=1;
 
-    for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+    for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
     {
-      double gene_value=expression_gene[gene_count2] +
-        expression_gene_h3[gene_count2];
-      double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-      int gene_n=n_gene[gene_count1][gene_count2];
-      double gene_lambda=lambda_gene[gene_count1][gene_count2];
-      double gene_activation_multiplier=1;
-
-      switch(gene_interaction(gene_count1,gene_count2))
-      {
-      case 0:
-        gene_activation_multiplier=1.0;
-        break;
-
-      case 2:
-        gene_lambda=1./gene_lambda;
-        gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n));
-        break;
-
-      case 1:
-        gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-          1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-        break;
-
-      default :
-        Rcout << "Invalid Interation code for Gene"<<gene_count1
-        <<" and gene"<<gene_count2<<" interaction"<<"\n";
-      }
-
-      final_multiplier=final_multiplier*gene_activation_multiplier;
+      double geneValue=exprxGene[geneCount2] +
+        exprxGeneH3[geneCount2];
+      double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+      int geneN=NGene[geneCount1][geneCount2];
+      double geneLambda=lambda_gene[geneCount1][geneCount2];
+      calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                     geneValue, geneInteraction, geneN, geneLambda,
+                     geneThreshold);
     }
 
 
-    expression_gene_h4[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-      k_gene[gene_count1]*(expression_gene[gene_count1]+
-      expression_gene_h3[gene_count1]));
+    exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+      kGene[geneCount1]*(exprxGene[geneCount1]+
+      exprxGeneH3[geneCount1]));
   }
 
 
   /////////////////////////////////////////////////////////////
-  for(int gene_count1=0;gene_count1<number_gene;gene_count1++){
-    expression_gene[gene_count1] = expression_gene[gene_count1]+
-      (expression_gene_h1[gene_count1]+2*expression_gene_h2[gene_count1]+
-      2*expression_gene_h3[gene_count1]+expression_gene_h4[gene_count1])/6;
-    if(expression_gene[gene_count1]<0) expression_gene[gene_count1]=0;
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+    exprxGene[geneCount1] = exprxGene[geneCount1]+
+      (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
+      2*exprxGeneH3[geneCount1]+exprxGeneH4[geneCount1])/6;
+    if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
     }
 
 
-  if((i> (print_start + print_interval*print_counter)) &&
-     i <= (h+print_start + print_interval*print_counter))
+  if((i> (printStart + printInterval*printCounter)) &&
+     i <= (h+printStart + printInterval*printCounter))
   {
-    print_counter++;
+    printCounter++;
     //std::cout<<i<<"\n";
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      out_GE<<std::setprecision(output_precision)
-            <<expression_gene[gene_count1]<<"\t";
+      outGE<<std::setprecision(outputPrecision)
+            <<exprxGene[geneCount1]<<"\t";
     }
-    //out_GE<<"\n";
+    //outGE<<"\n";
   }
-}while(i<tot_time);
+}while(i<totTime);
 }
 
 
 
-void stepDP( std::vector <double> &expression_gene,
-              std::fstream &out_GE,
-              const double &tot_time,
-              const int &number_gene,
-              IntegerMatrix gene_interaction,
-              const std::vector<double> &g_gene,
-              const std::vector<double> &k_gene,
-              const std::vector<std::vector<int> > &n_gene,
+void stepDP( std::vector <double> &exprxGene,
+              std::ofstream &outGE,
+              const double &totTime,
+              const int &numberGene,
+              IntegerMatrix geneInteraction,
+              const std::vector<double> &gGene,
+              const std::vector<double> &kGene,
+              const std::vector<std::vector<int> > &NGene,
               const std::vector<std::vector<double> > &lambda_gene,
               const std::vector<std::vector<double> > &threshold_gene_log,
               const int &possible_interactions,
               const double &standard_deviation_factor,
-              const int &output_precision,
-              const double &print_start, const double &print_interval,
-              double h, const double &rk_tolerance){
-  double expression_gene_h[number_gene]; //array for temp gene expression values
-  double expression_gene_h1[number_gene]; //array for temp gene expression values
-  double expression_gene_h2[number_gene]; //array for temp gene expression values
-  double expression_gene_h3[number_gene]; //array for temp gene expression values
-  double expression_gene_h4[number_gene]; //array for temp gene expression values
-  double expression_gene_h5[number_gene]; //array for temp gene expression values
-  double expression_gene_h6[number_gene]; //array for temp gene expression values
-  double expression_gene_h7[number_gene]; //array for temp gene expression values
+              const int &outputPrecision,
+              const double &printStart, const double &printInterval,
+              double h, const double &rkTolerance){
+  double exprxGeneH[numberGene]; //array for temp gene expression values
+  double exprxGeneH1[numberGene]; //array for temp gene expression values
+  double exprxGeneH2[numberGene]; //array for temp gene expression values
+  double exprxGeneH3[numberGene]; //array for temp gene expression values
+  double exprxGeneH4[numberGene]; //array for temp gene expression values
+  double exprxGeneH5[numberGene]; //array for temp gene expression values
+  double exprxGeneH6[numberGene]; //array for temp gene expression values
+  double exprxGeneH7[numberGene]; //array for temp gene expression values
 
-  for(int gene_count_temp=0;gene_count_temp<number_gene;gene_count_temp++)
+  for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   {
-    expression_gene_h[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h1[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h2[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h3[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h4[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h5[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h6[gene_count_temp]=expression_gene[gene_count_temp];
-    expression_gene_h7[gene_count_temp]=expression_gene[gene_count_temp];
+    exprxGeneH[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH1[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH2[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH3[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH5[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH6[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH7[geneCountTmp]=exprxGene[geneCountTmp];
   }
 
   double i=0.0;
-  int print_counter = 0;
+  int printCounter = 0;
 
   do
   {
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2];
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h1[gene_count1]=h*(g_gene[gene_count1]*final_multiplier-
-        k_gene[gene_count1]*expression_gene[gene_count1]);
+      exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*finalMultiplier-
+        kGene[geneCount1]*exprxGene[geneCount1]);
     }
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+
-          0.2*expression_gene_h1[gene_count2];
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2]+
+          0.2*exprxGeneH1[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h2[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1] +
-        0.2*expression_gene_h1[gene_count1]));
+      exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1] +
+        0.2*exprxGeneH1[geneCount1]));
     }
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+
-          (0.25*expression_gene_h1[gene_count2]+
-          0.75*expression_gene_h2[gene_count2])*0.3;
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2]+
+          (0.25*exprxGeneH1[geneCount2]+
+          0.75*exprxGeneH2[geneCount2])*0.3;
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h3[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1]+
-        (0.25*expression_gene_h1[gene_count1]+
-        0.75*expression_gene_h2[gene_count1])*0.3));
+      exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1]+
+        (0.25*exprxGeneH1[geneCount1]+
+        0.75*exprxGeneH2[geneCount1])*0.3));
     }
 
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+
-          0.8*(((11./9.)*expression_gene_h1[gene_count2]+
-          (-14./3.)*expression_gene_h2[gene_count2])+
-          (40./9.)*expression_gene_h3[gene_count2]);
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2]+
+          0.8*(((11./9.)*exprxGeneH1[geneCount2]+
+          (-14./3.)*exprxGeneH2[geneCount2])+
+          (40./9.)*exprxGeneH3[geneCount2]);
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h4[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1]+
-        0.8*(((11./9.)*expression_gene_h1[gene_count1]+
-        (-14./3.)*expression_gene_h2[gene_count1])+
-        (40./9.)*expression_gene_h3[gene_count1])));
+      exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1]+
+        0.8*(((11./9.)*exprxGeneH1[geneCount1]+
+        (-14./3.)*exprxGeneH2[geneCount1])+
+        (40./9.)*exprxGeneH3[geneCount1])));
     }
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+(8./9.)*
-          ((4843./1458.)*expression_gene_h1[gene_count2]+
-          (-3170./243.)*expression_gene_h2[gene_count2]+
-          (8056./729.)*expression_gene_h3[gene_count2]+
-          (-53./162.)*expression_gene_h4[gene_count2]);
+        double geneValue=exprxGene[geneCount2]+(8./9.)*
+          ((4843./1458.)*exprxGeneH1[geneCount2]+
+          (-3170./243.)*exprxGeneH2[geneCount2]+
+          (8056./729.)*exprxGeneH3[geneCount2]+
+          (-53./162.)*exprxGeneH4[geneCount2]);
 
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h5[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1]+(8./9.)*
-        ((4843./1458.)*expression_gene_h1[gene_count1]+
-        (-3170./243.)*expression_gene_h2[gene_count1]+
-        (8056./729.)*expression_gene_h3[gene_count1]+
-        (-53./162.)*expression_gene_h4[gene_count1])));
+      exprxGeneH5[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1]+(8./9.)*
+        ((4843./1458.)*exprxGeneH1[geneCount1]+
+        (-3170./243.)*exprxGeneH2[geneCount1]+
+        (8056./729.)*exprxGeneH3[geneCount1]+
+        (-53./162.)*exprxGeneH4[geneCount1])));
     }
 
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+
-          ((9017./3168.)*expression_gene_h1[gene_count2]+
-          (-355./33.)*expression_gene_h2[gene_count2]+
-          (46732./5247.)*expression_gene_h3[gene_count2]+
-          (49./176.)*expression_gene_h4[gene_count2]+
-          (-5103./18656.)*expression_gene_h5[gene_count2]);
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2]+
+          ((9017./3168.)*exprxGeneH1[geneCount2]+
+          (-355./33.)*exprxGeneH2[geneCount2]+
+          (46732./5247.)*exprxGeneH3[geneCount2]+
+          (49./176.)*exprxGeneH4[geneCount2]+
+          (-5103./18656.)*exprxGeneH5[geneCount2]);
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h6[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1]+
-        (9017./3168.)*expression_gene_h1[gene_count1]+
-        (-355./33.)*expression_gene_h2[gene_count1]+
-        (46732./5247.)*expression_gene_h3[gene_count1]+
-        (49./176.)*expression_gene_h4[gene_count1]+
-        (-5103./18656.)*expression_gene_h5[gene_count1]));
+      exprxGeneH6[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1]+
+        (9017./3168.)*exprxGeneH1[geneCount1]+
+        (-355./33.)*exprxGeneH2[geneCount1]+
+        (46732./5247.)*exprxGeneH3[geneCount1]+
+        (49./176.)*exprxGeneH4[geneCount1]+
+        (-5103./18656.)*exprxGeneH5[geneCount1]));
     }
 
 
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      double final_multiplier=1;
+      double finalMultiplier=1;
 
-      for(int gene_count2=0;gene_count2<number_gene;gene_count2++)
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
       {
-        double gene_value=expression_gene[gene_count2]+
-          ((35./384.)*expression_gene_h1[gene_count2]+
-          (500./113.)*expression_gene_h3[gene_count2]+
-          (125./192.)*expression_gene_h4[gene_count2]+
-          (-2187./6784.)*expression_gene_h5[gene_count2]+
-          (11./84.)*expression_gene_h6[gene_count2]);
-        double gene_threshold=threshold_gene_log[gene_count1][gene_count2];
-        int gene_n=n_gene[gene_count1][gene_count2];
-        double gene_lambda=lambda_gene[gene_count1][gene_count2];
-        double gene_activation_multiplier=1;
-
-        switch(gene_interaction(gene_count1,gene_count2))
-        {
-        case 0:
-          gene_activation_multiplier=1.0;
-          break;
-
-        case 2:
-          gene_lambda=1./gene_lambda;
-          gene_activation_multiplier=gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n));
-          break;
-
-        case 1:
-          gene_activation_multiplier=(gene_lambda+(1.-gene_lambda)*
-            1./(1.+pow((gene_value/gene_threshold),gene_n)))/gene_lambda;
-          break;
-
-        default :
-          Rcout << "Invalid Interation code for Gene"<<gene_count1
-          <<" and gene"<<gene_count2<<" interaction"<<"\n";
-        }
-
-        final_multiplier=final_multiplier*gene_activation_multiplier;
+        double geneValue=exprxGene[geneCount2]+
+          ((35./384.)*exprxGeneH1[geneCount2]+
+          (500./113.)*exprxGeneH3[geneCount2]+
+          (125./192.)*exprxGeneH4[geneCount2]+
+          (-2187./6784.)*exprxGeneH5[geneCount2]+
+          (11./84.)*exprxGeneH6[geneCount2]);
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, finalMultiplier,
+                       geneValue, geneInteraction, geneN, geneLambda,
+                       geneThreshold);
       }
 
 
-      expression_gene_h7[gene_count1]=h*((g_gene[gene_count1])*final_multiplier-
-        k_gene[gene_count1]*(expression_gene[gene_count1]+
-        (35./384.)*expression_gene_h1[gene_count1]+
-        (500./113.)*expression_gene_h3[gene_count1]+
-        (125./192.)*expression_gene_h4[gene_count1]+
-        (-2187./6784.)*expression_gene_h5[gene_count1]+
-        (11./84.)*expression_gene_h6[gene_count1]));
+      exprxGeneH7[geneCount1]=h*((gGene[geneCount1])*finalMultiplier-
+        kGene[geneCount1]*(exprxGene[geneCount1]+
+        (35./384.)*exprxGeneH1[geneCount1]+
+        (500./113.)*exprxGeneH3[geneCount1]+
+        (125./192.)*exprxGeneH4[geneCount1]+
+        (-2187./6784.)*exprxGeneH5[geneCount1]+
+        (11./84.)*exprxGeneH6[geneCount1]));
     }
     double max_diff_o4_o5=0;
     /////////////////////////////////////////////////////////////
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      expression_gene_h[gene_count1]=expression_gene[gene_count1]+
-        (5179./57600.)*expression_gene_h1[gene_count1]+
-        (7571./16695.)*expression_gene_h3[gene_count1]+
-        (393./640.)*expression_gene_h4[gene_count1]+
-        (-92097./339200.)*expression_gene_h5[gene_count1]+
-        (187./2100.)*expression_gene_h6[gene_count1]+
-        (1./40.)*expression_gene_h7[gene_count1];
-      if(expression_gene_h[gene_count1]<0) expression_gene_h[gene_count1]=0;
+      exprxGeneH[geneCount1]=exprxGene[geneCount1]+
+        (5179./57600.)*exprxGeneH1[geneCount1]+
+        (7571./16695.)*exprxGeneH3[geneCount1]+
+        (393./640.)*exprxGeneH4[geneCount1]+
+        (-92097./339200.)*exprxGeneH5[geneCount1]+
+        (187./2100.)*exprxGeneH6[geneCount1]+
+        (1./40.)*exprxGeneH7[geneCount1];
+      if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
 
-      expression_gene[gene_count1]=expression_gene[gene_count1]+
-        (35./384.)*expression_gene_h1[gene_count1]+
-        (500./1113.)*expression_gene_h3[gene_count1]+
-        (125./192.)*expression_gene_h4[gene_count1]+
-        (-2187./6784.)*expression_gene_h5[gene_count1]+
-        (11./84.)*expression_gene_h6[gene_count1];
+      exprxGene[geneCount1]=exprxGene[geneCount1]+
+        (35./384.)*exprxGeneH1[geneCount1]+
+        (500./1113.)*exprxGeneH3[geneCount1]+
+        (125./192.)*exprxGeneH4[geneCount1]+
+        (-2187./6784.)*exprxGeneH5[geneCount1]+
+        (11./84.)*exprxGeneH6[geneCount1];
 
-      if(expression_gene[gene_count1]<0) expression_gene[gene_count1]=0;
+      if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
 
-      double diff_o4_o5=expression_gene[gene_count1] -
-        expression_gene_h[gene_count1];
+      double diff_o4_o5=exprxGene[geneCount1] -
+        exprxGeneH[geneCount1];
 
       diff_o4_o5 = diff_o4_o5 >= 0 ? diff_o4_o5 : -diff_o4_o5;
-      max_diff_o4_o5 = max_diff_o4_o5 > diff_o4_o5 ? max_diff_o4_o5 : diff_o4_o5;
+      max_diff_o4_o5 = max_diff_o4_o5 > diff_o4_o5 ? max_diff_o4_o5 :
+        diff_o4_o5;
 
     }
-    double s_rk = h*rk_tolerance/(2*(tot_time)*max_diff_o4_o5);
+    double s_rk = h*rkTolerance/(2*(totTime)*max_diff_o4_o5);
 
-    s_rk=pow(s_rk,0.25);
+    s_rk=std::pow(s_rk,0.25);
     //Rcout<<s_rk<<"\n";
     if(s_rk<1) {
       if(h>0.00001)
@@ -765,25 +540,26 @@ void stepDP( std::vector <double> &expression_gene,
 
     }
 
-    for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
-      expression_gene_h[gene_count1]=expression_gene[gene_count1];
+      exprxGeneH[geneCount1]=exprxGene[geneCount1];
 
 
     }
-    if((i> (print_start + print_interval*print_counter)) &&
-       i <= (h+print_start + print_interval*print_counter))
+    if((i> (printStart + printInterval*printCounter)) &&
+       i <= (h+printStart + printInterval*printCounter))
     {
-      print_counter++;
+
+      printCounter++;
       //std::cout<<i<<"\n";
-      for(int gene_count1=0;gene_count1<number_gene;gene_count1++)
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
       {
-        out_GE<<std::setprecision(output_precision)
-              <<expression_gene[gene_count1]<<"\t";
+        outGE<<std::setprecision(outputPrecision)
+              <<exprxGene[geneCount1]<<"\t";
       }
-      //out_GE<<"\n";
+      //outGE<<"\n";
     }
     //i=i+h;
-  }while(i<tot_time);
+  }while(i<totTime);
 
 }

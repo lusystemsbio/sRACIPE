@@ -7,18 +7,16 @@ sRACIPE implements a randomization-based method for gene circuit modeling. It al
 
 If you use sRACIPE, please consider citing our paper [Role of noise and parametric variation in the dynamics of gene regulatory circuits](https://www.nature.com/articles/s41540-018-0076-x) published in [npj Systems Biology and Applications](https://www.nature.com/npjsba/articles).
 
-*Installing R package from GitHub*
+*Installation*
 
-1) Install devtools package. In R, type: 
-install.packages("devtools")
-2) Load the devtools package:
+if (!requireNamespace("BiocManager", quietly = TRUE))
+install.packages("BiocManager")
+BiocManager::install("sRACIPE")
+
+Or install the development version of the package from Github.
+
 library(devtools)
-3) Install sRACIPE from GitHub:
-install_github("lusystemsbio/sRACIPE")
-
-*Using the package:* 
-
-Please refer to the  [Using sRACIPE](http://htmlpreview.github.io/?https://github.com/TheJacksonLaboratory/sRACIPE_dev/blob/master/vignettes/sRACIPE.html) and vignettes. 
+install_github(“lusystembio/sRACIPE”)
 
 # Webserver
 

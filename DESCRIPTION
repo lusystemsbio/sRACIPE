@@ -1,17 +1,18 @@
 Package: sRACIPE
 Type: Package
 Title: Systems biology tool to simulate gene regulatory circuits 
-Version: 0.99.1
+Version: 0.99.8
 Author: Vivek Kohar
 Maintainer: Vivek Kohar <vivek.kohar@gmail.com>
 Description: sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology, and simulates an ensemble of models with random kinetic parameters at multiple noise levels. Statistical analysis of the generated gene expressions reveals the basin of attraction and stability of various phenotypic states and their changes associated with intrinsic and extrinsic noises. sRACIPE provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation. 
-License: Custom
+License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
-Suggests: knitr,
-    rmarkdown
+Suggests: knitr, BiocStyle, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp
-biocViews: ResearchField, SystemsBiology, MathematicalBiology
-Imports: ggplot2, reshape2, MASS, RColorBrewer, gridExtra,visNetwork, gplots, umap, htmlwidgets
+biocViews: ResearchField, SystemsBiology, MathematicalBiology, GeneExpression, GeneRegulation, GeneTarget
+Depends: R (>= 3.5.0),SummarizedExperiment, methods, Rcpp
+Imports: ggplot2, reshape2, MASS, RColorBrewer, gridExtra,visNetwork, gplots, umap, htmlwidgets, S4Vectors, BiocGenerics, grDevices, stats, utils
 RoxygenNote: 6.1.1
+URL: https://github.com/vivekkohar/sRACIPE
+BugReport: https://github.com/vivekkohar/sRACIPE/issues

@@ -21,11 +21,13 @@ extern double Hs_Racipe(double A, double AB0, int n_ab, double lambda_ab);
 extern std::mt19937_64 u_generator;
 extern std::uniform_real_distribution<double> u_distribution;
 extern std::mt19937_64 g_generator;
+// Gaussian distributed random number generator with mean 0 and 1
+//standard deviation
 extern std::normal_distribution<double> g_distribution;
 
-Rcpp::IntegerMatrix readTopology(
-    Rcpp::IntegerMatrix gene_interaction, const Rcpp::String filepath,
-    const Rcpp::String filename, Rcpp::StringVector geneNames);
+// Rcpp::IntegerMatrix readTopology(
+//     Rcpp::IntegerMatrix gene_interaction, const Rcpp::String filepath,
+//     const Rcpp::String filename, Rcpp::StringVector geneNames);
 
 int generateThresholds(
     const Rcpp::IntegerMatrix gene_interaction,
@@ -37,7 +39,7 @@ int generateThresholds(
     const double standard_deviation_factor);
 
 void stepEM( std::vector <double> &expression_gene,
-             std::fstream &out_GE,
+             std::ofstream &out_GE,
              const double &tot_time,
              const int &number_gene,
              const Rcpp::IntegerMatrix gene_interaction,
@@ -55,7 +57,7 @@ void stepEM( std::vector <double> &expression_gene,
              const double &D,
              const double &h);
 void stepRK4( std::vector <double> &expression_gene,
-        std::fstream &out_GE,
+        std::ofstream &out_GE,
         const double &tot_time,
         const int &number_gene,
         const Rcpp::IntegerMatrix gene_interaction,
@@ -71,7 +73,7 @@ void stepRK4( std::vector <double> &expression_gene,
         const double &h);
 
  void stepDP( std::vector <double> &expression_gene,
-          std::fstream &out_GE,
+          std::ofstream &out_GE,
           const double &tot_time,
           const int &number_gene,
           const Rcpp::IntegerMatrix gene_interaction,
@@ -86,5 +88,8 @@ void stepRK4( std::vector <double> &expression_gene,
           const double &print_start, const double &print_interval,
           double h, const double &rk_tolerance);
 
+extern size_t convertAdjMatToVector(
+     Rcpp::IntegerMatrix gene_interaction, std::vector<size_t>& tgtGene,
+     std::vector<std::pair<size_t,size_t> >& intSrcType);
 
 #endif
