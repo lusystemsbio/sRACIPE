@@ -249,7 +249,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double rkTolerance = simulationParameters[6];
   // double paramRange = simulationParameters[7];
   double printInterval = simulationParameters[8];
-
+  // Rcout<<printInterval<<"\t"<<printStart<<"\n";
   size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
   double noiseScalingFactor = stochasticParameters[1];
   double initialNoise = stochasticParameters[2];
@@ -274,6 +274,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   bool genIC = options[2];
   bool genParams = options[3];
   bool integrate = options[4];
+  bool simDet = options[5];
   // bool useBoost = options[5];
   // bool useBoost = true;
 
@@ -472,7 +473,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
 
           for(size_t fileCount=0;fileCount<nNoise;fileCount++)
           {
-            if(fileCount==nNoise-1){D=0;}
+            if((fileCount==nNoise-1) &(simDet)){D=0;}
 
 
 

@@ -11,7 +11,7 @@ citEntry(entry="article",
   textVersion=
     paste("Kohar, V. and Lu, M.,",
           "Role of noise and parametric variation in the dynamics of gene regulatory circuits,",
-          "npj Systems Biology and Applicationsvolume 4, Article number: 40 (2018)",
+          "npj Systems Biology and Applications volume 4, Article number: 40 (2018)",
           sep=" ")
 )
 

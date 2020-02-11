@@ -1,0 +1,136 @@
+---
+title: "Single Model Simulations"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting the circuit
+This article shows how single model can be simulated using sRACIPE. 
+
+```{r }
+
+suppressWarnings(suppressPackageStartupMessages(library(sRACIPE)))
+suppressWarnings(suppressPackageStartupMessages(library(ggplot2)))
+
+racipe <- RacipeSE() # Construct an empty RacipeSE object
+data("EMT1") # Load a sample circuit
+sracipeCircuit(racipe) <- EMT1
+racipe
+
+```
+
+## Generate a random parameter set
+
+One can initialize the racipe object with experimentally determined parameters
+or generate a random parameter set and then modify the some or all of the 
+parameters. As we are interested in the trajectories of a single model, we set
+`timeSeries` to `TRUE`.
+
+```{r }
+racipe <- sracipeSimulate(racipe, timeSeries = TRUE, plots = FALSE, genIC = TRUE, 
+                         genParams = TRUE, integrate = FALSE
+                       )
+
+racipe
+
+```
+## Modify the parameters or initial conditions
+
+Notice that the `colData` changed now and contains the randomly generated 
+parameters and initial conditions. These can be accessed and modified using
+`sracipeParams` and sracipeIC `accessors`.
+
+```{r }
+parameters <- sracipeParams(racipe) # Get the parameters
+dim(parameters) 
+parameters["G_Zeb1"]
+parameters[,2]
+parameters["G_Zeb1"] <- 10*parameters["G_Zeb1"] # modify parameters
+parameters[,2] <- 50 # modify parameters
+sracipeParams(racipe) <- parameters # change the parameters to modified values
+racipe$G_Zeb1
+
+
+ic <- sracipeIC(racipe) # Get the initial conditions
+dim(ic) 
+ic[1]
+
+ic[1] <- 10 # modify initial condition
+sracipeIC(racipe) <- ic # change the ic to modified values
+
+```
+
+## Simulate with modified values
+  
+```{r }
+racipe <- sracipeSimulate(racipe, timeSeries = TRUE, plots = FALSE, genIC = FALSE, 
+                         genParams = FALSE, integrate = TRUE,
+                        simulationTime  = 20,
+                       integrateStepSize = 0.05
+                       )
+# Function to plot data
+sracipePlotTS <- function(plotData, ...){
+  plotData <- t(plotData)
+  sexprs <- stack(as.data.frame(plotData))
+  colnames(sexprs) <- c("geneExp", "Gene")
+  sexprs$time <- rep(as.numeric(rownames(plotData)), ncol(plotData))
+  theme_set(theme_bw(base_size = 10))
+  ggplot2::qplot(time, geneExp, data = sexprs, group = Gene, colour = Gene,
+      geom = "line", ylab = "Gene Expression", xlab = "time" )
+}
+plotData <- sracipeGetTS(racipe)
+p <- sracipePlotTS(plotData)
+p + scale_y_log10() # Use log scale
+
+```
+
+## Parameter perturbation
+The role of parameter perturbation can be studied by slowly changing one 
+parameter while keeping the other paramters constant. Here we will simulate 
+a large number of models with same parameters except for the parameter being 
+perturbed. We start with a random initial condition each time to capture 
+multiple attractors incase the system is multistable. 
+
+```{r }
+selectedParameter <- "G_Zeb1" # parameter to be perturbed
+parMin <- 1 # Minimum value of parameter
+parMax <- 100 # Maximum value of parameter
+nModels <- 30 # Number of models. Parameter value will be uniformly sampled 
+# nModels times from parMin to parMax.
+
+parameters <- sracipeParams(racipe)
+newParameters <- parameters[rep(seq_len(nrow(parameters)), nModels),]
+tmpValue <- seq(from = as.numeric(parMin), 
+                  to = as.numeric(parMax),
+                  length.out = nModels)
+newParameters[selectedParameter] <- tmpValue
+    
+circuit <- sracipeCircuit(racipe)
+rs <- sracipeSimulate(circuit, genIC = TRUE, genParams = TRUE, integrate = FALSE,
+                          numModels = nModels)
+sracipeParams(rs) <- newParameters # Modify parameters etc
+
+rs <- sracipeSimulate(rs, genIC = FALSE, genParams = FALSE, integrate = TRUE,
+                          numModels = nModels, simulationTime = 100)
+
+# Plot the steady state values
+library(ggplot2)
+sexprs <- assay(rs,1)
+sexprs <- reshape2::melt(t(sexprs))
+colnames(sexprs) <- c("bifurParameter","Gene","geneExp")
+modParameter <- rep(tmpValue,times = dim(rs)[1])
+sexprs$modParameter <- modParameter
+theme_set(theme_bw(base_size = 10))
+p <- ggplot2::ggplot(sexprs) +
+        geom_point(aes(x=modParameter,y=geneExp,color = Gene)) +
+        xlab((selectedParameter)) +
+        ylab("Gene Expression") 
+p + scale_y_log10() # Use log scale
+   
+```
+

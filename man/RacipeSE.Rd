@@ -4,9 +4,26 @@
 \alias{RacipeSE}
 \title{RacipeSE constructor}
 \usage{
-RacipeSE(...)
+RacipeSE(
+  .object = NULL,
+  assays = SimpleList(),
+  rowData = NULL,
+  colData = DataFrame(),
+  metadata = list(),
+  ...
+)
 }
 \arguments{
+\item{.object}{(optional) Another RacipeSE object.}
+
+\item{assays}{(optional) assay object for initialization}
+
+\item{rowData}{(optional) rowData for initialization}
+
+\item{colData}{(optional) colData for initialization}
+
+\item{metadata}{(optional) metadata for initialization}
+
 \item{...}{Arguments passed to SummarizedExperiment}
 }
 \value{

@@ -1,0 +1,9 @@
+pandoc: 2.7.3
+pkgdown: 1.4.1
+pkgdown_sha: ~
+articles:
+  simulatingTrajectories: articles/simulatingTrajectories.html
+  singleModelSimulations: articles/singleModelSimulations.html
+  underTheHood: articles/underTheHood.html
+  sRACIPE: sRACIPE.html
+

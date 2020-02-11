@@ -67,7 +67,7 @@ void stepEM( std::vector <double> &exprxGene,
   }
 
   double i=0.0;
-  int printCounter = 0;
+  double printTime = printStart;
   do
   {
     i+=h;
@@ -97,11 +97,10 @@ void stepEM( std::vector <double> &exprxGene,
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
       exprxGene[geneCount1]=exprxGeneH[geneCount1];}
 
-    if((i> (printStart + printInterval*printCounter)) &&
-       i <= (h+printStart + printInterval*printCounter))
+    if((i> printTime) &&
+       (i <= (printTime + printInterval)))
     {
-      printCounter++;
-      //std::cout<<i<<"\n";
+      printTime +=printInterval;
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
       {
         outGE<<std::setprecision(outputPrecision)
@@ -151,7 +150,7 @@ for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
 }
 double i=0.0;
-int printCounter = 0;
+double printTime = printStart;
 do
 {
   i+=h;
@@ -252,10 +251,10 @@ do
     }
 
 
-  if((i> (printStart + printInterval*printCounter)) &&
-     i <= (h+printStart + printInterval*printCounter))
+  if((i> printTime) &&
+     (i <= (printTime + printInterval)))
   {
-    printCounter++;
+    printTime +=printInterval;
     //std::cout<<i<<"\n";
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {

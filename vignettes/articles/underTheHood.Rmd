@@ -1,0 +1,140 @@
+---
+title: "Under the hood - design and implementation"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+We discuss the design of sRACIPE in this article. As our primary aim is to develop 
+a robust framework for simulating gene expression profiles that can capture
+the experimental observations, we utilized the well established data structures 
+from BioConductor to store the modeling results and parameters. We extend the 
+[SummarizedExperiment](http://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) 
+S4 class to create a new class RacipeSE to store and access the circuit/network,
+simulated gene expressions, parameters, intial conditions and other meta 
+information. As for any S4 class objects, the slots should not be accessed 
+directly and the getter and accessor functions should be used instead. 
+
+## Configuration
+
+When a `RacipeSE` object is constructed, a `SummarizedExperiment` object is 
+constructed and the default configuration is added as metadata. The default
+configuration is stored as a `configData` data object. These configuration 
+parameters can also be passed as argumnets to `sracipeSimulate` function.
+The getter/accessor function for configuration is `sracipeConfig`.
+
+
+```{r }
+
+suppressWarnings(suppressPackageStartupMessages(library(sRACIPE)))
+
+racipe <- RacipeSE() # Construct an empty RacipeSE object
+racipe  # View the object. Notice the config in metadata. 
+sracipeConfig(racipe) # access the config
+```
+
+The config list includes other lists or vectors like `simParams`, `stochParams`, 
+`hyperParams`, `options`, `thresholds` etc. The list `simParams` contains values
+for parameters like the number of models (`numModels`), simulation time
+(`simulationTime`), step size for simulations (`integrateStepSize`), 
+when to start recording the gene expressions (`printStart`), 
+time interval between recordings (`printInterval`), 
+number of initial conditions (`nIC`), output precision (`outputPrecision`), 
+tolerance for adaptive runge kutta method (`rkTolerance`), 
+parametric variation (`paramRange`). The list `stochParams` contains the 
+parameters for stochastic simulations like the number of noise levels to be 
+simulated (`nNoise`), the ratio of subsequent noise levels 
+(`noiseScalingFactor`), maximum noise (`initialNoise`), whether to use same 
+noise for all genes or to scale it as per the median expression of the genes 
+(`scaledNoise`), ratio of shot noise to additive noise (`shotNoise`). 
+The list `hyperParams` contains the parameters like the minimum and maximum 
+production and degration of the genes, fold change, hill coefficient etc. 
+The list `options` includes logical values like annealing (`anneal`), 
+scaling of noise (`scaledNoise`), generation of new initial conditions 
+(`genIC`), parameters (`genParams`) and whether to integrate or not 
+(`integrate`). 
+
+
+Metadata information also includes `annotation`, `nInteraction`
+(number of interactions in the circuit), `normalized` 
+(whether the data is normalized or not), data analysis lists like `pca`, `umap`,
+cluster assignment of the models etc. These are added to the object in subsequent 
+steps in the pipeline.
+
+
+## Circuit
+`SummarizedExperiment` slot `rowData` is used to store the circuit topology. 
+It is a square matrix with dimension equal to the number of genes in the circuit. 
+The values of the matrix represent the type of interaction in the gene pair given by row and column. 1 represents activation, 2 inhibition and 0 for no interaction. The `sracipeCircuit` getter and 
+accessor should be used to access this information. The `annotation` getter and 
+setter set/get the name. Setting the circuit also adds `nInteractions` and 
+`annotation` to the RacipeSE object.
+
+```{r }
+data("demoCircuit")
+sracipeCircuit(racipe) <- demoCircuit
+annotation(racipe) <- "demoCircuit"
+annotation(racipe)
+```
+
+
+## Parameters and initial conditions
+`SummarizedExperiment` slot `colData` contains the parameters and initial 
+conditions for each model. Each gene in the circuit has two parameters, 
+namely, its production rate and its degradation rate. Each interaction 
+has three parameters, namely, threshold of activation, the hill coefficient, 
+and the fold change. Each gene has one or more initial gene expression values 
+as specified by nIC. The corresponding getter and setter are `sracipeParams`
+and `sracipeIC`.
+
+
+## Simulated gene expression
+As such, sRACIPE can be used to simulate the trajectory for a single model 
+with specific kinetic parameters
+or a large large number of models with randomized parameters. 
+These sRACIPE models can be considered as separate samples/cells differing from 
+each other in terms of the parameters reflecting the cellular heterogeneity. 
+The `SummarizedExperiment` slot `assays` is used for storing 
+simulated gene expressions. 
+The rows of these matrix-like elements correspond to various genes in the 
+circuit and columns correspond to models. The first element of the `List` 
+is used for unperturbed deterministic simulations. 
+The subsequent elements are used for stochastic simulations at 
+different noise levels and/or knockout simulations. The name for each assay 
+contains the information on the noise level (for
+stochastic simulations), knocked out gene (knockout simulations), 
+or time (temporal simulations).
+The `assay` or `assays` accessor and getters from the SummarizedExperiment class
+should be used to access or modify these slots.
+
+## Time Series
+If one is interested in trajectories of a single model, then sRACIPE provides
+an argument `timeSeries` in the `sracipeSimulate` funcion. If enabled, sRACIPE
+will generate the trajectory for a single model and the corresponding plotting
+functions will also show time series plots. In such case, the trajectories 
+are stored in `metadata` instead of `assays`. The use of `sracipeGetTS` function 
+is recommended in this case.
+
+Usually, sRACIPE only records the steady states or the simulated gene expression
+at the end of the simulation. But the model trajectories can also be recorded 
+and analyzed using sRACIPE using the
+variables `printInterval` and `printStart`. These variables define how 
+often the simulated gene expressions are recorded. Thus, one can record multiple
+time points during the model simulations. If intermediate time points 
+are also recorded, then the first element will contain the last (steady-state)
+solutions and the other slots will contain the values at the intermediate time 
+points. For more details on temporal simulations of large number of models, 
+please refer to the corresponding article.
+
+
+
+
+
+
+

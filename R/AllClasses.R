@@ -70,20 +70,47 @@
 #' \code{\link{sracipeSimulate}} function.
 #'    
 #' @import SummarizedExperiment
-#' @importFrom S4Vectors metadata
+#' @importFrom S4Vectors metadata DataFrame isEmpty
 #' @importFrom utils data
+#' @param .object (optional) Another RacipeSE object.
+#' @param assays (optional) assay object for initialization
+#' @param rowData (optional) rowData for initialization
+#' @param colData (optional) colData for initialization
+#' @param metadata (optional) metadata for initialization 
 #' @param ... Arguments passed to SummarizedExperiment
 #' @return RacipeSE object
 #' @examples
 #' rSet <- RacipeSE()
 #'
 
-RacipeSE <- function(...) {
-    .object <- SummarizedExperiment(...)
-    if (is.null(metadata(.object)$config)) {
+RacipeSE <- function(.object = NULL, assays = SimpleList(),
+                     rowData = NULL,
+                     colData = DataFrame(),
+                     metadata = list(), ...) {
+    
+    if(is(.object,"RacipeSE")) {
+        if(isEmpty(assays)) assays <- assays(.object)
+        if(is.null(rowData)) rowData <- rowData(.object)
+        if(isEmpty(colData)) colData <- colData(.object)
+        if(length(metadata)==0) metadata <- metadata(.object)
+    } 
+    objectTmp <- SummarizedExperiment(
+        assays=assays, rowData=rowData, colData=colData, metadata=metadata)
+
+    if(is.null(metadata(objectTmp)$config))
+    {
         configData <- NULL
-        utils::data("configData",envir = environment())
-        metadata(.object)$config <- configData
+        data("configData",envir = environment(), package = "sRACIPE")
+        metadata(objectTmp)$config <- configData
     }
-    .RacipeSE(.object)
+
+    ## Validity steps
+    metadata(objectTmp)$config$simParams["numModels"] <- dim(objectTmp)[2]
+    
+    if(!is.null(metadata(objectTmp)$nInteractions)) 
+        metadata(objectTmp)$nInteractions <- 
+        sum(as.matrix(rowData(objectTmp))>0)
+    
+    .RacipeSE(objectTmp)
 }
+

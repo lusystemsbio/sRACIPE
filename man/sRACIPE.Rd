@@ -3,7 +3,6 @@
 \docType{package}
 \name{sRACIPE}
 \alias{sRACIPE}
-\alias{sRACIPE-package}
 \title{sRACIPE: A package for stochastic random circuit perturbation.}
 \description{
 sRACIPE is a systems biology tool to study the role of noise and parameter

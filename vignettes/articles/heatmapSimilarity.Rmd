@@ -1,0 +1,22 @@
+---
+title: "Comparing simulated and experimental data"
+output: 
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+sracipeHeatmapSimilarity()
+```
+
+A crucial aspect for network modeling is to evaluate whether the simulations
+capture the essential features of the experimental data or not. This comparison
+will help in finetuning the network or parameters. 
+
+In sRACIPE, the function `sracipeHeatmapSimilarity` can compare two 
+expression datasets and return a similarity score. One can provide the 
+experimental data and simulated data as two datasets. If the clusters for the 
+experimental data are not provided, then the data is clustered using 
+hierarchical clustering. Then each model in the simulated data is compared with 
+each cluster using correlation of expression values. 

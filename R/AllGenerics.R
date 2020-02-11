@@ -128,6 +128,29 @@ setGeneric("sracipeParams",
            }
 )
 
+#' @export
+#' @import SummarizedExperiment
+#' @title  A method to extract the time series
+#' @description If timeSeries option is used in sracipeSimulate function, this
+#' method will return the simulated time series.
+#' @param .object RacipeSE object
+#' @examples 
+#' data("demoCircuit")
+#' RacipeSet <- RacipeSE()
+#' sracipeCircuit(RacipeSet) <- demoCircuit
+#' RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE, 
+#' simulationTime = 2)
+#' trajectories <- sracipeGetTS(RacipeSet)
+#' rm(RacipeSet)
+#' @return List
+#'
+
+setGeneric(name="sracipeGetTS",
+           def=function(.object)
+           {
+             standardGeneric("sracipeGetTS")
+           }
+)
 
 #' @export
 #' @title  A method to set the simulation parameters
@@ -142,6 +165,7 @@ setGeneric("sracipeParams",
 #' sracipeParams(rSet) <- parameters
 #' rm(parameters, rSet)
 #' @return A RacipeSE object
+#' 
 
 setGeneric("sracipeParams<-",
            def = function(.object, value)
@@ -224,7 +248,7 @@ setGeneric("sracipeNormalize",
 
 
 #' @export
-#' @import grDevices
+#' @import grDevices 
 #' @title Plot Gene Regulatory Circuit
 #' @description  Plot Gene Regulatory Circuit to a file or output device.
 #' @param .object RacipeSE object
@@ -255,6 +279,7 @@ setGeneric("sracipePlotCircuit",
 #' @export
 #' @import SummarizedExperiment
 #' @importFrom gplots heatmap.2
+#' @importFrom graphics barplot hist image layout par
 #' @import ggplot2
 #' @import gridExtra
 #' @import umap
@@ -269,6 +294,8 @@ setGeneric("sracipePlotCircuit",
 #' data and the the models will be colored in UMAP and PCA plots according to
 #' these clustering results. The clusters can be also supplied using
 #' \code{assignedClusters}.
+#' @param heatmapPlot (optional) logical. Default \code{TRUE}. Whether to plot 
+#' hierarchichal clustering. 
 #' @param pcaPlot (optional) logical. Default \code{TRUE}. Whether to plot PCA
 #' embedding.
 #' @param umapPlot (optional) logical. Default \code{TRUE}. Whether to plot
@@ -300,6 +327,7 @@ setGeneric("sracipePlotCircuit",
 #' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}},
 setGeneric("sracipePlotData",
            def = function(.object, plotToFile = FALSE, nClusters = 2,
+                          heatmapPlot = TRUE,
                           pcaPlot = TRUE, umapPlot = TRUE,networkPlot = TRUE,
                           clustMethod = "ward.D2", col = col,
                           distType = "euclidean",
