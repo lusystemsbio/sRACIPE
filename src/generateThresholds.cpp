@@ -86,7 +86,7 @@ size_t generateThresholds(
 
         size_t nBA=static_cast<size_t>(u_distribution(u_generator)*
         (nMax-nMin))+nMin;
-        double geneLambda=1./((lambdaMax-lambdaMin)*(nMax-nMin)+lambdaMin);
+        double geneLambda=1./((lambdaMax-lambdaMin)*u_distribution(u_generator)+lambdaMin);
         double hillEval=Hs_Racipe(gB/kB, BA0, nBA, geneLambda);
         Af[modelCount] = Af[modelCount]*hillEval;
       }
@@ -103,7 +103,7 @@ size_t generateThresholds(
 
         size_t nBA= static_cast<size_t>(u_distribution(u_generator)*
         (nMax-nMin))+nMin;
-        double geneLambda=1./((lambdaMax-lambdaMin)*(nMax-nMin)+lambdaMin);
+        double geneLambda=1./((lambdaMax-lambdaMin)*u_distribution(u_generator)+lambdaMin);
         Af[modelCount]=Af[modelCount]/Hs_Racipe(gB/kB, BA0, nBA,
                                                   geneLambda);
       }
