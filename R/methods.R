@@ -33,16 +33,16 @@ setMethod("sracipeCircuit<-", "RacipeSE",
             }
             if(is(value, "data.frame")){
               filename <- deparse(substitute(value))
-              if(dim(value)[2]!=3) 
+              if(dim(value)[2]!=3)
               {
                 message("Incorrect number of columns in circuit")
                 return()
                 }
               storage.mode(value[,3]) <- "integer"
-              if(sum(!(value[,3] %in% c(1,2)))>0){
-                message("Incorrect interactions (only 1,2 allowed)")
+              if(sum(!(value[,3] %in% c(1,2,3,4)))>0){
+                message("Incorrect interactions (only 1,2,3,4 allowed)")
                 return()
-              } 
+              }
               circuitTable <- value
               colnames(circuitTable) <- c("Source","Target","Type")
               }
@@ -74,8 +74,8 @@ setMethod("sracipeCircuit<-", "RacipeSE",
             }
             configData <- NULL
             data("configData",envir = environment(), package = "sRACIPE")
-            
-            
+
+
             .object <- RacipeSE(
               assays = SimpleList(matrix(NA, nrow = nGenes,ncol = configData$simParams["numModels"])),
               rowData = DataFrame(circuitAdjMat),
@@ -229,14 +229,14 @@ setMethod(f="sracipeNormalize",
     tsSimulations <- lapply(tsSimulations,log2)
     #   stochasticSimulations <-
     #      lapply(stochasticSimulations, function(x) x[,is.finite(colMeans(x))])
-    
+
     tsSimulations <- lapply(tsSimulations,
                             function(x) sweep(x, 1, means, FUN = "-"))
     tsSimulations <- lapply(tsSimulations,
                             function(x) sweep(x, 1, sds, FUN = "/"))
     assayDataTmp2 <- c(assayDataTmp2, tsSimulations)
   }
-  
+
   stochSims <- 0
   if(!is.null(metadata(.object)$stochasticSimulations)){
     stochSims <- length(metadata(.object)$stochasticSimulations)
@@ -254,7 +254,7 @@ setMethod(f="sracipeNormalize",
   }
 
 
-  
+
   if(!is.null(metadata(.object)$knockOutSimulations)){
     knockOutSimulations <- .object$knockOutSimulations
     koSims <- length(metadata(.object)$knockOutSimulations)
@@ -371,7 +371,7 @@ setMethod(f="sracipePlotData",
   p <- list()
   ts <- list()
   tsCounter <- 1
-  
+
   stoch <- list()
 
   i=1;
@@ -434,7 +434,7 @@ setMethod(f="sracipePlotData",
 
 
     if(plotToFile){
-    
+
     dev.off()
   }
   V1 <- NULL
@@ -453,7 +453,7 @@ setMethod(f="sracipePlotData",
     #  panel.border = element_rect(color = "black"))
     i <- i+1
   }
- 
+
   if(pcaPlot){
 
     pca1 = summary(prcomp(t(assayDataTmp[[1]]), scale. = FALSE))
@@ -465,7 +465,7 @@ setMethod(f="sracipePlotData",
       theme(text = element_text(size=30),
             panel.background = element_rect(fill = "white", color = "black"),
             panel.grid.major = element_line(color="gray", size=0.25))
-    
+
     if(!is.null(metadataTmp$tsSimulations)){
       tsPca <- assayDataTmp[
         2:(1+length(metadataTmp$tsSimulations))]
@@ -473,7 +473,7 @@ setMethod(f="sracipePlotData",
         tsPca[[j]] <-
           t(scale(t(tsPca[[j]]), pca1$center, pca1$scale) %*%
               pca1$rotation)
-        
+
         ts[[j]] <-
           ggplot2::ggplot(data = as.data.frame(t(tsPca[[j]]))) +
           geom_point(aes(x = PC1, y=PC2), shape = 1) +
@@ -485,9 +485,9 @@ setMethod(f="sracipePlotData",
                                                 color = "black"),
                 panel.grid.major = element_line(color="gray", size=0.25))
       }
-      
+
     }
-  
+
     if(!is.null(metadataTmp$stochasticSimulations)){
       stochasticPca <- assayDataTmp[
         2:(1+length(metadataTmp$stochasticSimulations))]
@@ -555,14 +555,14 @@ setMethod(f="sracipePlotData",
         koPlotCounter <- koPlotCounter + 1
         }
         if(heatmapPlot){
- 
+
           gplots::heatmap.2(
             geneExpression, trace = "none", col = col, main = "WT",
             hclustfun = function(x) hclust(x, method = 'ward.D2'),
             distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2)
           )
           gplots::heatmap.2(
-            simData, trace = "none", col = col, 
+            simData, trace = "none", col = col,
             main = names(knockOutSimulations[ko]),
             hclustfun = function(x) hclust(x, method = 'ward.D2'),
             distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2)
@@ -576,7 +576,7 @@ setMethod(f="sracipePlotData",
     fileName <- paste0(annotation(.object),"_plots.pdf")
     pdf(fileName, onefile = TRUE)
   }
-    
+
   for (i in seq(length(p))) {
      gridExtra::grid.arrange(p[[i]])
     # do.call("grid.arrange", p[[i]])
@@ -599,7 +599,7 @@ setMethod(f="sracipePlotData",
         dev.off()
       }
     }
-    
+
   if(!is.null(metadataTmp$stochasticSimulations)){
     if(plotToFile){
       fileName <- paste0(annotation(.object),"_stochasticPlots.pdf")
@@ -853,7 +853,7 @@ setMethod(f="sracipeKnockDown",
 
             if (missing(plotFilename))
               plotFilename <- annotation(.object)
-            
+
             filename <-
               (paste(plotFilename, "_knockdown.pdf", sep = ""))
 

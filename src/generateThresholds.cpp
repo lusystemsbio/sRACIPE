@@ -90,6 +90,41 @@ size_t generateThresholds(
         double hillEval=Hs_Racipe(gB/kB, BA0, nBA, geneLambda);
         Af[modelCount] = Af[modelCount]*hillEval;
       }
+
+      for(size_t counterInteraction1=0;
+          counterInteraction1<interactionsNumber[geneCount1][3];
+          counterInteraction1++)
+      {
+        double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
+        double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
+        double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
+          (2*std::sqrt(3)*sdFactor*geneIsolatedMedian)
+          *u_distribution(u_generator);
+
+        size_t nBA= static_cast<size_t>(u_distribution(u_generator)*
+        (nMax-nMin))+nMin;
+        double geneLambda=1./((lambdaMax-lambdaMin)*(nMax-nMin)+lambdaMin);
+        Af[modelCount]=Af[modelCount]/Hs_Racipe(gB/kB, BA0, nBA,
+                                                  geneLambda);
+      }
+
+      for(size_t counterInteraction1=0;
+          counterInteraction1<interactionsNumber[geneCount1][4];
+          counterInteraction1++)
+      {
+        double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
+        double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
+        double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
+          (2*std::sqrt(3)*sdFactor*geneIsolatedMedian)
+          *u_distribution(u_generator);
+
+        size_t nBA=static_cast<size_t>(u_distribution(u_generator)*
+        (nMax-nMin))+nMin;
+        double geneLambda=(lambdaMax-lambdaMin)*u_distribution(u_generator) +
+          lambdaMin;
+        double hillEval=Hs_Racipe(gB/kB, BA0, nBA, geneLambda);
+        Af[modelCount] = Af[modelCount]/hillEval;
+      }
     }
 
     std::sort(Af.begin(), Af.end());
