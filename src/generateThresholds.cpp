@@ -59,7 +59,6 @@ size_t generateThresholds(
           counterInteraction1<interactionsNumber[geneCount1][1];
           counterInteraction1++)
       {
-        Rcout<<"1"<<"\n";
         double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
         double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
         double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
@@ -79,7 +78,6 @@ size_t generateThresholds(
           counterInteraction1<interactionsNumber[geneCount1][2];
           counterInteraction1++)
       {
-        Rcout<<"2"<<"\n";
         double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
         double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
         double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
@@ -97,7 +95,6 @@ size_t generateThresholds(
           counterInteraction1<interactionsNumber[geneCount1][3];
           counterInteraction1++)
       {
-        Rcout<<"3"<<"\n";
         double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
         double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
         double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
@@ -115,7 +112,6 @@ size_t generateThresholds(
           counterInteraction1<interactionsNumber[geneCount1][4];
           counterInteraction1++)
       {
-        Rcout<<"4"<<"\n";
         double gB=gMin+(gMax-gMin)*u_distribution(u_generator);
         double kB=kMin+(kMax-kMin)*u_distribution(u_generator);
         double BA0=geneIsolatedMedian*(1-sdFactor*std::sqrt(3)) +
