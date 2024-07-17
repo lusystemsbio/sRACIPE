@@ -16,7 +16,7 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
 ){
 
     double geneActMultiplier=1;
-    double geneActMultiplier2=1; \\ Degradation multiplier
+    double geneActMultiplier2=1;
 
     switch(geneInteraction(geneCount1,geneCount2))
     {
