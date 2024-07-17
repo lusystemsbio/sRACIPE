@@ -200,6 +200,16 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
       case 1:
         gene_min_multiplier=1./geneLambda;
         break;
+
+      case 3:
+        geneLambda=1./geneLambda;
+        gene_min_multiplier=geneLambda;
+        break;
+
+      case 4:
+        gene_min_multiplier=1./geneLambda;
+        break;
+
       default :
         Rcout << "Invalid Interation code for Gene"<<geneCount1
         <<" and gene"<<geneCount2<<" interaction"<<"\n";
