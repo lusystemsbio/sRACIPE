@@ -47,7 +47,7 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
 
     case 4:
       geneActMultiplier2=(geneLambda+(1.-geneLambda)*
-        1./(1.+std::pow((geneValue/geneThreshold),geneN)))/geneLambda;
+        1./(1.+std::pow((geneValue/geneThreshold),geneN)));
         geneActMultiplier=1.0;
       break;
 
