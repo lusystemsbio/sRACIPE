@@ -25,16 +25,16 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
       geneActMultiplier2=1.0;
       break;
 
+    case 1:
+      geneActMultiplier=(geneLambda+(1.-geneLambda)*
+        1./(1.+std::pow((geneValue/geneThreshold),geneN)))/geneLambda;
+      geneActMultiplier2=1.0;
+      break;
+
     case 2:
       geneLambda = 1./geneLambda;
       geneActMultiplier = geneLambda+(1.-geneLambda)*
         1./(1.+std::pow((geneValue/geneThreshold),geneN));
-        geneActMultiplier2=1.0;
-      break;
-
-    case 1:
-      geneActMultiplier=(geneLambda+(1.-geneLambda)*
-        1./(1.+std::pow((geneValue/geneThreshold),geneN)))/geneLambda;
         geneActMultiplier2=1.0;
       break;
 
@@ -50,6 +50,19 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
         1./(1.+std::pow((geneValue/geneThreshold),geneN)));
         geneActMultiplier=1.0;
       break;
+
+    case 5:
+      geneActMultiplier=(geneLambda+(1.-geneLambda)*
+        1./(1.+std::pow((geneValue/geneThreshold),geneN)))/geneLambda;
+      geneActMultiplier2=1.0;
+      break;
+
+    case 6:
+      geneLambda = 1./geneLambda;
+      geneActMultiplier = geneLambda+(1.-geneLambda)*
+        1./(1.+std::pow((geneValue/geneThreshold),geneN));
+        geneActMultiplier2=1.0;
+      break;  
 
     default :
       Rcout << "Invalid Interation code for Gene"<<geneCount1
@@ -77,7 +90,9 @@ void stepEM( std::vector <double> &exprxGene,
              const int &outputPrecision,
              const double &printStart, const double &printInterval,
              const double &D,
-             const double &h){
+             const double &h,
+             const double &signalRate,
+             const NumericVector &geneTypes){
 
   double exprxGeneH[numberGene]; //array for temp gene expression values
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -104,6 +119,10 @@ void stepEM( std::vector <double> &exprxGene,
         calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
                             geneValue, geneInteraction, geneN, geneLambda,
                             geneThreshold);
+      }
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
       }
       exprxGeneH[geneCount1] = exprxGene[geneCount1] +
         h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
@@ -155,7 +174,9 @@ void stepRK4( std::vector <double> &exprxGene,
              const double &standard_deviation_factor,
              const int &outputPrecision,
              const double &printStart, const double &printInterval,
-             const double &h){
+             const double &h,
+             const double &signalRate,
+             const NumericVector &geneTypes){
 
 double exprxGeneH1[numberGene]; //array for temp gene expression values
 double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -190,6 +211,10 @@ do
                      geneThreshold);
     }
 
+    if (geneTypes[geneCount1] == 2){
+      growthMultiplier = growthMultiplier*signalRate;
+      degMultiplier = degMultiplier*signalRate;
+    }
 
     exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
       kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
@@ -212,6 +237,10 @@ do
                      geneThreshold);
     }
 
+    if (geneTypes[geneCount1] == 2){
+      growthMultiplier = growthMultiplier*signalRate;
+      degMultiplier = degMultiplier*signalRate;
+    }
 
     exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
       growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
@@ -235,6 +264,10 @@ do
                      geneThreshold);
     }
 
+    if (geneTypes[geneCount1] == 2){
+      growthMultiplier = growthMultiplier*signalRate;
+      degMultiplier = degMultiplier*signalRate;
+    }
 
     exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
       kGene[geneCount1]*(exprxGene[geneCount1] +
@@ -259,6 +292,10 @@ do
                      geneThreshold);
     }
 
+    if (geneTypes[geneCount1] == 2){
+      growthMultiplier = growthMultiplier*signalRate;
+      degMultiplier = degMultiplier*signalRate;
+    }
 
     exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
       kGene[geneCount1]*(exprxGene[geneCount1]+
@@ -306,7 +343,9 @@ void stepDP( std::vector <double> &exprxGene,
               const double &standard_deviation_factor,
               const int &outputPrecision,
               const double &printStart, const double &printInterval,
-              double h, const double &rkTolerance){
+              double h, const double &rkTolerance,
+              const double &signalRate,
+             const NumericVector &geneTypes){
   double exprxGeneH[numberGene]; //array for temp gene expression values
   double exprxGeneH1[numberGene]; //array for temp gene expression values
   double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -349,6 +388,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier-
         kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
@@ -371,6 +414,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1] +
@@ -395,6 +442,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+
@@ -422,6 +473,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+
@@ -451,6 +506,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH5[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+(8./9.)*
@@ -482,6 +541,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH6[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+
@@ -515,6 +578,10 @@ void stepDP( std::vector <double> &exprxGene,
                        geneThreshold);
       }
 
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
 
       exprxGeneH7[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+

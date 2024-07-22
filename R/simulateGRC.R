@@ -7,15 +7,15 @@
 #' @description Simulate a gene regulatory circuit using its topology as the
 #' only input. It will generate an ensemble of random models.
 #' @param circuit data.frame or character. The file containing the circuit or
-#' @param config  (optional) List. It contains simulation parameters 
+#' @param config  (optional) List. It contains simulation parameters
 #' like integration method
-#' (stepper) and other lists or vectors like simParams, 
-#' stochParams, hyperParams, options, thresholds etc. 
-#' The list simParams contains values for parameters like the 
-#' number of models (numModels), 
-#' simulation time (simulationTime), step size for simulations 
-#' (integrateStepSize), when to start recording the gene expressions 
-#' (printStart), time interval between recordings (printInterval), number of 
+#' (stepper) and other lists or vectors like simParams,
+#' stochParams, hyperParams, options, thresholds etc.
+#' The list simParams contains values for parameters like the
+#' number of models (numModels),
+#' simulation time (simulationTime), step size for simulations
+#' (integrateStepSize), when to start recording the gene expressions
+#' (printStart), time interval between recordings (printInterval), number of
 #' initial conditions (nIC), output precision (outputPrecision), tolerance for
 #' adaptive runge kutta method (rkTolerance), parametric variation (paramRange).
 #' The list stochParams contains the parameters for stochastic simulations like
@@ -23,13 +23,13 @@
 #' noise levels (noiseScalingFactor), maximum noise (initialNoise), whether to
 #' use same noise for all genes or to scale it as per the median expression of
 #' the genes (scaledNoise), ratio of shot noise to additive noise (shotNoise).
-#' The list hyperParams contains the parameters like the minimum and maximum 
+#' The list hyperParams contains the parameters like the minimum and maximum
 #' production and degration of the genes, fold change, hill coefficient etc.
-#' The list options includes logical values like annealing (anneal), scaling of 
+#' The list options includes logical values like annealing (anneal), scaling of
 #' noise (scaledNoise), generation of new initial conditions (genIC), parameters
 #' (genParams) and whether to integrate or not (integrate). The user
-#' modifiable simulation options can be specified as other arguments. This 
-#' list should be used if one wants to modify many settings for multiple 
+#' modifiable simulation options can be specified as other arguments. This
+#' list should be used if one wants to modify many settings for multiple
 #' simulations.
 #' @param anneal (optional) Logical. Default FALSE. Whether to use annealing
 #' for stochastic simulations. If TRUE, the gene expressions at higher noise
@@ -84,16 +84,16 @@
 #' Simulation after knocking out one or more genes. To knock out all the genes
 #' in the circuit, use \code{knockOut = "all"}. If it is a vector, then all
 #' the genes in the vector will be knocked out simultaneously.
-#' @param printStart (optional) numeric (0-\code{simulationTime}). 
-#' Default \code{simulationTime}. To be used only when \code{timeSeries} is 
+#' @param printStart (optional) numeric (0-\code{simulationTime}).
+#' Default \code{simulationTime}. To be used only when \code{timeSeries} is
 #' \code{TRUE}.
 #' The time from which the output should be recorded. Useful for time series
 #' analysis and studying the dynamics of a model for a particular initial
-#' condition. 
+#' condition.
 #' @param printInterval (optional) numeric (\code{integrateStepSize}-
 #' \code{simulationTime - printStart}). Default 10. The separation between
-#' two recorded time points for a given trajectory. 
-#' To be used only when \code{timeSeries} is 
+#' two recorded time points for a given trajectory.
+#' To be used only when \code{timeSeries} is
 #' \code{TRUE}.
 #' @param stepper (optional) Character. Stepper to be used for integrating the
 #' differential equations. The options include \code{"EM"} for Euler-Maruyama
@@ -122,14 +122,14 @@
 #' rate and initial condition to zero.
 #' @param rkTolerance (optional) numeric. Default \code{0.01}. Error tolerance
 #' for adaptive integration method.
-#' @param timeSeries (optional) logical. Default \code{FALSE}. 
+#' @param timeSeries (optional) logical. Default \code{FALSE}.
 #' Whether to generate time series for a single model instead of performing
-#' RACIPE simulations. 
-#' @return \code{RacipeSE} object. RacipeSE class inherits 
-#' \code{SummarizedExperiment} and contains the circuit, parameters, 
+#' RACIPE simulations.
+#' @return \code{RacipeSE} object. RacipeSE class inherits
+#' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
-#' simulated gene expressions, and simulation configuration. These can be 
-#' accessed using correponding getters. 
+#' simulated gene expressions, and simulation configuration. These can be
+#' accessed using correponding getters.
 #' @examples
 #' data("demoCircuit")
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit)
@@ -150,17 +150,18 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       scaledNoise=FALSE,outputPrecision=12L,
                       printStart = 50.0,
                       printInterval=10, stepper = "RK4",
-                      thresholdModels = 5000, plots = FALSE, 
+                      thresholdModels = 5000, plots = FALSE,
                       plotToFile = FALSE,
                       genIC = TRUE, genParams = TRUE,
-                      integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE, 
+                      integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
+                      signalRate = 10.0,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
  configData <- NULL
  data("configData",envir = environment(), package = "sRACIPE")
  configuration <- configData
- 
+
   if(methods::is(circuit,"RacipeSE"))
   {
 
@@ -209,6 +210,9 @@ if(!missing(config)){
 
   if(!missing(paramRange)){
     configuration$simParams["paramRange"] <- paramRange
+  }
+  if(!missing(signalRate)){
+    configuration$hyperParams["signalRate"] <- signalRate
   }
   if(!missing(prodRateMin)){
     configuration$hyperParams["prodRateMin"] <- prodRateMin
@@ -276,8 +280,8 @@ if(!missing(config)){
     if(configuration$simParams["printInterval"] <
        configuration$simParams["integrateStepSize"]){
       configuration$simParams["printInterval"] <-
-      configuration$simParams["integrateStepSize"] 
-      warnings("Print Interval cannot be smaller than integration step size. 
+      configuration$simParams["integrateStepSize"]
+      warnings("Print Interval cannot be smaller than integration step size.
                Setting it to integrate step size.")}
   }
 
@@ -301,7 +305,7 @@ if(!missing(config)){
  if(!missing(rkTolerance)){
    configuration$simParams["rkTolerance"] <- rkTolerance
  }
- 
+
  # Apply parameter range
   configuration$hyperParams["prodRateMin"] <- 0.5*(
     configuration$hyperParams["prodRateMin"] +
@@ -391,11 +395,11 @@ if(missing(nNoise)){
   if(!missing(initialNoise) & !anneal )
   {
     if(timeSeries)
-    # if(timeSeries) 
+    # if(timeSeries)
       {configuration$stochParams["nNoise"] <- 1}
     else {if(simDet) configuration$stochParams["nNoise"] <- 2}
   }
-  
+
 }
   if(anneal){
     if(missing(nNoise)) {configuration$stochParams["nNoise"] <- 30L}
@@ -405,21 +409,21 @@ if(missing(nNoise)){
   if(timeSeries){
     configuration$simParams["numModels"] <- 1
     # configuration$stochParams["nNoise"] <- 0
-    
-    if(missing(printInterval)) 
+
+    if(missing(printInterval))
     configuration$simParams["printInterval"] <- max(
       0.05, configuration$simParams["integrateStepSize"])
     if(missing(printStart)) configuration$simParams["printStart"] <- 0
-    
+
     if(configuration$stepper == "DP") {configuration$stepper <- "RK4"
     warnings("Using RK4 integration method for time series simulation.")
-    
+
     }
   }
   stepperInt <- 1L
   if(configuration$stepper == "RK4"){ stepperInt <- 4L}
   if(configuration$stepper == "DP") {stepperInt <- 5L}
-  
+
   if(configuration$stochParams["nNoise"] > 0) {
     if(stepper != "EM"){
       warnings("Defaulting to EM stepper for stochastic simulations")
@@ -438,15 +442,15 @@ if(missing(nNoise)){
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, stepperInt)
+                                       outFileParams,outFileIC, stepperInt, metadata(rSet)$geneTypes)
     if(configuration$options["integrate"]){
 
-      
+
       if(timeSeries){
 
         timeStamps <- c(seq(
           configuration$simParams["printStart"] +
-            configuration$simParams["printInterval"], 
+            configuration$simParams["printInterval"],
           configuration$simParams["simulationTime"],
           configuration$simParams["printInterval"]),
           configuration$simParams["simulationTime"])
@@ -469,9 +473,9 @@ if(missing(nNoise)){
           metadataTmp$timeSeriesDet <- NULL
           metadataTmp$timeSeriesDet <- detGeneExp
           #print(dim(detGeneExp))
-          
+
         }
-        
+
         geneExpression <- t(geneExpression)
         #print(dim(geneExpression))
         colnames(ic) <- geneNames
@@ -491,7 +495,7 @@ if(missing(nNoise)){
         metadataTmp$timeSeries <- NULL
       metadataTmp$timeSeries <- geneExpression
 
-        rSet <- RacipeSE(rowData = geneInteraction, 
+        rSet <- RacipeSE(rowData = geneInteraction,
                          colData = colData,
                          metadata = metadataTmp)
         return(rSet)
@@ -499,42 +503,42 @@ if(missing(nNoise)){
     geneExpression <- utils::read.table(outFileGE, header = FALSE)
 
     if(
-      (configuration$simParams["printStart"] + 
-       configuration$simParams["printInterval"]) < 
+      (configuration$simParams["printStart"] +
+       configuration$simParams["printInterval"]) <
        configuration$simParams["simulationTime"]){
 
       timeStamps <- seq(
         configuration$simParams["printStart"] +
-          configuration$simParams["printInterval"], 
+          configuration$simParams["printInterval"],
         configuration$simParams["simulationTime"],
         configuration$simParams["printInterval"])
 
       tsSimulations <- as.list(timeStamps)
       names(timeStamps) <- timeStamps
-      
+
       for(i in seq_along(timeStamps)){
         tsSimulations[[i]] <- geneExpression[
           , (1+(i-1)*(nGenes)):(i*nGenes)]
         colnames(tsSimulations[[i]]) <- geneNames
       }
-      
+
       geneExpression <- geneExpression[
         ,(1+(length(timeStamps)*nGenes)):
           ((length(timeStamps)+1)*nGenes)]
-      
+
       tsSimulations <- lapply(tsSimulations,t)
-      
+
       geneExpression <- t(geneExpression)
       rownames(geneExpression) <- geneNames
       assayDataTmp <- c(list(deterministic = geneExpression),
                         tsSimulations)
       metadataTmp$tsSimulations <- timeStamps
-      
-      
+
+
     }
-    if((configuration$stochParams["nNoise"] == 0) &  
-       (configuration$simParams["printStart"] + 
-        configuration$simParams["printInterval"] > 
+    if((configuration$stochParams["nNoise"] == 0) &
+       (configuration$simParams["printStart"] +
+        configuration$simParams["printInterval"] >
        configuration$simParams["simulationTime"])){
       geneExpression <- t(geneExpression)
       rownames(geneExpression) <- geneNames
@@ -599,10 +603,10 @@ if(missing(nNoise)){
           }
           params <- parameters
           params[,knockOut_number] <- 0.0
-          
+
           icTmp <- ic
           icTmp[,knockOut_number] <- 0.0
-          
+
           configTmp <- configuration
           configTmp$options["genIC"] <- FALSE
           configTmp$options["genParams"] <- FALSE
@@ -634,17 +638,17 @@ if(missing(nNoise)){
       paramName <- sracipeGenParamNames(rSet)
       parameters <- utils::read.table(outFileParams, header = FALSE)
       colnames(parameters) <- paramName
-      
+
       ic <- utils::read.table(outFileIC, header = FALSE)
       colnames(ic) <- geneNames
       colData <- (cbind(parameters,ic))
       metadataTmp$config <- configuration
       rSet <- RacipeSE(rowData = geneInteraction, colData = colData,
-                       
+
                        metadata = metadataTmp)
       return(rSet)
   }
-  
+
     colData <- (cbind(parameters,ic))
     metadataTmp$config <- configuration
  # return(list(rowData = geneInteraction, colData = colData,

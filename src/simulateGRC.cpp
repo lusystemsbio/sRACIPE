@@ -210,6 +210,15 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
         gene_min_multiplier=1./geneLambda;
         break;
 
+      case 6:
+        geneLambda=1./geneLambda;
+        gene_min_multiplier=geneLambda;
+        break;
+
+      case 5:
+        gene_min_multiplier=1./geneLambda;
+        break;
+
       default :
         Rcout << "Invalid Interation code for Gene"<<geneCount1
         <<" and gene"<<geneCount2<<" interaction"<<"\n";
@@ -231,7 +240,8 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                 Rcpp::List config, String outFileGE, String outFileParams,
                 String outFileIC,
-              const int stepper = 1)
+              const int stepper = 1, 
+              Rcpp::NumericVector geneTypes)
 
 {
     unsigned int seed =  static_cast<unsigned int>
@@ -276,6 +286,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   size_t interactionTypes = static_cast<size_t>(hyperParameters[8]);
   // size_t thresholdModels = static_cast<size_t>(hyperParameters[9]);
   double sdFactor = hyperParameters[10];
+  double signalRate = hyperParameters[11];
 
   NumericVector thresholdGene = as<NumericVector>(config["thresholds"]);
 
@@ -505,7 +516,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     numberGene, geneInteraction, gGene, kGene, nGene,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
-                    outputPrecision, printStart, printInterval, D, h);
+                    outputPrecision, printStart, printInterval, D, h, 
+                    signalRate, geneTypes);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -515,7 +527,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        threshGeneLog, interactionTypes,
                        sdFactor,
                        outputPrecision,
-                       printStart,  printInterval, h);
+                       printStart,  printInterval, h,
+                       signalRate, geneTypes);
               break;
 
             case 5:
@@ -526,7 +539,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       threshGeneLog,interactionTypes,
                       sdFactor,
                       outputPrecision,printStart, printInterval,h,
-                      rkTolerance);
+                      rkTolerance,
+                      signalRate, geneTypes);
               break;
 
             default:

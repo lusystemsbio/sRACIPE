@@ -39,8 +39,8 @@ setMethod("sracipeCircuit<-", "RacipeSE",
                 return()
                 }
               storage.mode(value[,3]) <- "integer"
-              if(sum(!(value[,3] %in% c(1,2,3,4)))>0){
-                message("Incorrect interactions (only 1,2,3,4 allowed)")
+              if(sum(!(value[,3] %in% c(1,2,3,4,5,6)))>0){
+                message("Incorrect interactions (only 1,2,3,4,5,6 allowed)")
                 return()
               }
               circuitTable <- value
@@ -62,6 +62,7 @@ setMethod("sracipeCircuit<-", "RacipeSE",
 
             nGenes <- length(circuitGenes)
             nInteraction <- length(circuitTable$Source)
+            geneTypes = rep(1, nGenes)
             circuitAdjMat <- matrix(data = 0,nrow = nGenes,
                                                ncol = nGenes)
             storage.mode(circuitAdjMat) <- "integer"
@@ -72,6 +73,13 @@ setMethod("sracipeCircuit<-", "RacipeSE",
               circuitAdjMat[circuitTable[i,2], circuitTable[i,1]] <-
                 circuitTable[i,3]
             }
+
+            for(i in seq_len(nGenes)){
+              if (all(circuitAdjMat[,i] %in% c(0,5,6))){
+                geneTypes(i) <- 2
+              }
+            }
+
             configData <- NULL
             data("configData",envir = environment(), package = "sRACIPE")
 
@@ -83,7 +91,8 @@ setMethod("sracipeCircuit<-", "RacipeSE",
                                  metadata = list(
                                    annotation = filename,
                                    nInteractions = nInteraction,
-                                   config = configData)
+                                   config = configData,
+                                   geneTypes = geneTypes)
                                  )
             message("circuit file successfully loaded")
             return(.object)
