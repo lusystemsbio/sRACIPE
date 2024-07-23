@@ -211,9 +211,6 @@ if(!missing(config)){
   if(!missing(paramRange)){
     configuration$simParams["paramRange"] <- paramRange
   }
-  if(!missing(signalRate)){
-    configuration$hyperParams["signalRate"] <- signalRate
-  }
   if(!missing(prodRateMin)){
     configuration$hyperParams["prodRateMin"] <- prodRateMin
   }
@@ -238,6 +235,9 @@ if(!missing(config)){
   }
   if(!missing(hillCoeffMax)){
     configuration$hyperParams["hillCoeffMax"] <- hillCoeffMax
+  }
+  if(!missing(signalRate)){
+    configuration$hyperParams["signalRate"] <- signalRate
   }
   if(!missing(integrateStepSize)){
     configuration$simParams["integrateStepSize"] <- integrateStepSize
