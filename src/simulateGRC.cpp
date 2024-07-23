@@ -240,8 +240,8 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                 Rcpp::List config, String outFileGE, String outFileParams,
                 String outFileIC,
-              const int stepper = 1, 
-              Rcpp::NumericVector geneTypes)
+                Rcpp::NumericVector geneTypes,
+              const int stepper = 1)
 
 {
     unsigned int seed =  static_cast<unsigned int>

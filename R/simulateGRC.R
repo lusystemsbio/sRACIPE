@@ -442,7 +442,7 @@ if(missing(nNoise)){
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, stepperInt, metadata(rSet)$geneTypes)
+                                       outFileParams,outFileIC, metadata(rSet)$geneTypes, stepperInt)
     if(configuration$options["integrate"]){
 
 
