@@ -5,7 +5,7 @@ generateThresholds <- function(geneInteraction, thresholdGene, config) {
     .Call('_sRACIPE_generateThresholds', PACKAGE = 'sRACIPE', geneInteraction, thresholdGene, config)
 }
 
-simulateGRCCpp <- function(geneInteraction, config, outFileGE, outFileParams, outFileIC, stepper = 1L) {
-    .Call('_sRACIPE_simulateGRCCpp', PACKAGE = 'sRACIPE', geneInteraction, config, outFileGE, outFileParams, outFileIC, stepper)
+simulateGRCCpp <- function(geneInteraction, config, outFileGE, outFileParams, outFileIC, geneTypes, stepper = 1L) {
+    .Call('_sRACIPE_simulateGRCCpp', PACKAGE = 'sRACIPE', geneInteraction, config, outFileGE, outFileParams, outFileIC, geneTypes, stepper)
 }
 

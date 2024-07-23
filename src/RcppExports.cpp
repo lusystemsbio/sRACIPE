@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // generateThresholds
 size_t generateThresholds(const Rcpp::IntegerMatrix geneInteraction, Rcpp::NumericVector thresholdGene, Rcpp::List config);
 RcppExport SEXP _sRACIPE_generateThresholds(SEXP geneInteractionSEXP, SEXP thresholdGeneSEXP, SEXP configSEXP) {
@@ -19,8 +24,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulateGRCCpp
-int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction, Rcpp::List config, String outFileGE, String outFileParams, String outFileIC, const int stepper);
-RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP geneInteractionSEXP, SEXP configSEXP, SEXP outFileGESEXP, SEXP outFileParamsSEXP, SEXP outFileICSEXP, SEXP stepperSEXP) {
+int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction, Rcpp::List config, String outFileGE, String outFileParams, String outFileIC, Rcpp::NumericVector geneTypes, const int stepper);
+RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP geneInteractionSEXP, SEXP configSEXP, SEXP outFileGESEXP, SEXP outFileParamsSEXP, SEXP outFileICSEXP, SEXP geneTypesSEXP, SEXP stepperSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,15 +34,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< String >::type outFileGE(outFileGESEXP);
     Rcpp::traits::input_parameter< String >::type outFileParams(outFileParamsSEXP);
     Rcpp::traits::input_parameter< String >::type outFileIC(outFileICSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type geneTypes(geneTypesSEXP);
     Rcpp::traits::input_parameter< const int >::type stepper(stepperSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(geneInteraction, config, outFileGE, outFileParams, outFileIC, stepper));
+    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(geneInteraction, config, outFileGE, outFileParams, outFileIC, geneTypes, stepper));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sRACIPE_generateThresholds", (DL_FUNC) &_sRACIPE_generateThresholds, 3},
-    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 6},
+    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 7},
     {NULL, NULL, 0}
 };
 
