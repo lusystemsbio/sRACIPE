@@ -76,7 +76,7 @@ setMethod("sracipeCircuit<-", "RacipeSE",
 
             for(i in seq_len(nGenes)){
               if (all(circuitAdjMat[,i] %in% c(0,5,6))){
-                geneTypes(i) <- 2
+                geneTypes[i] <- 2
               }
             }
 
