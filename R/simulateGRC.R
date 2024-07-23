@@ -172,6 +172,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
    if((methods::is(circuit,"character")) | (methods::is(circuit, "data.frame")))
   {
     sracipeCircuit(rSet) <- circuit
+    metadataTmp$geneTypes <- metadata(rSet)$geneTypes
     if(methods::is(circuit, "data.frame")){
       metadataTmp$annotation <- deparse(substitute(circuit))
       metadataTmp$nInteractions <- length(circuit[,1])
@@ -442,7 +443,7 @@ if(missing(nNoise)){
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, metadata(rSet)$geneTypes, stepperInt)
+                                       outFileParams,outFileIC, metadataTmp$geneTypes, stepperInt)
     if(configuration$options["integrate"]){
 
 
