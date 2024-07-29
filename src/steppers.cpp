@@ -3,7 +3,8 @@
 using namespace Rcpp;
 
 
-double sum_delta (double &exprxGene, double &exprxGeneH, int numberGene)
+double sum_delta (std::vector<double> &exprxGene, 
+                  std::vector<double> &exprxGeneH, int numberGene)
 {
     int i = 0;
     double ssq = 0.0;
@@ -149,6 +150,7 @@ void stepEM( std::vector <double> &exprxGene,
 
     if((j == convergTestIter) && (D == 0)){
       j = 0;
+      double test_delta;
       test_delta = sum_delta(exprxGene, exprxGeneH, numberGene)
       if (test_delta < convergThresh){
         for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -337,6 +339,7 @@ do
 
   if(j == convergTestIter){
     j = 0;
+    double test_delta;
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
       exprxGeneNext[geneCount1] = exprxGene[geneCount1]+
         (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
@@ -680,6 +683,8 @@ void stepDP( std::vector <double> &exprxGene,
     }
 
     if(j == convergTestIter){
+      j = 0;
+      double test_delta;
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
       {
       exprxGeneNext[geneCount1]=exprxGene[geneCount1]+
