@@ -4,7 +4,7 @@ using namespace Rcpp;
 
 
 double sum_delta (std::vector<double> &exprxGene, 
-                  double &exprxGeneH, int numberGene)
+                  std::vector<double> &exprxGeneH, int numberGene)
 {
     int i = 0;
     double ssq = 0.0;
@@ -151,7 +151,10 @@ void stepEM( std::vector <double> &exprxGene,
     if((j == convergTestIter) && (D == 0)){
       j = 0;
       double test_delta;
-      test_delta = sum_delta(exprxGene, exprxGeneH, numberGene)
+      std::vector<double> exprxGeneNext(numberGene);
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+        exprxGeneNext[geneCount1]=exprxGeneH[geneCount1];}
+      test_delta = sum_delta(exprxGene, exprxGeneNext, numberGene)
       if (test_delta < convergThresh){
         for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
         {
@@ -214,7 +217,7 @@ double exprxGeneH2[numberGene]; //array for temp gene expression values
 double exprxGeneH3[numberGene]; //array for temp gene expression values
 double exprxGeneH4[numberGene]; //array for temp gene expression values
 
-double exprxGeneNext[numberGene]; //Array for convergence testing
+std::vector<double> exprxGeneNext(numberGene); //Array for convergence testing
 
 for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
 {
@@ -411,7 +414,7 @@ void stepDP( std::vector <double> &exprxGene,
   double exprxGeneH6[numberGene]; //array for temp gene expression values
   double exprxGeneH7[numberGene]; //array for temp gene expression values
 
-  double exprxGeneNext[numberGene]; //Array for convergence testing
+  std::vector<double> exprxGeneNext(numberGene); //Array for convergence testing
 
   for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   {
