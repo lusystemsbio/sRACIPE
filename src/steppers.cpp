@@ -154,7 +154,7 @@ void stepEM( std::vector <double> &exprxGene,
       std::vector<double> exprxGeneNext(numberGene);
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         exprxGeneNext[geneCount1]=exprxGeneH[geneCount1];}
-      test_delta = sum_delta(exprxGene, exprxGeneNext, numberGene)
+      test_delta = sum_delta(exprxGene, exprxGeneNext, numberGene);
       if (test_delta < convergThresh){
         for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
         {
