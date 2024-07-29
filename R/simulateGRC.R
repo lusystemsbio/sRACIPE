@@ -154,7 +154,8 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       plotToFile = FALSE,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
-                      signalRate = 10.0,
+                      signalRate = 10.0, convergThresh = 1e-12,
+                      convergTestIter = 500,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -246,6 +247,12 @@ if(!missing(config)){
   if(!missing(simulationTime)){
     configuration$simParams["simulationTime"] <- simulationTime
   }
+ if(!missing(convergThresh)){
+   configuration$simParams["convergThresh"] <- convergThresh
+ }
+ if(!missing(convergTestIter)){
+   configuration$simParams["convergTestIter"] <- convergTestIter
+ }
  if(!missing(simDet)){
    configuration$options["simDet"] <- simDet
  } else {

@@ -269,6 +269,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double rkTolerance = simulationParameters[6];
   // double paramRange = simulationParameters[7];
   double printInterval = simulationParameters[8];
+  long double convergThresh = simulationParameters[9];
+  int convergTestIter = simulationParameters[10];
   // Rcout<<printInterval<<"\t"<<printStart<<"\n";
   size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
   double noiseScalingFactor = stochasticParameters[1];
@@ -517,7 +519,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h, 
-                    signalRate, geneTypes);
+                    signalRate, geneTypes, convergThresh, 
+                    convergTestIter);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -528,7 +531,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        sdFactor,
                        outputPrecision,
                        printStart,  printInterval, h,
-                       signalRate, geneTypes);
+                       signalRate, geneTypes, convergThresh,
+                       convergTestIter);
               break;
 
             case 5:
@@ -540,7 +544,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       sdFactor,
                       outputPrecision,printStart, printInterval,h,
                       rkTolerance,
-                      signalRate, geneTypes);
+                      signalRate, geneTypes, convergThresh,
+                      convergTestIter);
               break;
 
             default:

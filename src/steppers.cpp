@@ -3,6 +3,16 @@
 using namespace Rcpp;
 
 
+double sum_delta (double &exprxGene, double &exprxGeneH, int numberGene)
+{
+    int i = 0;
+    double ssq = 0.0;
+    
+    for (i=0;i<numberGene;i++){
+        ssq+=pow(exprxGene[i]-exprxGeneH[i],2);
+    }
+    return ssq;
+}
 
 
 void calcMultiplier(const int& geneCount1, const int& geneCount2,
@@ -92,7 +102,9 @@ void stepEM( std::vector <double> &exprxGene,
              const double &D,
              const double &h,
              const double &signalRate,
-             const NumericVector &geneTypes){
+             const NumericVector &geneTypes,
+             const long double &convergThresh,
+             const int &convergTestIter){
 
   double exprxGeneH[numberGene]; //array for temp gene expression values
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -101,10 +113,12 @@ void stepEM( std::vector <double> &exprxGene,
   }
 
   double i=0.0;
+  int j = 0;
   double printTime = printStart;
   do
   {
     i+=h;
+    j+=1;
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
       double growthMultiplier=1;
@@ -131,6 +145,19 @@ void stepEM( std::vector <double> &exprxGene,
         D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
         Darray[geneCount1]*exprxGene[geneCount1];
       if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
+    }
+
+    if((j == convergTestIter) && (D == 0)){
+      j = 0;
+      test_delta = sum_delta(exprxGene, exprxGeneH, numberGene)
+      if (test_delta < convergThresh){
+        for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+        {
+          outGE<<std::setprecision(outputPrecision)
+          <<exprxGene[geneCount1]<<"\t";
+        }
+        break;
+      }
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -176,12 +203,16 @@ void stepRK4( std::vector <double> &exprxGene,
              const double &printStart, const double &printInterval,
              const double &h,
              const double &signalRate,
-             const NumericVector &geneTypes){
+             const NumericVector &geneTypes,
+             const long double &convergThresh,
+             const int &convergTestIter){
 
 double exprxGeneH1[numberGene]; //array for temp gene expression values
 double exprxGeneH2[numberGene]; //array for temp gene expression values
 double exprxGeneH3[numberGene]; //array for temp gene expression values
 double exprxGeneH4[numberGene]; //array for temp gene expression values
+
+double exprxGeneNext[numberGene]; //Array for convergence testing
 
 for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
 {
@@ -191,10 +222,12 @@ for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
 }
 double i=0.0;
+int j = 0;
 double printTime = printStart;
 do
 {
   i+=h;
+  j+=1;
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
     double growthMultiplier=1;
@@ -302,6 +335,24 @@ do
       exprxGeneH3[geneCount1])*degMultiplier);
   }
 
+  if(j == convergTestIter){
+    j = 0;
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+      exprxGeneNext[geneCount1] = exprxGene[geneCount1]+
+        (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
+        2*exprxGeneH3[geneCount1]+exprxGeneH4[geneCount1])/6;
+    if(exprxGeneNext[geneCount1]<0) exprxGeneNext[geneCount1]=0;
+    }
+    test_delta = sum_delta(exprxGene, exprxGeneNext, numberGene);
+    if (test_delta < convergThresh){
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+        {
+        outGE<<std::setprecision(outputPrecision)
+        <<exprxGene[geneCount1]<<"\t";
+        }
+        break;
+      }
+  }
 
   /////////////////////////////////////////////////////////////
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -345,7 +396,9 @@ void stepDP( std::vector <double> &exprxGene,
               const double &printStart, const double &printInterval,
               double h, const double &rkTolerance,
               const double &signalRate,
-             const NumericVector &geneTypes){
+              const NumericVector &geneTypes,
+              const long double &convergThresh,
+              const int &convergTestIter){
   double exprxGeneH[numberGene]; //array for temp gene expression values
   double exprxGeneH1[numberGene]; //array for temp gene expression values
   double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -354,6 +407,8 @@ void stepDP( std::vector <double> &exprxGene,
   double exprxGeneH5[numberGene]; //array for temp gene expression values
   double exprxGeneH6[numberGene]; //array for temp gene expression values
   double exprxGeneH7[numberGene]; //array for temp gene expression values
+
+  double exprxGeneNext[numberGene]; //Array for convergence testing
 
   for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   {
@@ -368,10 +423,12 @@ void stepDP( std::vector <double> &exprxGene,
   }
 
   double i=0.0;
+  int j=0;
   int printCounter = 0;
 
   do
   {
+    j+=1;
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
     {
       double growthMultiplier=1;
@@ -621,6 +678,30 @@ void stepDP( std::vector <double> &exprxGene,
         diff_o4_o5;
 
     }
+
+    if(j == convergTestIter){
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+      {
+      exprxGeneNext[geneCount1]=exprxGene[geneCount1]+
+        (35./384.)*exprxGeneH1[geneCount1]+
+        (500./1113.)*exprxGeneH3[geneCount1]+
+        (125./192.)*exprxGeneH4[geneCount1]+
+        (-2187./6784.)*exprxGeneH5[geneCount1]+
+        (11./84.)*exprxGeneH6[geneCount1];
+
+      if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
+      }
+      test_delta = sum_delta(exprxGene, exprxGeneNext, numberGene);
+      if (test_delta < convergThresh){
+        for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+        {
+          outGE<<std::setprecision(outputPrecision)
+          <<exprxGene[geneCount1]<<"\t";
+        }
+          break;
+      }
+    }
+
     double s_rk = h*rkTolerance/(2*(totTime)*max_diff_o4_o5);
 
     s_rk=std::pow(s_rk,0.25);
