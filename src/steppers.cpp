@@ -4,7 +4,7 @@ using namespace Rcpp;
 
 
 double sum_delta (std::vector<double> &exprxGene, 
-                  std::vector<double> &exprxGeneH, int numberGene)
+                  double &exprxGeneH, int numberGene)
 {
     int i = 0;
     double ssq = 0.0;
