@@ -321,7 +321,7 @@ setMethod(f="sracipePlotCircuit",
       font.size = 50,
       value = c(rep(1, length(node_list)))
     )
-  edge_col <- data.frame(c(1, 2, 3, 4, 5, 6), c("blue", "darkred", "cyan", "brown1", "blueviolet", "darkorange"))
+  edge_col <- data.frame(c(1, 2, 3, 4, 5, 6), c("blue", "darkred", "cyan", "deeppink", "blueviolet", "darkorange"))
   arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6), c("arrow", "circle", "arrow", "circle", "arrow", "circle"))
   colnames(arrow_type) <- c("type", "color")
   colnames(edge_col) <- c("type", "color")
@@ -342,7 +342,7 @@ setMethod(f="sracipePlotCircuit",
 
   network <-
     visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
-    #visEdges(arrows = "to") %>%
+    visEdges(arrows = "to") %>%
     visOptions(manipulation = FALSE) %>%
     visLayout(randomSeed = 123) %>%
     #visNodes(scaling = list(label = list(enabled = T))) %>%
