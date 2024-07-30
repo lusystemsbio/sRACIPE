@@ -59,7 +59,7 @@ void stepEM( std::vector <double> &expression_gene,
              const double &signalRate,
              const Rcpp::NumericVector &geneTypes,
              const long double &convergThresh,
-             const int &convergTestIter);
+             const int &numStepsConverge);
 void stepRK4( std::vector <double> &expression_gene,
         std::ofstream &out_GE,
         const double &tot_time,
@@ -78,7 +78,7 @@ void stepRK4( std::vector <double> &expression_gene,
         const double &signalRate,
         const Rcpp::NumericVector &geneTypes,
         const long double &convergThresh,
-        const int &convergTestIter);
+        const int &numStepsConverge);
 
  void stepDP( std::vector <double> &expression_gene,
           std::ofstream &out_GE,
@@ -98,7 +98,7 @@ void stepRK4( std::vector <double> &expression_gene,
           const double &signalRate,
           const Rcpp::NumericVector &geneTypes,
           const long double &convergThresh,
-          const int &convergTestIter);
+          const int &numStepsConverge);
 
 extern size_t convertAdjMatToVector(
      Rcpp::IntegerMatrix gene_interaction, std::vector<size_t>& tgtGene,

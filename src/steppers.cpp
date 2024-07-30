@@ -105,7 +105,7 @@ void stepEM( std::vector <double> &exprxGene,
              const double &signalRate,
              const NumericVector &geneTypes,
              const long double &convergThresh,
-             const int &convergTestIter){
+             const int &numStepsConverge){
 
   double exprxGeneH[numberGene]; //array for temp gene expression values
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -148,7 +148,7 @@ void stepEM( std::vector <double> &exprxGene,
       if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
     }
 
-    if((j == convergTestIter) && (D == 0)){
+    if((j == numStepsConverge) && (abs(D) < 1e-5)){
       j = 0;
       double test_delta;
       std::vector<double> exprxGeneNext(numberGene);
@@ -210,7 +210,7 @@ void stepRK4( std::vector <double> &exprxGene,
              const double &signalRate,
              const NumericVector &geneTypes,
              const long double &convergThresh,
-             const int &convergTestIter){
+             const int &numStepsConverge){
 
 double exprxGeneH1[numberGene]; //array for temp gene expression values
 double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -340,7 +340,7 @@ do
       exprxGeneH3[geneCount1])*degMultiplier);
   }
 
-  if(j == convergTestIter){
+  if(j == numStepsConverge){
     j = 0;
     double test_delta;
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -404,7 +404,7 @@ void stepDP( std::vector <double> &exprxGene,
               const double &signalRate,
               const NumericVector &geneTypes,
               const long double &convergThresh,
-              const int &convergTestIter){
+              const int &numStepsConverge){
   double exprxGeneH[numberGene]; //array for temp gene expression values
   double exprxGeneH1[numberGene]; //array for temp gene expression values
   double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -685,7 +685,7 @@ void stepDP( std::vector <double> &exprxGene,
 
     }
 
-    if(j == convergTestIter){
+    if(j == numStepsConverge){
       j = 0;
       double test_delta;
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)

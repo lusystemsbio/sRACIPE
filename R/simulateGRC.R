@@ -125,6 +125,13 @@
 #' @param timeSeries (optional) logical. Default \code{FALSE}.
 #' Whether to generate time series for a single model instead of performing
 #' RACIPE simulations.
+#' @param signalRate (optional) numeric. Default \code{10}. The factor by which
+#' the differential equations for fast genes are multiplied by. Fast genes only
+#' have inward signaling interactions of types 5 or 6
+#' @param convergThresh (optional) numeric. Default \code{1e-12}. The threshold
+#' for convergence to a steady state for deterministic simulations.
+#' @param numStepConverge (optional) numeric. Default \code{500}. The number of
+#' integration steps between convergence tests for deterministic simulations.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
@@ -155,7 +162,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
                       signalRate = 10.0, convergThresh = 1e-12,
-                      convergTestIter = 500,
+                      numStepsConverge = 500,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -250,8 +257,8 @@ if(!missing(config)){
  if(!missing(convergThresh)){
    configuration$simParams["convergThresh"] <- convergThresh
  }
- if(!missing(convergTestIter)){
-   configuration$simParams["convergTestIter"] <- convergTestIter
+ if(!missing(numStepsConverge)){
+   configuration$simParams["numStepsConverge"] <- numStepsConverge
  }
  if(!missing(simDet)){
    configuration$options["simDet"] <- simDet
