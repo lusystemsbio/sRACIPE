@@ -163,6 +163,7 @@ void stepEM( std::vector <double> &exprxGene,
           outGE<<std::setprecision(outputPrecision)
           <<exprxGene[geneCount1]<<"\t";
         }
+        if(i>totTime) break;
         //outGE<<"\n";
       }
     }
@@ -362,6 +363,7 @@ do
         outGE<<std::setprecision(outputPrecision)
               <<exprxGene[geneCount1]<<"\t";
       }
+      if(i>totTime) break;
       //outGE<<"\n";
     }
   }
@@ -375,7 +377,7 @@ do
         outGE<<std::setprecision(outputPrecision)
         <<exprxGene[geneCount1]<<"\t";
         }
-        break;
+      break;
       }
   }
 
@@ -716,6 +718,7 @@ void stepDP( std::vector <double> &exprxGene,
           outGE<<std::setprecision(outputPrecision)
                 <<exprxGene[geneCount1]<<"\t";
         }
+        if(i>totTime) break;
         //outGE<<"\n";
       }
       //i=i+h;
