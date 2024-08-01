@@ -458,6 +458,7 @@ if(missing(nNoise)){
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
                                        outFileParams,outFileIC, metadataTmp$geneTypes, stepperInt)
+  print("here1")
     if(configuration$options["integrate"]){
 
 
@@ -516,6 +517,7 @@ if(missing(nNoise)){
         return(rSet)
       }
     geneExpression <- utils::read.table(outFileGE, header = FALSE)
+    print("here2")
 
     if(
       (configuration$simParams["printStart"] +
@@ -571,17 +573,21 @@ if(missing(nNoise)){
         colnames(stochasticSimulations[[i]]) <- geneNames
       }
       stochasticSimulations <- lapply(stochasticSimulations,t)
+      print("here3")
       if(simDet){
       geneExpression <- geneExpression[
         ,(1+(configuration$stochParams["nNoise"]*nGenes)):
           ((configuration$stochParams["nNoise"]+1)*nGenes)]
 
 
-
+      print("here4")
       geneExpression <- t(geneExpression)
+      print("here5")
       rownames(geneExpression) <- geneNames
+      print("here6")
       assayDataTmp <- c(list(deterministic = geneExpression),
                         stochasticSimulations)
+      print("here7")
       } else {
         assayDataTmp <- stochasticSimulations
       }
@@ -591,12 +597,16 @@ if(missing(nNoise)){
     }
 
     paramName <- sracipeGenParamNames(rSet)
+    print("here8")
     # paramFile <- paste0("tmp/",outFile,"_parameters.txt")
     parameters <- utils::read.table(outFileParams, header = FALSE)
+    print("here9")
     colnames(parameters) <- paramName
 
     # icFile <- paste0("tmp/",outFile,"_IC.txt")
+    Print("here10")
     ic <- utils::read.table(outFileIC, header = FALSE)
+    print("here11")
     colnames(ic) <- geneNames
     metadataTmp$normalized <- FALSE
 
@@ -650,25 +660,33 @@ if(missing(nNoise)){
   }
     }
   else {
+      print("here12")
       paramName <- sracipeGenParamNames(rSet)
+      print("here13")
       parameters <- utils::read.table(outFileParams, header = FALSE)
+      print("here14")
       colnames(parameters) <- paramName
 
+      print("here15")
       ic <- utils::read.table(outFileIC, header = FALSE)
+      print("here16")
       colnames(ic) <- geneNames
+      print("here17")
       colData <- (cbind(parameters,ic))
+      print("here18")
       metadataTmp$config <- configuration
       rSet <- RacipeSE(rowData = geneInteraction, colData = colData,
 
                        metadata = metadataTmp)
       return(rSet)
   }
-
+    print("here19")
     colData <- (cbind(parameters,ic))
     metadataTmp$config <- configuration
  # return(list(rowData = geneInteraction, colData = colData,
    #         assays =  assayDataTmp,
   #          metadata = metadataTmp))
+    print("here20")
     rSet <- RacipeSE(rowData = geneInteraction, colData = colData,
                      assays =  assayDataTmp,
                      metadata = metadataTmp)
