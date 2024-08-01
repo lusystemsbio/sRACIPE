@@ -108,7 +108,7 @@ void stepEM( std::vector <double> &exprxGene,
              const int &numStepsConverge){
 
   double exprxGeneH[numberGene]; //array for temp gene expression values
-  std::vector<double> prevExprxGene(numberGene)
+  std::vector<double> prevExprxGene(numberGene);
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   {
     exprxGeneH[geneCount1] = exprxGene[geneCount1];
