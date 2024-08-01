@@ -558,7 +558,9 @@ if(missing(nNoise)){
         configuration$simParams["printInterval"] >
        configuration$simParams["simulationTime"])){
       geneExpression <- t(geneExpression)
+      print("here3")
       rownames(geneExpression) <- geneNames
+      print("here3")
     assayDataTmp <- list(deterministic = geneExpression)}
     # colnames(geneExpression) <- geneNames
     if(configuration$stochParams["nNoise"] > 0){
@@ -573,14 +575,12 @@ if(missing(nNoise)){
         colnames(stochasticSimulations[[i]]) <- geneNames
       }
       stochasticSimulations <- lapply(stochasticSimulations,t)
-      print("here3")
       if(simDet){
       geneExpression <- geneExpression[
         ,(1+(configuration$stochParams["nNoise"]*nGenes)):
           ((configuration$stochParams["nNoise"]+1)*nGenes)]
 
 
-      print("here4")
       geneExpression <- t(geneExpression)
       print("here5")
       rownames(geneExpression) <- geneNames
