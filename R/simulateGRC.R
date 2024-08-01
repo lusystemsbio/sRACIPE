@@ -559,8 +559,9 @@ if(missing(nNoise)){
        configuration$simParams["simulationTime"])){
       geneExpression <- t(geneExpression)
       print("here3")
+      print(geneExpression)
       rownames(geneExpression) <- geneNames
-      print("here3")
+      print("here4")
     assayDataTmp <- list(deterministic = geneExpression)}
     # colnames(geneExpression) <- geneNames
     if(configuration$stochParams["nNoise"] > 0){
