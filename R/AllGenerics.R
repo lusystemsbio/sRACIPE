@@ -134,11 +134,11 @@ setGeneric("sracipeParams",
 #' @description If timeSeries option is used in sracipeSimulate function, this
 #' method will return the simulated time series.
 #' @param .object RacipeSE object
-#' @examples 
+#' @examples
 #' data("demoCircuit")
 #' RacipeSet <- RacipeSE()
 #' sracipeCircuit(RacipeSet) <- demoCircuit
-#' RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE, 
+#' RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE,
 #' simulationTime = 2)
 #' trajectories <- sracipeGetTS(RacipeSet)
 #' rm(RacipeSet)
@@ -156,16 +156,17 @@ setGeneric(name="sracipeGetTS",
 #' @title  A method to set the simulation parameters
 #' @description Set the parameters
 #' @param .object RacipeSE object
-#' @param value DataFrame containing the parameteres
+#' @param value DataFrame containing the parameters. Dimensions should be
+#' (numModels) rows by (# of parameters) columns.
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrate = FALSE)
 #' parameters <- sracipeParams(rSet)
 #' sracipeParams(rSet) <- parameters
 #' rm(parameters, rSet)
 #' @return A RacipeSE object
-#' 
+#'
 
 setGeneric("sracipeParams<-",
            def = function(.object, value)
@@ -183,7 +184,7 @@ setGeneric("sracipeParams<-",
 #' @param .object RacipeSE object
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrate=FALSE)
 #' ics <- sracipeIC(rSet)
 #' rm(rSet,ics)
@@ -202,10 +203,11 @@ setGeneric("sracipeIC",
 #' @title  A method to set the initial conditions
 #' @description Set the initial conditions
 #' @param .object RacipeSE object
-#' @param value DataFrame containing the initial conditions
+#' @param value DataFrame containing the initial conditions, dimensions should
+#' be (# genes) rows by (numModels*nIC) columns
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10,
 #' integrate=FALSE)
 #' ics <- sracipeIC(rSet)
 #' sracipeIC(rSet) <- ics
@@ -248,7 +250,7 @@ setGeneric("sracipeNormalize",
 
 
 #' @export
-#' @import grDevices 
+#' @import grDevices
 #' @title Plot Gene Regulatory Circuit
 #' @description  Plot Gene Regulatory Circuit to a file or output device.
 #' @param .object RacipeSE object
@@ -294,8 +296,8 @@ setGeneric("sracipePlotCircuit",
 #' data and the the models will be colored in UMAP and PCA plots according to
 #' these clustering results. The clusters can be also supplied using
 #' \code{assignedClusters}.
-#' @param heatmapPlot (optional) logical. Default \code{TRUE}. Whether to plot 
-#' hierarchichal clustering. 
+#' @param heatmapPlot (optional) logical. Default \code{TRUE}. Whether to plot
+#' hierarchichal clustering.
 #' @param pcaPlot (optional) logical. Default \code{TRUE}. Whether to plot PCA
 #' embedding.
 #' @param umapPlot (optional) logical. Default \code{TRUE}. Whether to plot
