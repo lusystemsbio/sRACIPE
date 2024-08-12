@@ -6,7 +6,7 @@ using namespace Rcpp;
 //This function calculates the squared Euclidean norm of a vector.
 double cal_norm(
     std::vector<double> &vector,
-    int &number_genes
+    const int &number_genes
 ){
     double ssq = 0.0;
     for(int i=0;i<number_genes;i++){
@@ -130,7 +130,7 @@ int cal_period(const int &number_gene,
             int countMinExp,
             std::vector<int> &minIdxArr,
             std::vector<std::vector<double> > min_exp_arr,
-            double &LC_start_exp_arr,
+            std::vector<double> &LC_start_exp_arr,
             const int &NumSampledPeriods,
             const int &AllowedPeriodError,
             const double &SamePointProximity
@@ -339,7 +339,7 @@ int find_limitcycles(const std::vector<std::vector<double> > &exprxGene,
              const int &NumSampledPeriods,
              const int &AllowedPeriodError,
              const double &SamePointProximity,
-             const Rcpp::LogicalVector &convergBool
+             Rcpp::LogicalVector &convergBool
 
 ){
     int LCSimSteps = (int) (LCSimTime/LCSimStepSize);
