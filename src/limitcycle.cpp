@@ -316,7 +316,7 @@ int detect_limitcycle(const int &number_gene,
 }
 
 
-int find_limitcycles(const std::vector<std::vector<double> > &exprxGene,
+int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
              std::ofstream &out_LC,
              const int &number_gene,
              const int &nIC,
