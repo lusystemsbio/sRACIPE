@@ -111,7 +111,7 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
                     double& growthMultiplier,
                     double& degMultiplier,
                     double& geneValue,
-                    IntegerMatrix geneInteraction,
+                    const Rcpp::IntegerMatrix geneInteraction,
                     const int& geneN,
                     double& geneLambda,
                     const double& geneThreshold);
