@@ -3,18 +3,6 @@
 using namespace Rcpp;
 
 
-double sum_delta (std::vector<double> &exprxGene, 
-                  std::vector<double> &exprxGeneH, int numberGene)
-{
-    int i = 0;
-    double ssq = 0.0;
-    
-    for (i=0;i<numberGene;i++){
-        ssq+=pow(exprxGene[i]-exprxGeneH[i],2);
-    }
-    return ssq;
-}
-
 
 void calcMultiplier(const int& geneCount1, const int& geneCount2,
                     double& growthMultiplier,

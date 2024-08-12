@@ -104,4 +104,16 @@ extern size_t convertAdjMatToVector(
      Rcpp::IntegerMatrix gene_interaction, std::vector<size_t>& tgtGene,
      std::vector<std::pair<size_t,size_t> >& intSrcType);
 
+double sum_delta (std::vector<double> &exprxGene, 
+                  std::vector<double> &exprxGeneH, int numberGene);
+
+void calcMultiplier(const int& geneCount1, const int& geneCount2,
+                    double& growthMultiplier,
+                    double& degMultiplier,
+                    double& geneValue,
+                    IntegerMatrix geneInteraction,
+                    const int& geneN,
+                    double& geneLambda,
+                    const double& geneThreshold);
+
 #endif

@@ -41,3 +41,14 @@ size_t convertAdjMatToVector(
   }
   return nInteractions;
 }
+
+double sum_delta (std::vector<double> &exprxGene, 
+                  std::vector<double> &exprxGeneH, int numberGene)
+{
+    double ssq = 0.0;
+    
+    for (int i=0;i<numberGene;i++){
+        ssq+=pow(exprxGene[i]-exprxGeneH[i],2);
+    }
+    return ssq;
+}
