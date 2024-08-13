@@ -34,6 +34,7 @@ void stepEMconv( std::vector <double> &exprxGene,
   }
 
   double i=0.0;
+  bool isConverged = false;
   
   //For each test, we run the simulation for numStepsConverge iterations
   //and check if the system has changed state in that time
@@ -84,12 +85,22 @@ void stepEMconv( std::vector <double> &exprxGene,
           outGE<<std::setprecision(outputPrecision)
           <<exprxGene[geneCount1]<<"\t";
         }
+        isConverged = true;
         break;
       }
     }
 
 
   };
+
+  if(isConverged == false){
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    {
+      outGE<<std::setprecision(outputPrecision)
+      <<exprxGene[geneCount1]<<"\t";
+    }
+  }
+
 
   // for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   // {
@@ -136,6 +147,7 @@ for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
   exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
 }
 double i=0.0;
+bool isConverged = false;
 
 //For each test, we run the simulation for numStepsConverge iterations
 //and check if the system has changed state in that time
@@ -271,10 +283,19 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
         outGE<<std::setprecision(outputPrecision)
         <<exprxGene[geneCount1]<<"\t";
         }
+      isConverged = true;  
       break;
       }
 
 };
+if(isConverged == false){
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {
+    outGE<<std::setprecision(outputPrecision)
+    <<exprxGene[geneCount1]<<"\t";
+  }
+}
+
 }
 
 
