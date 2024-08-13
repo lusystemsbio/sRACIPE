@@ -568,19 +568,6 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        numStepsConverge, numConvergenceTests);
               break;
 
-            case 51:
-//              Rcout<<"DP";
-              // adaptive Dormand Prince with convergence testing
-              stepDPconv( expressionGene,outGE,numberGene,
-                      geneInteraction,gGene,kGene,nGene,lambdaGene,
-                      threshGeneLog,interactionTypes,
-                      sdFactor,
-                      outputPrecision,h,
-                      rkTolerance,
-                      signalRate, geneTypes, convergThresh,
-                      numStepsConverge, numConvergenceTests);
-              break;
-
             default:
               Rcout<< "Error in specifying the stepper.\n";
 

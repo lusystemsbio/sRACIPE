@@ -134,24 +134,6 @@ void stepRK4conv( std::vector <double> &expression_gene,
         const int &numStepsConverge,
         const int &numConvergenceTests);
 
- void stepDPconv( std::vector <double> &expression_gene,
-          std::ofstream &out_GE,
-          const int &number_gene,
-          const Rcpp::IntegerMatrix gene_interaction,
-          const std::vector<double> &g_gene,
-          const std::vector<double> &k_gene,
-          const std::vector<std::vector<int> > &n_gene,
-          const std::vector<std::vector<double> > &lambda_gene,
-          const std::vector<std::vector<double> > &threshold_gene_log,
-          const int &possible_interactions,
-          const double &standard_deviation_factor,
-          const int &output_precision,
-          double h, const double &rk_tolerance,
-          const double &signalRate,
-          const Rcpp::NumericVector &geneTypes,
-          const long double &convergThresh,
-          const int &numStepsConverge,
-          const int &numConvergenceTests);
 
 extern size_t convertAdjMatToVector(
      Rcpp::IntegerMatrix gene_interaction, std::vector<size_t>& tgtGene,
