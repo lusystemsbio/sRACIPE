@@ -405,7 +405,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
             NewSimSteps = period + 1;
 
             MAX_DIST = cal_limitcycle(number_gene,
-                    LCSimStepSize, LCSimSteps,
+                    LCSimStepSize, NewSimSteps,
                     convergThresh, geneInteraction,
                     g_gene, k_gene,
                     n_gene, lambda_gene,
