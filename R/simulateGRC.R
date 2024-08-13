@@ -162,7 +162,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
                       signalRate = 10.0, convergThresh = 1e-12,
-                      numStepsConverge = 500,
+                      numStepsConverge = 500, numConvergenceTests = 25,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -254,12 +254,6 @@ if(!missing(config)){
   if(!missing(simulationTime)){
     configuration$simParams["simulationTime"] <- simulationTime
   }
- if(!missing(convergThresh)){
-   configuration$simParams["convergThresh"] <- convergThresh
- }
- if(!missing(numStepsConverge)){
-   configuration$simParams["numStepsConverge"] <- numStepsConverge
- }
  if(!missing(simDet)){
    configuration$options["simDet"] <- simDet
  } else {
@@ -299,6 +293,15 @@ if(!missing(config)){
       warnings("Print Interval cannot be smaller than integration step size.
                Setting it to integrate step size.")}
   }
+ if(!missing(convergThresh)){
+   configuration$simParams["convergThresh"] <- convergThresh
+ }
+ if(!missing(numStepsConverge)){
+   configuration$simParams["numStepsConverge"] <- numStepsConverge
+ }
+ if(!missing(numConvergenceTests)){
+   configuration$simParams["numConvergenceTests"] <- numConvergenceTests
+ }
 
  if(!missing(genIC)){
    configuration$options["genIC"] <- genIC
@@ -435,9 +438,24 @@ if(missing(nNoise)){
 
     }
   }
-  stepperInt <- 1L
-  if(configuration$stepper == "RK4"){ stepperInt <- 4L}
-  if(configuration$stepper == "DP") {stepperInt <- 5L}
+  #Checking whether or not to do convergence tests
+  if(all(simDet, nNoise==0L, !timeSeries)){
+    convergTesting <- TRUE
+    message("Running with convergence tests")
+  }else {convergTesting <- FALSE}
+
+  configuration$options["convergTesting"] <- convergTesting
+
+  if(!convergTesting){
+    stepperInt <- 1L
+    if(configuration$stepper == "RK4"){ stepperInt <- 4L}
+    if(configuration$stepper == "DP") {stepperInt <- 5L}
+  } else { #Two digit stepperInt values correlate to running convergence tests
+    stepperInt <- 11L
+    if(configuration$stepper == "RK4"){ stepperInt <- 41L}
+    if(configuration$stepper == "DP") {stepperInt <- 51L}
+  }
+
 
   if(configuration$stochParams["nNoise"] > 0) {
     if(stepper != "EM"){

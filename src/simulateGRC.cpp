@@ -271,6 +271,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double printInterval = simulationParameters[8];
   long double convergThresh = simulationParameters[9];
   int numStepsConverge = simulationParameters[10];
+  int numConvergenceTests = simulationParameters[11];
   // Rcout<<printInterval<<"\t"<<printStart<<"\n";
   size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
   double noiseScalingFactor = stochasticParameters[1];
@@ -519,8 +520,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h, 
-                    signalRate, geneTypes, convergThresh, 
-                    numStepsConverge);
+                    signalRate, geneTypes);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -531,8 +531,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        sdFactor,
                        outputPrecision,
                        printStart,  printInterval, h,
-                       signalRate, geneTypes, convergThresh,
-                       numStepsConverge);
+                       signalRate, geneTypes);
               break;
 
             case 5:
@@ -544,8 +543,42 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       sdFactor,
                       outputPrecision,printStart, printInterval,h,
                       rkTolerance,
+                      signalRate, geneTypes);
+              break;
+
+            case 11:
+              // Euler Maruyama method with convergence testing
+              stepEMconv( expressionGene, outGE,
+                    numberGene, geneInteraction, gGene, kGene, nGene,
+                    lambdaGene, threshGeneLog, interactionTypes,
+                    sdFactor, shotNoise, Darray,
+                    outputPrecision, D, h, 
+                    signalRate, geneTypes, convergThresh, 
+                    numStepsConverge, numConvergenceTests);
+              break;
+            case 41:
+              //fourth order Runge-Kutta with convergence testing
+//              Rcout<<"RK4";
+              stepRK4conv( expressionGene, outGE, numberGene,
+                      geneInteraction, gGene, kGene, nGene, lambdaGene,
+                       threshGeneLog, interactionTypes,
+                       sdFactor,
+                       outputPrecision,
+                       h, signalRate, geneTypes, convergThresh,
+                       numStepsConverge, numConvergenceTests);
+              break;
+
+            case 51:
+//              Rcout<<"DP";
+              // adaptive Dormand Prince with convergence testing
+              stepDPconv( expressionGene,outGE,numberGene,
+                      geneInteraction,gGene,kGene,nGene,lambdaGene,
+                      threshGeneLog,interactionTypes,
+                      sdFactor,
+                      outputPrecision,h,
+                      rkTolerance,
                       signalRate, geneTypes, convergThresh,
-                      numStepsConverge);
+                      numStepsConverge, numConvergenceTests);
               break;
 
             default:
