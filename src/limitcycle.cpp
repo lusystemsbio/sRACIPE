@@ -61,7 +61,7 @@ void cal_fX(const int &number_gene,
     }
 
     //adjust fX by kX*X:
-    for(int i; i<number_gene; i++){
+    for(int i=0; i<number_gene; i++){
         fX_arr[i]-=fX2_arr[i];
     }
 
@@ -359,7 +359,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
        LC_start_exp_arr[i]=0.0;
     }
 
-    for(int i; i<nIC; i++){
+    for(int i=0; i<nIC; i++){
         if (convergBool[i] == FALSE) continue;
         period = detect_limitcycle(number_gene,
                 LCSimStepSize, LCSimSteps,
