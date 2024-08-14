@@ -6,6 +6,7 @@ using namespace Rcpp;
 
 void stepEMconv( std::vector <double> &exprxGene,
              std::ofstream &outGE,
+             std::ofstream &outConv,
              const int &numberGene,
              IntegerMatrix geneInteraction,
              const std::vector<double> &gGene,
@@ -101,6 +102,7 @@ void stepEMconv( std::vector <double> &exprxGene,
     }
   }
 
+  outConv<<isConverged<<"\n";
 
   // for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   // {
@@ -115,6 +117,7 @@ void stepEMconv( std::vector <double> &exprxGene,
 ///////////////////////////////////////////////////////////////////////////////
 void stepRK4conv( std::vector <double> &exprxGene,
              std::ofstream &outGE,
+             std::ofstream &outConv,
              const int &numberGene,
              IntegerMatrix geneInteraction,
              const std::vector<double> &gGene,
@@ -295,6 +298,8 @@ if(isConverged == false){
     <<exprxGene[geneCount1]<<"\t";
   }
 }
+
+outConv<<isConverged<<"\n";
 
 }
 

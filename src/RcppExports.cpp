@@ -24,8 +24,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulateGRCCpp
-int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction, Rcpp::List config, String outFileGE, String outFileParams, String outFileIC, Rcpp::NumericVector geneTypes, const int stepper);
-RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP geneInteractionSEXP, SEXP configSEXP, SEXP outFileGESEXP, SEXP outFileParamsSEXP, SEXP outFileICSEXP, SEXP geneTypesSEXP, SEXP stepperSEXP) {
+int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction, Rcpp::List config, String outFileGE, String outFileParams, String outFileIC, String outFileConverge, Rcpp::NumericVector geneTypes, const int stepper);
+RcppExport SEXP _sRACIPE_simulateGRCCpp(SEXP geneInteractionSEXP, SEXP configSEXP, SEXP outFileGESEXP, SEXP outFileParamsSEXP, SEXP outFileICSEXP, SEXP outFileConvergeSEXP, SEXP geneTypesSEXP, SEXP stepperSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,16 +34,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< String >::type outFileGE(outFileGESEXP);
     Rcpp::traits::input_parameter< String >::type outFileParams(outFileParamsSEXP);
     Rcpp::traits::input_parameter< String >::type outFileIC(outFileICSEXP);
+    Rcpp::traits::input_parameter< String >::type outFileConverge(outFileConvergeSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type geneTypes(geneTypesSEXP);
     Rcpp::traits::input_parameter< const int >::type stepper(stepperSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(geneInteraction, config, outFileGE, outFileParams, outFileIC, geneTypes, stepper));
+    rcpp_result_gen = Rcpp::wrap(simulateGRCCpp(geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, stepper));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sRACIPE_generateThresholds", (DL_FUNC) &_sRACIPE_generateThresholds, 3},
-    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 7},
+    {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 8},
     {NULL, NULL, 0}
 };
 

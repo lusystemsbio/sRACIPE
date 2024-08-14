@@ -375,6 +375,7 @@ if(!missing(config)){
   outFileGE <- tempfile(fileext = ".txt")
   outFileParams <- tempfile(fileext = ".txt")
   outFileIC <- tempfile(fileext = ".txt")
+  outFileConverge <- tempfile(fileext = ".txt")
   if(genParams){
   message("Generating gene thresholds")
   #Rcpp::sourceCpp("src/thresholdGenerator.cpp")
@@ -475,7 +476,7 @@ if(missing(nNoise)){
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, metadataTmp$geneTypes, stepperInt)
+                                       outFileParams,outFileIC, outFileConverge, metadataTmp$geneTypes, stepperInt)
 
     if(configuration$options["integrate"]){
 
@@ -617,6 +618,10 @@ if(missing(nNoise)){
     ic <- utils::read.table(outFileIC, header = FALSE)
     colnames(ic) <- geneNames
     metadataTmp$normalized <- FALSE
+
+    converge<- utils::read.table(outFileConverge, header = FALSE)
+    colnames(converge)<-"Model Convergence"
+    if(convergTesting) {metadataTmp$modelConvergence <- converge}
 
     ## Knockouts
 

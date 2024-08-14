@@ -239,7 +239,7 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 
 int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                 Rcpp::List config, String outFileGE, String outFileParams,
-                String outFileIC,
+                String outFileIC, String outFileConverge,
                 Rcpp::NumericVector geneTypes,
               const int stepper = 1)
 
@@ -307,6 +307,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   std::string fileNameGE = outFileGE;
   std::string fileNameParam = outFileParams;
   std::string fileNameIC = outFileIC;
+  std::string fileNameConverge = outFileConverge;
 
 
 
@@ -337,6 +338,10 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     //Create output files if not there already
     std::ofstream outGE(fileNameGE, std::ios::out);
     if(!outGE.is_open()) {     Rcout << "Cannot open output file.\n";
+      return 1;}
+    
+    std::ofstream outConv(fileNameConverge, std::ios::out);
+    if(!outConv.is_open()) {     Rcout << "Cannot open output file.\n";
       return 1;}
 
     std::ifstream inParams;
@@ -548,7 +553,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
 
             case 11:
               // Euler Maruyama method with convergence testing
-              stepEMconv( expressionGene, outGE,
+              stepEMconv( expressionGene, outGE, outConv,
                     numberGene, geneInteraction, gGene, kGene, nGene,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
@@ -559,7 +564,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
             case 41:
               //fourth order Runge-Kutta with convergence testing
 //              Rcout<<"RK4";
-              stepRK4conv( expressionGene, outGE, numberGene,
+              stepRK4conv( expressionGene, outGE, outConv, numberGene,
                       geneInteraction, gGene, kGene, nGene, lambdaGene,
                        threshGeneLog, interactionTypes,
                        sdFactor,
