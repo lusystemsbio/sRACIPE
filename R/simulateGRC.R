@@ -454,7 +454,7 @@ if(missing(nNoise)){
   } else { #Two digit stepperInt values correlate to running convergence tests
     stepperInt <- 11L
     if(configuration$stepper == "RK4"){ stepperInt <- 41L}
-    if(configuration$stepper == "DP") {stepperInt <- 51L}
+    #if(configuration$stepper == "DP") {stepperInt <- 51L}
   }
 
 
@@ -620,7 +620,7 @@ if(missing(nNoise)){
     metadataTmp$normalized <- FALSE
 
     converge<- utils::read.table(outFileConverge, header = FALSE)
-    colnames(converge)<-"Model Convergence"
+    colnames(converge)<-c("Model Convergence", "Tests Done")
     if(convergTesting) {metadataTmp$modelConvergence <- converge}
 
     ## Knockouts

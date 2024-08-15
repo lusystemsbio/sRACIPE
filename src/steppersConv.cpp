@@ -87,6 +87,7 @@ void stepEMconv( std::vector <double> &exprxGene,
           <<exprxGene[geneCount1]<<"\t";
         }
         isConverged = true;
+        outConv<<isConverged<<"\t" << testIter <<"\n";
         break;
       }
     }
@@ -100,9 +101,9 @@ void stepEMconv( std::vector <double> &exprxGene,
       outGE<<std::setprecision(outputPrecision)
       <<exprxGene[geneCount1]<<"\t";
     }
+    outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
   }
 
-  outConv<<isConverged<<"\n";
 
   // for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
   // {
@@ -287,6 +288,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
         <<exprxGene[geneCount1]<<"\t";
         }
       isConverged = true;  
+      outConv<<isConverged<<"\t" << testIter <<"\n";
       break;
       }
 
@@ -297,10 +299,9 @@ if(isConverged == false){
     outGE<<std::setprecision(outputPrecision)
     <<exprxGene[geneCount1]<<"\t";
   }
+  outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
 }
 
-outConv<<isConverged<<"\n";
 
 }
-
 
