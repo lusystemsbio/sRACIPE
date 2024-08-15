@@ -619,9 +619,12 @@ if(missing(nNoise)){
     colnames(ic) <- geneNames
     metadataTmp$normalized <- FALSE
 
-    converge<- utils::read.table(outFileConverge, header = FALSE)
-    colnames(converge)<-c("Model Convergence", "Tests Done")
-    if(convergTesting) {metadataTmp$modelConvergence <- converge}
+
+    if(convergTesting) {
+      converge<- utils::read.table(outFileConverge, header = FALSE)
+      colnames(converge)<-c("Model Convergence", "Tests Done")
+      metadataTmp$modelConvergence <- converge
+      }
 
     ## Knockouts
 
