@@ -163,6 +163,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
                       signalRate = 10.0, convergThresh = 1e-12,
                       numStepsConverge = 500, numConvergenceTests = 25,
+                      limitcycles = FALSE,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -315,6 +316,9 @@ if(!missing(config)){
 
  if(!missing(integrate)){
    configuration$options["integrate"] <- integrate
+ }
+ if(!missing(limitcycles)){
+   configuration$options["limitcycles"] <- limitcycles
  }
  if(missing(printStart)){
   configuration$simParams["printStart"] <-
@@ -624,7 +628,19 @@ if(missing(nNoise)){
       converge<- utils::read.table(outFileConverge, header = FALSE)
       colnames(converge)<-c("Model Convergence", "Tests Done")
       metadataTmp$modelConvergence <- converge
+      if(limitcycles){ #Running limit cycle algorithm
+        message("Checking for limit cycles")
+        outFileLC <- tempfile(fileext = ".txt")
+        LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, config, converge[,1],
+                                  outFileParams, outFileGE, metadataTmp$geneTypes)
+        if(LC_Test > -1){
+          metadataTmp$totalNumofLCs <- LC_Test
+          LCs <- utils::read.table(outFileLC, header = FALSE)
+          colnames(LCs <- c("Model No", "Limit Cycle No", "Period", geneNames))
+          metadataTmp$LCData <- LCs
+        }
       }
+    }
 
     ## Knockouts
 

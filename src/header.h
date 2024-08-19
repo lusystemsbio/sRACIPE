@@ -153,4 +153,12 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
                     double& geneLambda,
                     const double& geneThreshold);
 
+void readParameters(IntegerMatrix geneInteraction, const int &numberGene,
+                    std::vector<double> &gGene,
+                     std::vector<double> &kGene,
+                     std::vector<std::vector<int> > &nGene,
+                     std::vector<std::vector<double> > &lambdaGene,
+                     std::vector<std::vector<double> > &threshGeneLog,
+                     std::ifstream &inParams);
+
 #endif

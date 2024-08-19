@@ -317,9 +317,9 @@ int detect_limitcycle(const int &number_gene,
 
 
 int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
-             std::ofstream &out_LC,
-             const int &number_gene,
-             const int &nIC,
+             std::ofstream &outLC,
+             const size_t &number_gene,
+             const size_t &nIC,
              const Rcpp::IntegerMatrix geneInteraction,
              const std::vector<double> &g_gene,
              const std::vector<double> &k_gene,
@@ -330,10 +330,11 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
              const double &signalRate,
              const Rcpp::NumericVector &geneTypes,
              const size_t &modelCount,
+             const long double &convergThresh,
+             const size_t outputPrecision,
              const double &LCSimTime,
              const double &LCSimStepSize,
              const int &maxLCs,
-             const long double &convergThresh,
              const int &LCIter,
              const int &MaxPeriods,
              const int &NumSampledPeriods,
@@ -359,7 +360,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
        LC_start_exp_arr[i]=0.0;
     }
 
-    for(int i=0; i<nIC; i++){
+    for(size_t i=0; i<nIC; i++){
         if (convergBool[i] == FALSE) continue;
         period = detect_limitcycle(number_gene,
                 LCSimStepSize, LCSimSteps,
@@ -419,7 +420,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 
             //change convergBool status to false for all the positions that 
             //all give to this limit cycle:
-            for (int j=0;j<nIC;j++){
+            for (size_t j=0;j<nIC;j++){
 	            if (convergBool[j]==false) continue;
                 for(int k=0;k<period+2;k++){
                     tmp_norm=sum_delta(exprxGene[j],LC_Exp_Arr[k],number_gene);
@@ -431,6 +432,18 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
              }
 
             if(countLC>=maxLCs) break;
+
+            for(int j=0;j<NewSimSteps +1; j++){
+                //Write model number and LC number
+                outLC<<modelCount<<"\t"<<countLC<<"\t";
+                //Write Period
+                outLC<<period<<"\t";
+                for(size_t k=0; k<number_gene;k++){
+                    outLC<<std::setprecision(outputPrecision)
+                    <<LC_Exp_Arr[j][k]<<"\t";
+                }
+            outLC<<"\n";
+            }
         }
     }
 
@@ -438,3 +451,119 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 
 }
 
+// [[Rcpp::export]]
+
+int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
+    String outFileLC, Rcpp::List config,
+    Rcpp::LogicalVector &modelConverg,
+    String inFileParams, String inFileGE,
+    Rcpp::NumericVector geneTypes
+){
+    // Count total limit cycles found
+    int totLCs;
+
+    // Initialize the network
+    size_t numberGene = geneInteraction.ncol();
+    
+    Rcpp::NumericVector simulationParameters =
+        as<NumericVector>(config["simParams"]);
+    Rcpp::NumericVector hyperParameters =
+        as<NumericVector>(config["hyperParams"]);
+    Rcpp::NumericVector LCParameters = 
+        as<NumericVector>(config["LCParams"]);
+
+    size_t numModels = static_cast<size_t>(simulationParameters[0]);
+    double h = simulationParameters[2];
+    size_t nIC = static_cast<size_t> (simulationParameters[4]);
+    size_t outputPrecision = static_cast<size_t> (simulationParameters[5]);
+    double rkTolerance = simulationParameters[6];
+    long double convergThresh = simulationParameters[9];
+    double signalRate = hyperParameters[11];
+    double LCSimTime = LCParameters[0];
+    double LCSimStepSize = LCParameters[1];
+    int maxLCs = LCParameters[2];
+    int LCIter = LCParameters[3];
+    int MaxPeriods = LCParameters[4];
+    int NumSampledPeriods = LCParameters[5];
+    int AllowedPeriodError = LCParameters[6];
+    double SamePointProximity = LCParameters[7];
+
+    std::string fileNameGE = inFileGE;
+    std::string fileNameParam = inFileParams;
+    std::string fileNameLC = outFileLC;
+
+    std::ifstream inParams;
+    inParams.open(fileNameParam,
+                         std::ifstream::in);
+    if(!inParams.is_open()) {     Rcout <<fileNameParam
+        << "Cannot open input file for reading parameters.\n";  return -1;
+      }
+
+    std::ifstream inGE;
+    inGE.open(fileNameGE,
+                         std::ifstream::in);
+    if(!inGE.is_open()) {     Rcout <<fileNameParam
+        << "Cannot open input file for reading expressions.\n";  return -1;
+      }
+
+    std::ofstream outLC(fileNameLC, std::ios::out);
+    if(!outLC.is_open()) {     Rcout << "Cannot open output file.\n";
+      return -1;}
+    
+    for(size_t modelCount=0; modelCount<numModels; modelCount++){
+        //Initialize production rate of genes
+        std::vector<double> gGene(numberGene);
+
+        //Initialize degradation rate of genes
+        std::vector<double> kGene(numberGene);
+
+        //Initialize hill coefficient for each interaction
+        std::vector<std::vector<int> >
+          nGene(numberGene, std::vector<int>(numberGene));
+
+        //Initialize fold change for each interaction
+        std::vector<std::vector<double> >
+          lambdaGene(numberGene, std::vector<double>(numberGene));
+
+        //Initialize threshold for each interaction
+        std::vector<std::vector<double> >
+          threshGeneLog(numberGene, std::vector<double>(numberGene));
+
+        readParameters( geneInteraction, numberGene, gGene,
+                    kGene, nGene,
+                    lambdaGene,
+                    threshGeneLog, inParams);
+        
+        std::vector<std::vector<double> > 
+            exprxGene(nIC, std::vector<double>(numberGene));
+        for(size_t i=0; i<nIC; i++){
+            for(size_t j=0; j<numberGene){
+                inGE >> exprxGene[i][j];
+            }
+        }
+
+        Rcpp::LogicalVector convergBool(nIC);
+        for(size_t i=0; i<nIC; i++){
+            convergBool[i] = modelConverg[i + modelCount];
+        }
+
+        int count;
+        count = find_limitcycles(exprxGene,
+                                outLC, numberGene, nIC,
+                                geneInteraction,
+                                gGene, kGene, nGene, lambdaGene,
+                                threshGeneLog, h, signalRate, geneTypes,
+                                modelCount, convergThresh, outputPrecision, LCSimTime, 
+                                LCSimStepSize, maxLCs, LCIter,
+                                MaxPeriods, NumSampledPeriods, 
+                                AllowedPeriodError, SamePointProximity,
+                                convergBool);
+        totLCs += count;
+    }
+
+    inGE.close();
+    inParams.close();
+    outLC.close();
+
+    return totLCs;
+}
