@@ -476,7 +476,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     double h = simulationParameters[2];
     size_t nIC = static_cast<size_t> (simulationParameters[4]);
     size_t outputPrecision = static_cast<size_t> (simulationParameters[5]);
-    double rkTolerance = simulationParameters[6];
+    //double rkTolerance = simulationParameters[6];
     long double convergThresh = simulationParameters[9];
     double signalRate = hyperParameters[11];
     double LCSimTime = LCParameters[0];
@@ -537,7 +537,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
         std::vector<std::vector<double> > 
             exprxGene(nIC, std::vector<double>(numberGene));
         for(size_t i=0; i<nIC; i++){
-            for(size_t j=0; j<numberGene){
+            for(size_t j=0; j<numberGene; j++){
                 inGE >> exprxGene[i][j];
             }
         }
