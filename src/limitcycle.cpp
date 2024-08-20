@@ -356,7 +356,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
         LC_period_arr[i]=0; 
     }
 
-    for (int i=0;i<number_gene;i++){
+    for (size_t i=0;i<number_gene;i++){
        LC_start_exp_arr[i]=0.0;
     }
 
