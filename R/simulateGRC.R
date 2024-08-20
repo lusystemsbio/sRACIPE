@@ -631,7 +631,7 @@ if(missing(nNoise)){
       if(limitcycles){ #Running limit cycle algorithm
         message("Checking for limit cycles")
         outFileLC <- tempfile(fileext = ".txt")
-        LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, config, converge[,1],
+        LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
                                   outFileParams, outFileGE, metadataTmp$geneTypes)
         if(LC_Test > -1){
           metadataTmp$totalNumofLCs <- LC_Test
