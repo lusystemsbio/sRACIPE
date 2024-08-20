@@ -633,6 +633,7 @@ if(missing(nNoise)){
         outFileLC <- tempfile(fileext = ".txt")
         LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
                                   outFileParams, outFileGE, metadataTmp$geneTypes)
+        print(LC_Test)
         if(LC_Test > -1){
           metadataTmp$totalNumofLCs <- LC_Test
           LCs <- utils::read.table(outFileLC, header = FALSE)

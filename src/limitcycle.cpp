@@ -502,7 +502,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     std::ifstream inGE;
     inGE.open(fileNameGE,
                          std::ifstream::in);
-    if(!inGE.is_open()) {     Rcout <<fileNameParam
+    if(!inGE.is_open()) {     Rcout <<fileNameGE
         << "Cannot open input file for reading expressions.\n";  return -1;
       }
 
