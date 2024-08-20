@@ -503,12 +503,12 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     inGE.open(fileNameGE,
                          std::ifstream::in);
     if(!inGE.is_open()) {     Rcout <<fileNameGE
-        << "Cannot open input file for reading expressions.\n";  return -1;
+        << "Cannot open input file for reading expressions.\n";  return -2;
       }
 
     std::ofstream outLC(fileNameLC, std::ios::out);
     if(!outLC.is_open()) {     Rcout << "Cannot open output file.\n";
-      return -1;}
+      return -3;}
     
     for(size_t modelCount=0; modelCount<numModels; modelCount++){
         //Initialize production rate of genes
