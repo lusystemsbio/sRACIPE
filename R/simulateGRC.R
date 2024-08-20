@@ -639,6 +639,10 @@ if(missing(nNoise)){
           colnames(LCs <- c("Model No", "Limit Cycle No", "Period", geneNames))
           metadataTmp$LCData <- LCs
         }
+        else{ #Reports errors in file handling
+          LCs <- utils::read.table(outFileLC, header = FALSE)
+          metadataTmp$LCData <- LCs
+        }
       }
     }
 
