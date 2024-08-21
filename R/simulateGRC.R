@@ -163,7 +163,10 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
                       signalRate = 10.0, convergThresh = 1e-12,
                       numStepsConverge = 500, numConvergenceTests = 25,
-                      limitcycles = FALSE,
+                      limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
+                      maxLCs = 10, LCIter = 20, MaxPeriods = 100,
+                      NumSampledPeriods = 3, AllowedPeriodError = 3,
+                      SamePointProximity = 0.1,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -326,6 +329,31 @@ if(!missing(config)){
  }
  if(!missing(rkTolerance)){
    configuration$simParams["rkTolerance"] <- rkTolerance
+ }
+ #Putting LC params in configuration list
+ if(!missing(LCSimTime)){
+   configuration$LCParams["LCSimTime"] <- LCSimTime
+ }
+ if(!missing(LCSimStepSize)){
+   configuration$LCParams["LCSimStepSize"] <- LCSimStepSize
+ }
+ if(!missing(maxLCs)){
+   configuration$LCParams["maxLCs"] <- maxLCs
+ }
+ if(!missing(LCIter)){
+   configuration$LCParams["LCIter"] <- LCIter
+ }
+ if(!missing(MaxPeriods)){
+   configuration$LCParams["MaxPeriods"] <- MaxPeriods
+ }
+ if(!missing(NumSampledPeriods)){
+   configuration$LCParams["NumSampledPeriods"] <- NumSampledPeriods
+ }
+ if(!missing(AllowedPeriodError)){
+   configuration$LCParams["AllowedPeriodError"] <- AllowedPeriodError
+ }
+ if(!missing(SamePointProximity)){
+   configuration$LCParams["SamePointProximity"] <- SamePointProximity
  }
 
  # Apply parameter range
