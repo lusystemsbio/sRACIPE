@@ -637,7 +637,7 @@ if(missing(nNoise)){
         if(LC_Test > 0){
           metadataTmp$totalNumofLCs <- LC_Test
           LCs <- utils::read.table(outFileLC, header = FALSE)
-          colnames(LCs <- c("Model No", "Limit Cycle No", "Period", geneNames))
+          colnames(LCs) <- c("Model No", "Limit Cycle No", "Period", geneNames)
           metadataTmp$LCData <- LCs
         }
         else{ #Reports errors in file handling
