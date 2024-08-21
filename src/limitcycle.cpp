@@ -460,7 +460,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     Rcpp::NumericVector geneTypes
 ){
     // Count total limit cycles found
-    int totLCs;
+    int totLCs = 0;
 
     // Initialize the network
     size_t numberGene = geneInteraction.ncol();
@@ -511,7 +511,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     outLC.open(fileNameLC,std::ios::out);
 
 
-    Rcout << fileNameLC;
+    Rcout << fileNameLC << outLC.is_open();
 
     if(!outLC.is_open()) {     
         Rcout << "Cannot open output file.\n";
