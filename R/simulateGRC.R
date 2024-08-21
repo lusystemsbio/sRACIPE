@@ -630,19 +630,18 @@ if(missing(nNoise)){
       colnames(converge)<-c("Model Convergence", "Tests Done")
       metadataTmp$modelConvergence <- converge
       if(limitcycles){ #Running limit cycle algorithm
+        cat("\n")
         message("Checking for limit cycles")
         LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
                                   outFileParams, outFileGE, metadataTmp$geneTypes)
-        print(LC_Test)
-        if(LC_Test > -1){
+        if(LC_Test > 0){
           metadataTmp$totalNumofLCs <- LC_Test
           LCs <- utils::read.table(outFileLC, header = FALSE)
           colnames(LCs <- c("Model No", "Limit Cycle No", "Period", geneNames))
           metadataTmp$LCData <- LCs
         }
         else{ #Reports errors in file handling
-          LCs <- utils::read.table(outFileLC, header = FALSE)
-          metadataTmp$LCData <- LCs
+          message("No limit cycles detected")
         }
       }
     }
