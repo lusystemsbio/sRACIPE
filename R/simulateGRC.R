@@ -380,6 +380,7 @@ if(!missing(config)){
   outFileParams <- tempfile(fileext = ".txt")
   outFileIC <- tempfile(fileext = ".txt")
   outFileConverge <- tempfile(fileext = ".txt")
+  outFileLC <- tempfile(fileext = ".txt")
   if(genParams){
   message("Generating gene thresholds")
   #Rcpp::sourceCpp("src/thresholdGenerator.cpp")
@@ -630,7 +631,6 @@ if(missing(nNoise)){
       metadataTmp$modelConvergence <- converge
       if(limitcycles){ #Running limit cycle algorithm
         message("Checking for limit cycles")
-        outFileLC <- tempfile(fileext = ".txt")
         LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
                                   outFileParams, outFileGE, metadataTmp$geneTypes)
         print(LC_Test)

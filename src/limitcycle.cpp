@@ -506,7 +506,11 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
         << "Cannot open input file for reading expressions.\n";  return -2;
       }
 
+
     std::ofstream outLC(fileNameLC, std::ios::out);
+
+    Rcout << fileNameLC;
+
     if(!outLC.is_open()) {     Rcout << "Cannot open output file.\n";
       return -3;}
     
