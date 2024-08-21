@@ -81,7 +81,7 @@ double cal_limitcycle(int number_gene,
             const double &signalRate,
             const Rcpp::NumericVector &geneTypes,
             std::vector<double> start_exp_arr,
-            std::vector<std::vector<double>> LC_exp_arr
+            std::vector<std::vector<double>> &LC_exp_arr
 ){
     //variables
     std::vector<double> fX_arr(number_gene); //fX_arr saves deriv values in each Euler step
