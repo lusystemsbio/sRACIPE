@@ -507,7 +507,9 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
       }
 
 
-    std::ofstream outLC(fileNameLC, std::ios::out);
+    std::ofstream outLC;
+    outLC.open(fileNameLC,std::ios::out);
+
 
     Rcout << fileNameLC;
 
