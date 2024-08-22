@@ -986,3 +986,54 @@ setMethod(f="sracipeKnockDown",
 
 
 )
+
+#' @rdname sracipeConvergeDist
+#' @aliases sracipeConvergeDist
+setMethod(f="sracipeConvergeDist",
+          signature="RacipeSE",
+          definition=function(.object, plotToFile = FALSE)
+          {
+            meta <- metadata(.object)
+            #Checks if modelConvergence data exists in the object metadata
+            dataExists <- "modelConvergence" %in% names(meta)
+            if(!dataExists){
+              message("Cannot plot without convergence data")
+              return(.object)
+            }
+            convergenceData <- meta$modelConvergence
+            configuration <- meta$config
+            numModels <- configuration$simParams["numModels"]
+            nIC <- configuration$simParams["nIC"]
+            numConvergenceTests <- configuration$simParams["numConvergenceTests"]
+            numExprx = numModels*nIC
+
+            #Initialize proportions
+            convergedProportions <- numeric(numConvergenceTests)
+
+            if(plotToFile){
+              fileName <- paste0(annotation(.object),"_ConvergDist.pdf")
+              pdf(fileName) #Opens graphics object to store file in
+            }
+
+            #Getting rid of non-converged models
+            convergedICs <- convergenceData[convergenceData[, 1] != 0, ]
+            testScores <- convergedICs[,2]
+
+            for (i in 1:numConvergenceTests){
+              convergedProportions[i] <- sum(testScores <= i) / numExprx
+            }
+
+            title = paste0("Ratio of Converged ", annotation(.object), " Models over number of convergence tests")
+            plot(seq(1,numConvergenceTests), convergedProportions, type="l", col="blue",
+                 xlab="# Convergence Tests", ylab = "% Converged Models",
+                 main = title)
+
+            if(plotToFile){
+              message("Plot saved as pdf files in the working directory.")
+              dev.off() #closes graphics object and send it to working directory
+            }
+
+            return(.object)
+          }
+
+)
