@@ -361,7 +361,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
     }
 
     for(size_t i=0; i<nIC; i++){
-        if (convergBool[i] == false) continue;
+        if (convergBool[i] == true) continue;
         period = detect_limitcycle(number_gene,
                 LCSimStepSize, LCSimSteps,
                 convergThresh, geneInteraction, 
