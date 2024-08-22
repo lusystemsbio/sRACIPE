@@ -199,7 +199,7 @@ int detect_limitcycle(const int &number_gene,
                     const int &AllowedPeriodError,
                     const double &SamePointProximity,
                     std::vector<double> start_exp_arr,
-                    std::vector<double> LC_start_exp_arr
+                    std::vector<double> &LC_start_exp_arr
 ){
 
     //variables
