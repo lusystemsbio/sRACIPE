@@ -987,6 +987,7 @@ setMethod(f="sracipeKnockDown",
 
 )
 
+#' @export
 #' @rdname sracipeConvergeDist
 #' @aliases sracipeConvergeDist
 setMethod(f="sracipeConvergeDist",
