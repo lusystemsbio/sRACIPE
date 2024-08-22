@@ -548,7 +548,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
 
         Rcpp::LogicalVector convergBool(nIC);
         for(size_t i=0; i<nIC; i++){
-            convergBool[i] = modelConverg[i + modelCount];
+            convergBool[i] = modelConverg[i + modelCount*nIC];
         }
 
         int count;
