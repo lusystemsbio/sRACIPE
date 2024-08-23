@@ -5,7 +5,9 @@
 \alias{EMT2}
 \title{A circuit for epithelial to mesenchymal transition 
 including microRNAs}
-\format{A data frame with 82 rows and 3 variables}
+\format{
+A data frame with 82 rows and 3 variables
+}
 \usage{
 EMT2
 }

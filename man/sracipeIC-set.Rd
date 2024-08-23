@@ -13,7 +13,8 @@ sracipeIC(.object) <- value
 \arguments{
 \item{.object}{RacipeSE object}
 
-\item{value}{DataFrame containing the initial conditions}
+\item{value}{DataFrame containing the initial conditions, dimensions should
+be (# genes) rows by (numModels*nIC) columns}
 }
 \value{
 A RacipeSE object
@@ -23,7 +24,7 @@ Set the initial conditions
 }
 \examples{
 data("demoCircuit")
-rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10, 
+rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10,
 integrate=FALSE)
 ics <- sracipeIC(rSet)
 sracipeIC(rSet) <- ics

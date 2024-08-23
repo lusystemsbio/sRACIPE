@@ -40,21 +40,34 @@ sracipeSimulate(
   integrate = TRUE,
   rkTolerance = 0.01,
   timeSeries = FALSE,
+  signalRate = 10,
+  convergThresh = 1e-12,
+  numStepsConverge = 500,
+  numConvergenceTests = 25,
+  limitcycles = FALSE,
+  LCSimTime = 10,
+  LCSimStepSize = 0.01,
+  maxLCs = 10,
+  LCIter = 20,
+  MaxPeriods = 100,
+  NumSampledPeriods = 3,
+  AllowedPeriodError = 3,
+  SamePointProximity = 0.1,
   ...
 )
 }
 \arguments{
 \item{circuit}{data.frame or character. The file containing the circuit or}
 
-\item{config}{(optional) List. It contains simulation parameters 
+\item{config}{(optional) List. It contains simulation parameters
 like integration method
-(stepper) and other lists or vectors like simParams, 
-stochParams, hyperParams, options, thresholds etc. 
-The list simParams contains values for parameters like the 
-number of models (numModels), 
-simulation time (simulationTime), step size for simulations 
-(integrateStepSize), when to start recording the gene expressions 
-(printStart), time interval between recordings (printInterval), number of 
+(stepper) and other lists or vectors like simParams,
+stochParams, hyperParams, options, thresholds etc.
+The list simParams contains values for parameters like the
+number of models (numModels),
+simulation time (simulationTime), step size for simulations
+(integrateStepSize), when to start recording the gene expressions
+(printStart), time interval between recordings (printInterval), number of
 initial conditions (nIC), output precision (outputPrecision), tolerance for
 adaptive runge kutta method (rkTolerance), parametric variation (paramRange).
 The list stochParams contains the parameters for stochastic simulations like
@@ -62,13 +75,13 @@ the number of noise levels to be simulated (nNoise), the ratio of subsequent
 noise levels (noiseScalingFactor), maximum noise (initialNoise), whether to
 use same noise for all genes or to scale it as per the median expression of
 the genes (scaledNoise), ratio of shot noise to additive noise (shotNoise).
-The list hyperParams contains the parameters like the minimum and maximum 
+The list hyperParams contains the parameters like the minimum and maximum
 production and degration of the genes, fold change, hill coefficient etc.
-The list options includes logical values like annealing (anneal), scaling of 
+The list options includes logical values like annealing (anneal), scaling of
 noise (scaledNoise), generation of new initial conditions (genIC), parameters
 (genParams) and whether to integrate or not (integrate). The user
-modifiable simulation options can be specified as other arguments. This 
-list should be used if one wants to modify many settings for multiple 
+modifiable simulation options can be specified as other arguments. This
+list should be used if one wants to modify many settings for multiple
 simulations.}
 
 \item{anneal}{(optional) Logical. Default FALSE. Whether to use annealing
@@ -143,8 +156,8 @@ TRUE the noise in each gene will be proportional to its expression levels.}
 The decimal point precison of
 the output.}
 
-\item{printStart}{(optional) numeric (0-\code{simulationTime}). 
-Default \code{simulationTime}. To be used only when \code{timeSeries} is 
+\item{printStart}{(optional) numeric (0-\code{simulationTime}).
+Default \code{simulationTime}. To be used only when \code{timeSeries} is
 \code{TRUE}.
 The time from which the output should be recorded. Useful for time series
 analysis and studying the dynamics of a model for a particular initial
@@ -152,8 +165,8 @@ condition.}
 
 \item{printInterval}{(optional) numeric (\code{integrateStepSize}-
 \code{simulationTime - printStart}). Default 10. The separation between
-two recorded time points for a given trajectory. 
-To be used only when \code{timeSeries} is 
+two recorded time points for a given trajectory.
+To be used only when \code{timeSeries} is
 \code{TRUE}.}
 
 \item{stepper}{(optional) Character. Stepper to be used for integrating the
@@ -193,17 +206,27 @@ rate and initial condition to zero.}
 \item{rkTolerance}{(optional) numeric. Default \code{0.01}. Error tolerance
 for adaptive integration method.}
 
-\item{timeSeries}{(optional) logical. Default \code{FALSE}. 
+\item{timeSeries}{(optional) logical. Default \code{FALSE}.
 Whether to generate time series for a single model instead of performing
 RACIPE simulations.}
 
+\item{signalRate}{(optional) numeric. Default \code{10}. The factor by which
+the differential equations for fast genes are multiplied by. Fast genes only
+have inward signaling interactions of types 5 or 6}
+
+\item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
+for convergence to a steady state for deterministic simulations.}
+
 \item{...}{Other arguments}
+
+\item{numStepConverge}{(optional) numeric. Default \code{500}. The number of
+integration steps between convergence tests for deterministic simulations.}
 }
 \value{
-\code{RacipeSE} object. RacipeSE class inherits 
-\code{SummarizedExperiment} and contains the circuit, parameters, 
+\code{RacipeSE} object. RacipeSE class inherits
+\code{SummarizedExperiment} and contains the circuit, parameters,
 initial conditions,
-simulated gene expressions, and simulation configuration. These can be 
+simulated gene expressions, and simulation configuration. These can be
 accessed using correponding getters.
 }
 \description{
