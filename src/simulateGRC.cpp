@@ -302,6 +302,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   // bool useBoost = options[5];
   // bool useBoost = true;
 
+  double testTime = h*numStepsConverge; //For adaptive step methods
+
   // size_t maxSteps = static_cast<size_t>(simulationTime/h);
 
   std::string fileNameGE = outFileGE;
@@ -571,6 +573,20 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        outputPrecision,
                        h, signalRate, geneTypes, convergThresh,
                        numStepsConverge, numConvergenceTests);
+              break;
+
+            case 51:
+//              Rcout<<"DP";
+              // adaptive Dormand Prince with convergence testing
+              stepDPconv( expressionGene,outGE,numberGene,
+                      geneInteraction,gGene,kGene,nGene,lambdaGene,
+                      threshGeneLog,interactionTypes,
+                      sdFactor,
+                      outputPrecision,h,
+                      rkTolerance,
+                      signalRate, geneTypes, convergThresh,
+                      numStepsConverge, numConvergenceTests,
+                      testTime);
               break;
 
             default:
