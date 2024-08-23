@@ -310,6 +310,7 @@ if(isConverged == false){
 
 void stepDPconv( std::vector <double> &exprxGene,
               std::ofstream &outGE,
+              std::ofstream &outConv,
               const int &numberGene,
               IntegerMatrix geneInteraction,
               const std::vector<double> &gGene,
@@ -336,7 +337,7 @@ void stepDPconv( std::vector <double> &exprxGene,
   double exprxGeneH6[numberGene]; //array for temp gene expression values
   double exprxGeneH7[numberGene]; //array for temp gene expression values
 
-  
+  bool isConverged = false;
 
   std::vector<double> prevExprxGene(numberGene); //Array for convergence testing
 
@@ -645,9 +646,18 @@ void stepDPconv( std::vector <double> &exprxGene,
           outGE<<std::setprecision(outputPrecision)
           <<exprxGene[geneCount1]<<"\t";
         }
+        isConverged = true;  
+        outConv<<isConverged<<"\t" << testIter <<"\n";
           break;
       }
 
   };
-
+  if(isConverged == false){
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {
+    outGE<<std::setprecision(outputPrecision)
+    <<exprxGene[geneCount1]<<"\t";
+  }
+  outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
+}
 }

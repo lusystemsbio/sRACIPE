@@ -578,7 +578,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
             case 51:
 //              Rcout<<"DP";
               // adaptive Dormand Prince with convergence testing
-              stepDPconv( expressionGene,outGE,numberGene,
+              stepDPconv( expressionGene,outGE,outConv,numberGene,
                       geneInteraction,gGene,kGene,nGene,lambdaGene,
                       threshGeneLog,interactionTypes,
                       sdFactor,

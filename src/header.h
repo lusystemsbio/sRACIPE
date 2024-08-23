@@ -138,6 +138,7 @@ void stepRK4conv( std::vector <double> &expression_gene,
 
  void stepDPconv( std::vector <double> &expression_gene,
           std::ofstream &out_GE,
+          std::ofstream &out_Conv,
           const int &number_gene,
           const Rcpp::IntegerMatrix gene_interaction,
           const std::vector<double> &g_gene,
