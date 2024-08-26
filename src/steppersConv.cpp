@@ -354,7 +354,6 @@ void stepDPconv( std::vector <double> &exprxGene,
   }
 
   double i=0.0;
-  int printCounter = 0;
 
   //For each test, we run the simulation for numStepsConverge iterations
   //and check if the system has changed state in that time
