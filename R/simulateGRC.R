@@ -154,7 +154,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       hillCoeffMin=1L,hillCoeffMax=6L,integrateStepSize=0.02,
                       simulationTime=50.0,nIC=1L,nNoise=0L,simDet = TRUE,
                       initialNoise=50.0,noiseScalingFactor=0.5,shotNoise=0,
-                      scaledNoise=FALSE,outputPrecision=12L,
+                      ouNoise_t=1, scaledNoise=FALSE,outputPrecision=12L,
                       printStart = 50.0,
                       printInterval=10, stepper = "RK4",
                       thresholdModels = 5000, plots = FALSE,
@@ -166,7 +166,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
-                      SamePointProximity = 0.1, ouNoise_t=1,
+                      SamePointProximity = 0.1, LCStepper = "RK4",
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -358,6 +358,9 @@ if(!missing(config)){
  if(!missing(SamePointProximity)){
    configuration$LCParams["SamePointProximity"] <- SamePointProximity
  }
+
+ # Storing stepper for limit cycle calculations
+  configuration$LCStepper <- LCStepper
 
  # Apply parameter range
   configuration$hyperParams["prodRateMin"] <- 0.5*(
@@ -664,8 +667,10 @@ if(missing(nNoise)){
       if(limitcycles){ #Running limit cycle algorithm
         cat("\n")
         message("Checking for limit cycles")
+        LCStepperInt <- 1L
+        if(configuration$LCStepper == "RK4"){ LCStepperInt <- 4L}
         LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
-                                  outFileParams, outFileGE, metadataTmp$geneTypes)
+                                  outFileParams, outFileGE, metadataTmp$geneTypes, LCStepperInt)
         if(LC_Test > 0){
           metadataTmp$totalNumofLCs <- LC_Test
           LCs <- utils::read.table(outFileLC, header = FALSE)

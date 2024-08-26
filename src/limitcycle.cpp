@@ -18,7 +18,7 @@ double cal_norm(
 //This function calculates derivatives using the Euler method. This allows for 
 //limit cycle detection without having to use the main steppers or integrating them
 //into the limit cycle functionality.
-void cal_fX(const int &number_gene,
+void cal_fX_E(const int &number_gene,
             const double &signalRate,
             const Rcpp::IntegerMatrix geneInteraction,
             const std::vector<double> &g_gene,
@@ -67,6 +67,151 @@ void cal_fX(const int &number_gene,
 
 }
 
+//This function calculates derivatives using the rk4 method. This allows for 
+//limit cycle detection without having to use the main steppers or integrating them
+//into the limit cycle functionality.
+void cal_fX_R(const int &number_gene,
+            const double &signalRate,
+            const Rcpp::IntegerMatrix geneInteraction,
+            const std::vector<double> &gGene,
+            const std::vector<double> &kGene,
+            const std::vector<std::vector<int> > &nGene,
+            const std::vector<std::vector<double> > &lambda_gene,
+            const std::vector<std::vector<double> > &threshold_gene_log,
+            const Rcpp::NumericVector &geneTypes,
+            const double &h,
+            std::vector<double> &fX_arr,
+            std::vector <double> &exprxGene
+){
+double exprxGeneH1[number_gene]; //array for temp gene expression values
+double exprxGeneH2[number_gene]; //array for temp gene expression values
+double exprxGeneH3[number_gene]; //array for temp gene expression values
+double exprxGeneH4[number_gene]; //array for temp gene expression values
+
+    for(int geneCountTmp=0;geneCountTmp<number_gene;geneCountTmp++)
+    {
+    exprxGeneH1[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH2[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH3[geneCountTmp]=exprxGene[geneCountTmp];
+    exprxGeneH4[geneCountTmp]=exprxGene[geneCountTmp];
+    }
+
+    for(int geneCount1=0;geneCount1<number_gene;geneCount1++)
+    {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+        for(int geneCount2=0;geneCount2<number_gene;geneCount2++)
+        {
+          double geneValue=exprxGene[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
+
+        if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+        }
+
+        exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
+          kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+    }
+
+
+    for(int geneCount1=0;geneCount1<number_gene;geneCount1++)
+    {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+       for(int geneCount2=0;geneCount2<number_gene;geneCount2++)
+       {
+         double geneValue=exprxGene[geneCount2] +
+           0.5*exprxGeneH1[geneCount2];
+          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+          int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
+
+        if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+        }
+
+        exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
+          growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
+        0.5*exprxGeneH1[geneCount1])*degMultiplier);
+    }
+
+    for(int geneCount1=0;geneCount1<number_gene;geneCount1++)
+    {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+        for(int geneCount2=0;geneCount2<number_gene;geneCount2++)
+        {
+        double geneValue=exprxGene[geneCount2] +
+            0.5*exprxGeneH2[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
+
+        if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+        }
+
+        exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+          kGene[geneCount1]*(exprxGene[geneCount1] +
+          0.5*exprxGeneH2[geneCount1])*degMultiplier);
+    }
+
+
+    for(int geneCount1=0;geneCount1<number_gene;geneCount1++)
+    {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+        for(int geneCount2=0;geneCount2<number_gene;geneCount2++)
+        {
+        double geneValue=exprxGene[geneCount2] +
+            exprxGeneH3[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
+
+        if (geneTypes[geneCount1] == 2){
+          growthMultiplier = growthMultiplier*signalRate;
+          degMultiplier = degMultiplier*signalRate;
+        }
+
+        exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+          kGene[geneCount1]*(exprxGene[geneCount1]+
+        exprxGeneH3[geneCount1])*degMultiplier);
+    }
+
+    //calculate derivative
+    for(int i=0; i<number_gene; i++){
+        fX_arr[i] = (exprxGeneH1[i]+2*exprxGeneH2[i]+
+          2*exprxGeneH3[i]+exprxGeneH4[i])/6;
+    }
+
+}
+
 
 double cal_limitcycle(int number_gene,
             const double &LCSimStepSize,
@@ -81,7 +226,8 @@ double cal_limitcycle(int number_gene,
             const double &signalRate,
             const Rcpp::NumericVector &geneTypes,
             std::vector<double> start_exp_arr,
-            std::vector<std::vector<double>> &LC_exp_arr
+            std::vector<std::vector<double>> &LC_exp_arr,
+            const int stepper = 1
 ){
     //variables
     std::vector<double> fX_arr(number_gene); //fX_arr saves deriv values in each Euler step
@@ -96,31 +242,72 @@ double cal_limitcycle(int number_gene,
     }
 
     int countStep=0;
-    while(countStep<LCSimSteps){
-        cal_fX(number_gene,
-                signalRate,
-                geneInteraction,
-                g_gene, k_gene,
-                n_gene, lambda_gene,
-                threshold_gene_log,
-                geneTypes, fX_arr,
-                curr_exp_arr);
+    // The two cases are exactly the same except whether or not the loop calls
+    // cal_fX_E() or cal_fX_R() for the derivative calculations
+    switch (stepper){
+    case 1:
+        // Euler method simulation
+        while(countStep<LCSimSteps){
+            cal_fX_E(number_gene,
+                    signalRate,
+                    geneInteraction,
+                    g_gene, k_gene,
+                    n_gene, lambda_gene,
+                    threshold_gene_log,
+                    geneTypes, fX_arr,
+                    curr_exp_arr);
 
-        //calculate next expressions:
-        for (int i=0;i<number_gene;++i) {
-             next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i]*LCSimStepSize;
-        }        
+            //calculate next expressions:
+            for (int i=0;i<number_gene;++i) {
+                 next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i]*LCSimStepSize;
+            }        
 
-        double tmp_dist=sum_delta(curr_exp_arr,next_exp_arr,number_gene);
-        if(tmp_dist>max_dist) max_dist=tmp_dist;
+            double tmp_dist=sum_delta(curr_exp_arr,next_exp_arr,number_gene);
+            if(tmp_dist>max_dist) max_dist=tmp_dist;
 
-        countStep+=1;
-        //copy next exp to curr exp and save curr exp
-        for (int i=0;i<number_gene;++i){
-            curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
-            LC_exp_arr[countStep][i]=curr_exp_arr[i];
+            countStep+=1;
+            //copy next exp to curr exp and save curr exp
+            for (int i=0;i<number_gene;++i){
+                curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
+                LC_exp_arr[countStep][i]=curr_exp_arr[i];
+            }
         }
+        break;
+    case 4:
+        // fourth order Runge Kutta simulation
+        while(countStep<LCSimSteps){
+            cal_fX_R(number_gene,
+                    signalRate,
+                    geneInteraction,
+                    g_gene, k_gene,
+                    n_gene, lambda_gene,
+                    threshold_gene_log,
+                    geneTypes, LCSimStepSize,
+                    fX_arr,
+                    curr_exp_arr);
+
+            //calculate next expressions:
+            for (int i=0;i<number_gene;++i) {
+                 next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i];
+            }        
+
+            double tmp_dist=sum_delta(curr_exp_arr,next_exp_arr,number_gene);
+            if(tmp_dist>max_dist) max_dist=tmp_dist;
+
+            countStep+=1;
+            //copy next exp to curr exp and save curr exp
+            for (int i=0;i<number_gene;++i){
+                curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
+                LC_exp_arr[countStep][i]=curr_exp_arr[i];
+            }
+        }
+        break;
+    
+    default:
+        Rcout<< "Error in specifying the LC stepper.\n";
+        break;
     }
+
     return max_dist;
 }
 
@@ -199,7 +386,8 @@ int detect_limitcycle(const int &number_gene,
                     const int &AllowedPeriodError,
                     const double &SamePointProximity,
                     std::vector<double> start_exp_arr,
-                    std::vector<double> &LC_start_exp_arr
+                    std::vector<double> &LC_start_exp_arr,
+                    const int stepper = 1
 ){
 
     //variables
@@ -239,77 +427,162 @@ int detect_limitcycle(const int &number_gene,
     countMaxExp = 0;
     countMinExp = countMaxExp;
 
+    // The two cases are exactly the same except whether or not the loop calls
+    // cal_fX_E() or cal_fX_R() for the derivative calculations
+    switch (stepper){
+    case 1:
+        // Euler method simulation
+        //calculate ODE-outer loop:
+        for(int countIter=0; countIter<LCIter; countIter++){
 
+            //Calculate ODE-inner loop:
+            int countStep = 0;
+            while(countStep<LCSimSteps){
+                cal_fX_E(number_gene,
+                    signalRate,
+                    geneInteraction,
+                    g_gene, k_gene,
+                    n_gene, lambda_gene,
+                    threshold_gene_log,
+                    geneTypes, fX_arr,
+                    curr_exp_arr);
 
-    //calculate ODE-outer loop:
-    for(int countIter=0; countIter<LCIter; countIter++){
-
-        //Calculate ODE-inner loop:
-        int countStep = 0;
-        while(countStep<LCSimSteps){
-            cal_fX(number_gene,
-                signalRate,
-                geneInteraction,
-                g_gene, k_gene,
-                n_gene, lambda_gene,
-                threshold_gene_log,
-                geneTypes, fX_arr,
-                curr_exp_arr);
-
-            //calculate next expressions:
-            for (int i=0;i<number_gene;++i) {
-                next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i]*LCSimStepSize;
-            }
-
-            curr_dist=sum_delta(start_exp_arr,next_exp_arr,number_gene);
-            if(moving_uphill){ //while moving uphill:
-                if (curr_dist<prev_dist){
-                    //hit the peak already. now, switch to downhill:
-                    moving_uphill=false;
+                //calculate next expressions:
+                for (int i=0;i<number_gene;++i) {
+                    next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i]*LCSimStepSize;
                 }
-            }
-            else { //while moving downhill:
-                if (curr_dist>prev_dist){
-                    //hit the bottom already. now, switch to uphill:
-                    moving_uphill=true;
-                    //save information about this valley:
-                    for (int i=0;i<number_gene;++i){
-                        min_exp_arr[countMinExp][i]=curr_exp_arr[i];
+
+                curr_dist=sum_delta(start_exp_arr,next_exp_arr,number_gene);
+                if(moving_uphill){ //while moving uphill:
+                    if (curr_dist<prev_dist){
+                        //hit the peak already. now, switch to downhill:
+                        moving_uphill=false;
                     }
-                    minIdxArr[countMinExp]=count_exp;
-                    min_dist_arr[countMinExp]=prev_dist;
-                    countMinExp++;
                 }
-            }//end of the block for moving downhill
-            if((countMaxExp>=MaxPeriods) || (countMinExp>=MaxPeriods)) break;
+                else { //while moving downhill:
+                    if (curr_dist>prev_dist){
+                        //hit the bottom already. now, switch to uphill:
+                        moving_uphill=true;
+                        //save information about this valley:
+                        for (int i=0;i<number_gene;++i){
+                            min_exp_arr[countMinExp][i]=curr_exp_arr[i];
+                        }
+                        minIdxArr[countMinExp]=count_exp;
+                        min_dist_arr[countMinExp]=prev_dist;
+                        countMinExp++;
+                    }
+                }//end of the block for moving downhill
+                if((countMaxExp>=MaxPeriods) || (countMinExp>=MaxPeriods)) break;
 
-            prev_dist=curr_dist; //uphill motion
-            //copy next exp to curr exp and save curr exp
-            for (int i=0;i<number_gene;++i){
-                curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
-            }
-            count_exp++;
-            countStep+=1;
-        }//end of while(countStep<LCSimSteps)
+                prev_dist=curr_dist; //uphill motion
+                //copy next exp to curr exp and save curr exp
+                for (int i=0;i<number_gene;++i){
+                    curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
+                }
+                count_exp++;
+                countStep+=1;
+            }//end of while(countStep<LCSimSteps)
 
-        double fX_norm=cal_norm(fX_arr,number_gene);
-        //if a stable state is found or a boundary situation is met,
-        //then return -1:
-        if(fX_norm<=convergThresh) return -1;
+            double fX_norm=cal_norm(fX_arr,number_gene);
+            //if a stable state is found or a boundary situation is met,
+            //then return -1:
+            if(fX_norm<=convergThresh) return -1;
 
-        period = cal_period(
-                    number_gene,
-                    MaxPeriods,
-                    countMinExp,
-                    minIdxArr,
-                    min_exp_arr,
-                    LC_start_exp_arr,
-                    NumSampledPeriods,
-                    AllowedPeriodError,
-                    SamePointProximity);
-        //if nonzero period found, then break of the loop:
-        if (period!=0) break;
+            period = cal_period(
+                        number_gene,
+                        MaxPeriods,
+                        countMinExp,
+                        minIdxArr,
+                        min_exp_arr,
+                        LC_start_exp_arr,
+                        NumSampledPeriods,
+                        AllowedPeriodError,
+                        SamePointProximity);
+            //if nonzero period found, then break of the loop:
+            if (period!=0) break;
+        }
+        break;
+
+    case 4:
+        // fourth order Runge Kutta method simulation
+        //calculate ODE-outer loop:
+        for(int countIter=0; countIter<LCIter; countIter++){
+
+            //Calculate ODE-inner loop:
+            int countStep = 0;
+            while(countStep<LCSimSteps){
+                cal_fX_R(number_gene,
+                    signalRate,
+                    geneInteraction,
+                    g_gene, k_gene,
+                    n_gene, lambda_gene,
+                    threshold_gene_log,
+                    geneTypes, LCSimStepSize,
+                    fX_arr,
+                    curr_exp_arr);
+
+                //calculate next expressions:
+                for (int i=0;i<number_gene;++i) {
+                    next_exp_arr[i]=curr_exp_arr[i]+fX_arr[i];
+                }
+
+                curr_dist=sum_delta(start_exp_arr,next_exp_arr,number_gene);
+                if(moving_uphill){ //while moving uphill:
+                    if (curr_dist<prev_dist){
+                        //hit the peak already. now, switch to downhill:
+                        moving_uphill=false;
+                    }
+                }
+                else { //while moving downhill:
+                    if (curr_dist>prev_dist){
+                        //hit the bottom already. now, switch to uphill:
+                        moving_uphill=true;
+                        //save information about this valley:
+                        for (int i=0;i<number_gene;++i){
+                            min_exp_arr[countMinExp][i]=curr_exp_arr[i];
+                        }
+                        minIdxArr[countMinExp]=count_exp;
+                        min_dist_arr[countMinExp]=prev_dist;
+                        countMinExp++;
+                    }
+                }//end of the block for moving downhill
+                if((countMaxExp>=MaxPeriods) || (countMinExp>=MaxPeriods)) break;
+
+                prev_dist=curr_dist; //uphill motion
+                //copy next exp to curr exp and save curr exp
+                for (int i=0;i<number_gene;++i){
+                    curr_exp_arr[i]=next_exp_arr[i]>=0?next_exp_arr[i]:0;
+                }
+                count_exp++;
+                countStep+=1;
+            }//end of while(countStep<LCSimSteps)
+
+            double fX_norm=cal_norm(fX_arr,number_gene);
+            //if a stable state is found or a boundary situation is met,
+            //then return -1:
+            if(fX_norm<=convergThresh) return -1;
+
+            period = cal_period(
+                        number_gene,
+                        MaxPeriods,
+                        countMinExp,
+                        minIdxArr,
+                        min_exp_arr,
+                        LC_start_exp_arr,
+                        NumSampledPeriods,
+                        AllowedPeriodError,
+                        SamePointProximity);
+            //if nonzero period found, then break of the loop:
+            if (period!=0) break;
+        }
+        break;
+    
+    default:
+        Rcout<< "Error in specifying the LC stepper.\n";
+        break;
     }
+
+
 
     return period;
 
@@ -340,7 +613,8 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
              const int &NumSampledPeriods,
              const int &AllowedPeriodError,
              const double &SamePointProximity,
-             Rcpp::LogicalVector &convergBool
+             Rcpp::LogicalVector &convergBool,
+             const int stepper = 1
 
 ){
     int LCSimSteps = (int) (LCSimTime/LCSimStepSize);
@@ -457,7 +731,8 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     String outFileLC, Rcpp::List config,
     Rcpp::LogicalVector &modelConverg,
     String inFileParams, String inFileGE,
-    Rcpp::NumericVector geneTypes
+    Rcpp::NumericVector geneTypes,
+    const int stepper = 1
 ){
     // Count total limit cycles found
     int totLCs = 0;
@@ -561,7 +836,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
                                 LCSimStepSize, maxLCs, LCIter,
                                 MaxPeriods, NumSampledPeriods, 
                                 AllowedPeriodError, SamePointProximity,
-                                convergBool);
+                                convergBool, stepper);
         totLCs += count;
     }
 

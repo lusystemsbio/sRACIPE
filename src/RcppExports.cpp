@@ -24,8 +24,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // limitcyclesGRC
-int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction, String outFileLC, Rcpp::List config, Rcpp::LogicalVector& modelConverg, String inFileParams, String inFileGE, Rcpp::NumericVector geneTypes);
-RcppExport SEXP _sRACIPE_limitcyclesGRC(SEXP geneInteractionSEXP, SEXP outFileLCSEXP, SEXP configSEXP, SEXP modelConvergSEXP, SEXP inFileParamsSEXP, SEXP inFileGESEXP, SEXP geneTypesSEXP) {
+int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction, String outFileLC, Rcpp::List config, Rcpp::LogicalVector& modelConverg, String inFileParams, String inFileGE, Rcpp::NumericVector geneTypes, const int stepper);
+RcppExport SEXP _sRACIPE_limitcyclesGRC(SEXP geneInteractionSEXP, SEXP outFileLCSEXP, SEXP configSEXP, SEXP modelConvergSEXP, SEXP inFileParamsSEXP, SEXP inFileGESEXP, SEXP geneTypesSEXP, SEXP stepperSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +36,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< String >::type inFileParams(inFileParamsSEXP);
     Rcpp::traits::input_parameter< String >::type inFileGE(inFileGESEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type geneTypes(geneTypesSEXP);
-    rcpp_result_gen = Rcpp::wrap(limitcyclesGRC(geneInteraction, outFileLC, config, modelConverg, inFileParams, inFileGE, geneTypes));
+    Rcpp::traits::input_parameter< const int >::type stepper(stepperSEXP);
+    rcpp_result_gen = Rcpp::wrap(limitcyclesGRC(geneInteraction, outFileLC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -61,7 +62,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sRACIPE_generateThresholds", (DL_FUNC) &_sRACIPE_generateThresholds, 3},
-    {"_sRACIPE_limitcyclesGRC", (DL_FUNC) &_sRACIPE_limitcyclesGRC, 7},
+    {"_sRACIPE_limitcyclesGRC", (DL_FUNC) &_sRACIPE_limitcyclesGRC, 8},
     {"_sRACIPE_simulateGRCCpp", (DL_FUNC) &_sRACIPE_simulateGRCCpp, 8},
     {NULL, NULL, 0}
 };
