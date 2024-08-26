@@ -155,6 +155,98 @@ void stepEM( std::vector <double> &exprxGene,
 
 }
 
+void stepEM_OU( std::vector <double> &exprxGene,
+             std::ofstream &outGE,
+             const double &totTime,
+             const int &numberGene,
+             IntegerMatrix geneInteraction,
+             const std::vector<double> &gGene,
+             const std::vector<double> &kGene,
+             const std::vector<std::vector<int> > &NGene,
+             const std::vector<std::vector<double> > &lambda_gene,
+             const std::vector<std::vector<double> > &threshold_gene_log,
+             const int &possible_interactions,
+             const double &standard_deviation_factor,
+             const double &D_shot_scaling,
+             const std::vector<double> &Darray,
+             const int &outputPrecision,
+             const double &printStart, const double &printInterval,
+             const double &D,
+             const double &h,
+             const double &ouNoise_t,
+             const double &signalRate,
+             const Rcpp::NumericVector &geneTypes){
+
+  double exprxGeneH[numberGene]; //array for temp gene expression values
+  double currNoise[numberGene]; //array for temp gene expression values
+  std::vector <double> prevNoise(numberGene, 0.0); //array for current noise
+
+  for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  {
+    exprxGeneH[geneCount1] = exprxGene[geneCount1];
+    prevNoise[geneCount1] = D*Darray[geneCount1] * g_distribution(g_generator);
+  }
+
+  double i=0.0;
+  double printTime = printStart;
+  do
+  {
+    i+=h;
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+    {
+      double growthMultiplier=1;
+      double degMultiplier=1;
+      currNoise[geneCount1] = prevNoise[geneCount1] * exp(-h/ouNoise_t) + 
+        D*Darray[geneCount1] * sqrt(1-exp(-2*h/ouNoise_t)) * g_distribution(g_generator);
+
+      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+      {
+        double geneValue=exprxGene[geneCount2];
+        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+        int geneN=NGene[geneCount1][geneCount2];
+        double geneLambda=lambda_gene[geneCount1][geneCount2];
+        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                            geneValue, geneInteraction, geneN, geneLambda,
+                            geneThreshold);
+      }
+      if (geneTypes[geneCount1] == 2){
+        growthMultiplier = growthMultiplier*signalRate;
+        degMultiplier = degMultiplier*signalRate;
+      }
+
+      exprxGeneH[geneCount1] = exprxGene[geneCount1] +
+        h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
+        exprxGene[geneCount1]*degMultiplier) +
+        h*currNoise[geneCount1]+
+        D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
+        Darray[geneCount1]*exprxGene[geneCount1];
+      if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
+    }
+
+    for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
+      exprxGene[geneCount1]=exprxGeneH[geneCount1];
+      prevNoise[geneCount1]=currNoise[geneCount1];}
+
+    if((i> printTime) &&
+       (i <= (printTime + printInterval)))
+    {
+      printTime +=printInterval;
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+      {
+        outGE<<std::setprecision(outputPrecision)
+        <<exprxGene[geneCount1]<<"\t";
+      }
+      //outGE<<"\n";
+    }
+  }while(i<totTime);
+
+  // for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+  // {
+  //   outGE<<std::setprecision(outputPrecision)<<exprxGene[geneCount1]<<"\t";
+  // }
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 //Runge Kutta fourth order

@@ -166,7 +166,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
-                      SamePointProximity = 0.1,
+                      SamePointProximity = 0.1, ouNoise_t=1,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -281,6 +281,9 @@ if(!missing(config)){
   }
   if(!missing(shotNoise)){
     configuration$stochParams["shotNoise"] <- shotNoise
+  }
+  if(!missing(ouNoise_t)){
+    configuration$stochParams["ouNoise_tcorr"] <- ouNoise_t
   }
   if(!missing(scaledNoise)){
     configuration$options["scaledNoise"] <-scaledNoise
@@ -484,6 +487,7 @@ if(missing(nNoise)){
     stepperInt <- 1L
     if(configuration$stepper == "RK4"){ stepperInt <- 4L}
     if(configuration$stepper == "DP") {stepperInt <- 5L}
+    if(configuration$stepper == "EM_OU") {stepperInt <- 6L}
   } else { #Two digit stepperInt values correlate to running convergence tests
     stepperInt <- 11L
     if(configuration$stepper == "RK4"){ stepperInt <- 41L}
@@ -492,7 +496,7 @@ if(missing(nNoise)){
 
 
   if(configuration$stochParams["nNoise"] > 0) {
-    if(stepper != "EM"){
+    if(stepper != "EM" && stepper != "EM_OU"){
       warnings("Defaulting to EM stepper for stochastic simulations")
       configuration$stepper <- "EM"
       stepperInt <- 1L

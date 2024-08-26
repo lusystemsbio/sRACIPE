@@ -277,6 +277,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double noiseScalingFactor = stochasticParameters[1];
   double initialNoise = stochasticParameters[2];
   double shotNoise = static_cast<double>(stochasticParameters[4]);
+  double ou_tcorr = static_cast<double>(stochasticParameters[5]);
 
   double gMin = hyperParameters[0];
   double gMax = hyperParameters[1];
@@ -551,6 +552,17 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       outputPrecision,printStart, printInterval,h,
                       rkTolerance,
                       signalRate, geneTypes);
+              break;
+
+            case 6:
+//              Rcout<<"EM_OU";
+              // EM with OU noise
+              stepEM_OU( expressionGene, outGE, simulationTime,
+                    numberGene, geneInteraction, gGene, kGene, nGene,
+                    lambdaGene, threshGeneLog, interactionTypes,
+                    sdFactor, shotNoise, Darray,
+                    outputPrecision, printStart, printInterval, D, h,
+                    ou_tcorr, signalRate, geneTypes);
               break;
 
             case 11:
