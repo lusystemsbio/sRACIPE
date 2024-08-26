@@ -299,7 +299,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   bool genIC = options[2];
   bool genParams = options[3];
   bool integrate = options[4];
-  bool simDet = options[5];
+  bool simDet = options[6];
   // bool useBoost = options[5];
   // bool useBoost = true;
 
