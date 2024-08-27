@@ -161,7 +161,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       plotToFile = FALSE,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
-                      signalRate = 10.0, convergThresh = 1e-12,
+                      signalRate = 10.0, convergThresh = 1e-12, uniqueDigits = 6,
                       numStepsConverge = 500, numConvergenceTests = 25,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
@@ -308,6 +308,9 @@ if(!missing(config)){
  }
  if(!missing(numConvergenceTests)){
    configuration$simParams["numConvergenceTests"] <- numConvergenceTests
+ }
+ if(!missing(uniqueDigits)){
+   configuration$simParams["uniqueDigits"] <- uniqueDigits
  }
 
  if(!missing(genIC)){
@@ -664,6 +667,27 @@ if(missing(nNoise)){
       converge<- utils::read.table(outFileConverge, header = FALSE)
       colnames(converge)<-c("Model Convergence", "Tests Done")
       metadataTmp$modelConvergence <- converge
+
+      geneExpressionRounded <- round(geneExpression, digits = uniqueDigits)
+      uniqueStates <- numeric(numModels) #store number of unique states in a vector
+
+
+      if(nIC > 1){
+        for(modelCount in seq_len(numModels)){
+          #grab ICs and convergence data for each model
+          startIdx <- (modelCount - 1)*nIC + 1
+          endIdx <- modelCount*nIC
+
+          finalModelExpressions <- geneExpressionRounded[, startIdx:endIdx]
+          ICconvergences <- converge[start:end, 1]
+          convergedICs <- finalModelExpressions[, ICconvergences]
+
+          uniqueStates[modelCount] <- nrow(unique(convergedICs))
+        }
+        StateCounts <- data.frame(modelNo = 1:numModels, UniqueStateNo = uniqueStates)
+        metadataTmp$uniqueStateCounts <- StateCounts
+      }
+
       if(limitcycles){ #Running limit cycle algorithm
         cat("\n")
         message("Checking for limit cycles")
