@@ -679,7 +679,7 @@ if(missing(nNoise)){
           endIdx <- modelCount*nIC
 
           finalModelExpressions <- geneExpressionRounded[, startIdx:endIdx]
-          ICconvergences <- converge[start:end, 1]
+          ICconvergences <- converge[startIdx:endIdx, 1]
           convergedICs <- finalModelExpressions[, ICconvergences]
 
           uniqueStates[modelCount] <- nrow(unique(convergedICs))
