@@ -682,7 +682,7 @@ if(missing(nNoise)){
           ICconvergences <- converge[startIdx:endIdx, 1]
           convergedICs <- finalModelExpressions[, ICconvergences]
 
-          uniqueStates[modelCount] <- nrow(unique(convergedICs))
+          uniqueStates[modelCount] <- ncol(unique(convergedICs))
         }
         StateCounts <- data.frame(modelNo = 1:numModels, UniqueStateNo = uniqueStates)
         metadataTmp$uniqueStateCounts <- StateCounts
