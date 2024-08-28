@@ -680,10 +680,10 @@ if(missing(nNoise)){
           ICconvergences <- converge[startIdx:endIdx, 1]
           convergedICs <- finalModelExpressions[, ICconvergences]
 
-          if(is.null(ncol(unique(convergedICs)))){
+          if(is.null(ncol(unique(convergedICs, MARGIN = 2)))){
             uniqueStates[modelCount] <- 0
           } else {
-            uniqueStates[modelCount] <- ncol(unique(convergedICs))
+            uniqueStates[modelCount] <- ncol(unique(convergedICs, MARGIN = 2))
           }
         }
         StateCounts <- data.frame(modelNo = 1:numModels, UniqueStableStateNo = uniqueStates)
