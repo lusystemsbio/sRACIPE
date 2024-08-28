@@ -668,11 +668,9 @@ if(missing(nNoise)){
       colnames(converge)<-c("Model Convergence", "Tests Done")
       metadataTmp$modelConvergence <- converge
 
-      geneExpressionRounded <- round(geneExpression, digits = uniqueDigits)
-      uniqueStates <- numeric(numModels) #store number of unique states in a vector
-
-
       if(nIC > 1){
+        geneExpressionRounded <- round(geneExpression, digits = uniqueDigits)
+        uniqueStates <- numeric(numModels) #store number of unique states in a vector
         for(modelCount in seq_len(numModels)){
           #grab ICs and convergence data for each model
           startIdx <- (modelCount - 1)*nIC + 1
@@ -682,9 +680,13 @@ if(missing(nNoise)){
           ICconvergences <- converge[startIdx:endIdx, 1]
           convergedICs <- finalModelExpressions[, ICconvergences]
 
-          uniqueStates[modelCount] <- ncol(unique(convergedICs))
+          if(is.null(ncol(unique(convergedICs)))){
+            uniqueStates[modelCount] <- 0
+          } else {
+            uniqueStates[modelCount] <- ncol(unique(convergedICs))
+          }
         }
-        StateCounts <- data.frame(modelNo = 1:numModels, UniqueStateNo = uniqueStates)
+        StateCounts <- data.frame(modelNo = 1:numModels, UniqueStableStateNo = uniqueStates)
         metadataTmp$uniqueStateCounts <- StateCounts
       }
 
