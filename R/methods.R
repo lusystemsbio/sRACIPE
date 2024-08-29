@@ -1006,7 +1006,7 @@ setMethod(f="sracipeConvergeDist",
             numModels <- configuration$simParams["numModels"]
             nIC <- configuration$simParams["nIC"]
             numConvergenceTests <- configuration$simParams["numConvergenceTests"]
-            numExprx = numModels*nIC
+            numExprx = numModels #Check RacipeSE() constructor for why this is true
 
             #Initialize proportions
             convergedProportions <- numeric(numConvergenceTests)
