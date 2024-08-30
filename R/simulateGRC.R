@@ -666,7 +666,6 @@ if(missing(nNoise)){
     if(convergTesting) {
       converge<- utils::read.table(outFileConverge, header = FALSE)
       colnames(converge)<-c("Model Convergence", "Tests Done")
-      metadataTmp$modelConvergence <- converge
 
       if(nIC > 1){
         geneExpressionRounded <- round(geneExpression, digits = uniqueDigits)
@@ -702,11 +701,21 @@ if(missing(nNoise)){
           LCs <- utils::read.table(outFileLC, header = FALSE)
           colnames(LCs) <- c("Model No", "Limit Cycle No", "IC No", "Period", geneNames)
           metadataTmp$LCData <- LCs
+          LCICs <- unique(LCs[, c(1, 3)]) #Taking note of which model/ic index pairs caused an LC
+          for(lc in seq_len(LC_Test)){
+            #Labeling non-converged ics as producing limit cycles
+            modelIdx <- LCICs[lc,1]
+            icIdx <- LCICs[lc,2]
+            testIdx <- (modelIdx - 1)*nIC + icIdx
+            if(converge[testIdx,1] == 0){converge[testIdx,1] <- 2}
+          }
+
         }
         else{ #Reports errors in file handling
           message("No limit cycles detected")
         }
       }
+      metadataTmp$modelConvergence <- converge
     }
 
     ## Knockouts
