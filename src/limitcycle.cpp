@@ -707,6 +707,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 
             if(countLC>=maxLCs) break;
 
+            int icCount;
             icCount = i + 1; //Shift by 1 because R indexes from 1
             for(int j=0;j<NewSimSteps +1; j++){
                 //Write model number, LC number, and IC number
