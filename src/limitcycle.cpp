@@ -709,9 +709,11 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 
             int icCount;
             icCount = i + 1; //Shift by 1 because R indexes from 1
+            int modelNo;
+            modelNo = modelCount + 1; //Shift by 1 because R indexes from 1
             for(int j=0;j<NewSimSteps +1; j++){
                 //Write model number, LC number, and IC number
-                outLC<<modelCount<<"\t"<<countLC<<"\t"<<icCount<<"\t";
+                outLC<<modelNo<<"\t"<<countLC<<"\t"<<icCount<<"\t";
                 //Write Period
                 outLC<<period<<"\t";
                 for(size_t k=0; k<number_gene;k++){
