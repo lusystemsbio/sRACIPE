@@ -994,15 +994,15 @@ setMethod(f="sracipeConvergeDist",
           signature="RacipeSE",
           definition=function(.object, plotToFile = FALSE)
           {
-            meta <- metadata(.object)
+            metadataTmp <- metadata(.object)
             #Checks if modelConvergence data exists in the object metadata
-            dataExists <- "modelConvergence" %in% names(meta)
+            dataExists <- "modelConvergence" %in% names(metadataTmp)
             if(!dataExists){
               message("Cannot plot without convergence data")
               return(.object)
             }
-            convergenceData <- meta$modelConvergence
-            configuration <- meta$config
+            convergenceData <- metadataTmp$modelConvergence
+            configuration <- metadataTmp$config
             numModels <- configuration$simParams["numModels"]
             nIC <- configuration$simParams["nIC"]
             numConvergenceTests <- configuration$simParams["numConvergenceTests"]
@@ -1024,7 +1024,7 @@ setMethod(f="sracipeConvergeDist",
               convergedProportions[i] <- sum(testScores <= i) / numExprx
             }
 
-            title = paste0("Ratio of Converged ", annotation(.object), " Models over number of convergence tests")
+            title = paste0("Ratio of Stable ", annotation(.object), " Models over number of convergence tests")
             plot(seq(1,numConvergenceTests), convergedProportions, type="l", col="blue",
                  xlab="# Convergence Tests", ylab = "% Converged Models",
                  main = title)
@@ -1033,6 +1033,13 @@ setMethod(f="sracipeConvergeDist",
               message("Plot saved as pdf files in the working directory.")
               dev.off() #closes graphics object and send it to working directory
             }
+
+            metadataTmp$stableProportion <- convergedProportions[numConvergenceTests]
+            if(convergedProportions[numConvergenceTests] > 0.99){
+              ninetyNineIndex <- which(convergedProportions > 0.99)[1]
+              metadataTmp$ninetyNineConvergedNum <- ninetyNineIndex
+            }
+            metadata(.object) <- metadataTmp
 
             return(.object)
           }
