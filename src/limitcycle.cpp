@@ -860,7 +860,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
         if(count > 0){
             int model = modelCount + 1;
             outLCIC<<model<<"\t";
-            for(size_t ic; ic<nIC; ic++){
+            for(size_t ic=0; ic<nIC; ic++){
                 bool isLC = (convergBool[ic] == convergBoolTmp[ic]);
                 outLCIC<<isLC<<"\t";
             }
