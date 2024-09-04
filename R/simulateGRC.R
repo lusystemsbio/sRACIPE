@@ -707,7 +707,7 @@ if(missing(nNoise)){
           #categorizing them separately from non-converging models
           for(k in nrow(LCICs)){
             modelNo <- LCICs[k, 1]
-            positions <- which(LCICs[i, -1] == 1)
+            positions <- which(LCICs[k, -1] == 1)
             startIdx <- (modelNo - 1)*nIC + 1
             converge[startIdx + positions - 1, 1] <- 2
           }
