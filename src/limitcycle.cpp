@@ -673,7 +673,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
             }
             //if it is the same limit cycle, skip subsequent calculation:
             if(is_same) {
-                convergeBool[i] = true;
+                convergBool[i] = true;
                 continue;
                 }
 
@@ -858,13 +858,13 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
 
         //Checking which initial counditions produced limitcycles
         if(count > 0){
-            model = modelCount + 1;
+            int model = modelCount + 1;
             outLCIC<<model<<"\t";
             for(size_t ic; ic<nIC; ic++){
-                bool isLC = (convergeBool[ic] == convergeBoolTmp[ic]);
+                bool isLC = (convergBool[ic] == convergBoolTmp[ic]);
                 outLCIC<<isLC<<"\t";
             }
-            outLCIC<<"\n"
+            outLCIC<<"\n";
         }
 
     }
