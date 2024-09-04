@@ -672,7 +672,10 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
                 }
             }
             //if it is the same limit cycle, skip subsequent calculation:
-            if(is_same) continue;
+            if(is_same) {
+                convergeBool[i] = true;
+                continue;
+                }
 
             LC_period_arr[countLC]=period;
             countLC++;
@@ -692,14 +695,14 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
             //relax MAX_DIST by factoring it by 10:
             MAX_DIST *= 10.0;
 
-            //change convergBool status to false for all the positions that 
+            //change convergBool status to true for all the positions that 
             //all give to this limit cycle:
             for (size_t j=0;j<nIC;j++){
-	            if (convergBool[j]==false) continue;
+	            if (convergBool[j]==true) continue;
                 for(int k=0;k<period+2;k++){
                     tmp_norm=sum_delta(exprxGene[j],LC_Exp_Arr[k],number_gene);
                     if(tmp_norm<=MAX_DIST) {
-	                    convergBool[j]=false;
+	                    convergBool[j]=true;
                         break;
                     }
                 }
@@ -707,13 +710,11 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 
             if(countLC>=maxLCs) break;
 
-            int icCount;
-            icCount = i + 1; //Shift by 1 because R indexes from 1
             int modelNo;
             modelNo = modelCount + 1; //Shift by 1 because R indexes from 1
             for(int j=0;j<NewSimSteps +1; j++){
-                //Write model number, LC number, and IC number
-                outLC<<modelNo<<"\t"<<countLC<<"\t"<<icCount<<"\t";
+                //Write model number, LC number
+                outLC<<modelNo<<"\t"<<countLC<<"\t";
                 //Write Period
                 outLC<<period<<"\t";
                 for(size_t k=0; k<number_gene;k++){
@@ -732,7 +733,7 @@ int find_limitcycles(std::vector<std::vector<double> > &exprxGene,
 // [[Rcpp::export]]
 
 int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
-    String outFileLC, Rcpp::List config,
+    String outFileLC, String outFileLCIC, Rcpp::List config,
     Rcpp::LogicalVector &modelConverg,
     String inFileParams, String inFileGE,
     Rcpp::NumericVector geneTypes,
@@ -770,6 +771,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     std::string fileNameGE = inFileGE;
     std::string fileNameParam = inFileParams;
     std::string fileNameLC = outFileLC;
+    std::string fileNameLCIC = outFileLCIC;
 
     std::ifstream inParams;
     inParams.open(fileNameParam,
@@ -792,6 +794,14 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     if(!outLC.is_open()) {     
         Rcout << "Cannot open output file.\n";
         return -3;}
+    
+    std::ofstream outLCIC;
+    outLCIC.open(fileNameLCIC,std::ios::out);
+
+    if(!outLCIC.is_open()) {     
+        Rcout << "Cannot open output file.\n";
+        return -4;}
+    
     
     for(size_t modelCount=0; modelCount<numModels; modelCount++){
         //Initialize production rate of genes
@@ -826,8 +836,11 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
         }
 
         Rcpp::LogicalVector convergBool(nIC);
+        //Used to see which ics lead to limit cycles
+        Rcpp::LogicalVector convergBoolTmp(nIC);
         for(size_t i=0; i<nIC; i++){
             convergBool[i] = modelConverg[i + modelCount*nIC];
+            convergBoolTmp[i] = modelConverg[i + modelCount*nIC];
         }
 
         int count;
@@ -842,6 +855,18 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
                                 AllowedPeriodError, SamePointProximity,
                                 convergBool, stepper);
         totLCs += count;
+
+        //Checking which initial counditions produced limitcycles
+        if(count > 0){
+            model = modelCount + 1;
+            outLCIC<<model<<"\t";
+            for(size_t ic; ic<nIC; ic++){
+                bool isLC = (convergeBool[ic] == convergeBoolTmp[ic]);
+                outLCIC<<isLC<<"\t";
+            }
+            outLCIC<<"\n"
+        }
+
     }
 
     inGE.close();

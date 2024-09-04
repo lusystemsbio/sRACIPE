@@ -418,6 +418,7 @@ if(!missing(config)){
   outFileIC <- tempfile(fileext = ".txt")
   outFileConverge <- tempfile(fileext = ".txt")
   outFileLC <- tempfile(fileext = ".txt")
+  outFileLCIC <- tempfile(fileext = ".txt") #Records the different ics which produce limitcycles
   if(genParams){
   message("Generating gene thresholds")
   #Rcpp::sourceCpp("src/thresholdGenerator.cpp")
@@ -694,20 +695,21 @@ if(missing(nNoise)){
         message("Checking for limit cycles")
         LCStepperInt <- 1L
         if(configuration$LCStepper == "RK4"){ LCStepperInt <- 4L}
-        LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, configuration, converge[,1],
+        LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, outFileLCIC, configuration, converge[,1],
                                   outFileParams, outFileGE, metadataTmp$geneTypes, LCStepperInt)
         if(LC_Test > 0){
           metadataTmp$totalNumofLCs <- LC_Test
           LCs <- utils::read.table(outFileLC, header = FALSE)
-          colnames(LCs) <- c("Model No", "Limit Cycle No", "IC No", "Period", geneNames)
+          colnames(LCs) <- c("Model No", "Limit Cycle No", "Period", geneNames)
           metadataTmp$LCData <- LCs
-          LCICs <- unique(LCs[, c(1, 3)]) #Taking note of which model/ic index pairs caused an LC
-          for(lc in seq_len(LC_Test)){
-            #Labeling non-converged ics as producing limit cycles
-            modelIdx <- LCICs[lc,1]
-            icIdx <- LCICs[lc,2]
-            testIdx <- (modelIdx - 1)*nIC + icIdx
-            if(converge[testIdx,1] == 0){converge[testIdx,1] <- 2}
+          LCICs <- utils::read.table(outFileLCIC, header = FALSE)
+          #Recording the initial conditions which produced limit cycles and
+          #categorizing them separately from non-converging models
+          for(k in nrow(LCICs)){
+            modelNo <- LCICs[k, 1]
+            positions <- LCICs(array[i, -1] == 1)
+            startIdx <- (modelNo - 1)*nIC + 1
+            converge[startIdx + positions - 1, 1] <- 2
           }
 
         }

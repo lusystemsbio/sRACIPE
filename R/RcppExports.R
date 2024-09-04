@@ -5,8 +5,8 @@ generateThresholds <- function(geneInteraction, thresholdGene, config) {
     .Call('_sRACIPE_generateThresholds', PACKAGE = 'sRACIPE', geneInteraction, thresholdGene, config)
 }
 
-limitcyclesGRC <- function(geneInteraction, outFileLC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper = 1L) {
-    .Call('_sRACIPE_limitcyclesGRC', PACKAGE = 'sRACIPE', geneInteraction, outFileLC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper)
+limitcyclesGRC <- function(geneInteraction, outFileLC, outFileLCIC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper = 1L) {
+    .Call('_sRACIPE_limitcyclesGRC', PACKAGE = 'sRACIPE', geneInteraction, outFileLC, outFileLCIC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper)
 }
 
 simulateGRCCpp <- function(geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, stepper = 1L) {
