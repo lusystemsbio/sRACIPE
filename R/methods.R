@@ -1006,7 +1006,8 @@ setMethod(f="sracipeConvergeDist",
             numModels <- configuration$simParams["numModels"]
             nIC <- configuration$simParams["nIC"]
             numConvergenceTests <- configuration$simParams["numConvergenceTests"]
-            numExprx = numModels #Check RacipeSE() constructor for why this is true
+            numExprx <- numModels #Check RacipeSE() constructor for why this is true
+            lc <- configuration$options["limitcycles"]
 
             #Initialize proportions
             convergedProportions <- numeric(numConvergenceTests)
@@ -1017,8 +1018,14 @@ setMethod(f="sracipeConvergeDist",
             }
 
             #Getting rid of non-converged models
-            convergedICs <- convergenceData[convergenceData[, 1] != 0, ]
+            convergedICs <- convergenceData[convergenceData[, 1] == 1, ]
             testScores <- convergedICs[,2]
+
+            #Removing limit cycles from consideration
+            if(lc){
+              numLCICs <- length(which(convergenceData[,1] == 2))
+              numExprx <- numExprx - numLCICs
+            }
 
             for (i in 1:numConvergenceTests){
               convergedProportions[i] <- sum(testScores <= i) / numExprx

@@ -703,7 +703,7 @@ if(missing(nNoise)){
           colnames(LCs) <- c("Model No", "Limit Cycle No", "Period", geneNames)
           metadataTmp$LCData <- LCs
           LCICs <- utils::read.table(outFileLCIC, header = FALSE)
-          metadataTmp$LCICs <- LCICs
+          #metadataTmp$LCICs <- LCICs
           #Recording the initial conditions which produced limit cycles and
           #categorizing them separately from non-converging models
           for(k in 1:nrow(LCICs)){
