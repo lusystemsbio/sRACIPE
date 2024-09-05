@@ -706,7 +706,7 @@ if(missing(nNoise)){
           metadataTmp$LCICs <- LCICs
           #Recording the initial conditions which produced limit cycles and
           #categorizing them separately from non-converging models
-          for(k in nrow(LCICs)){
+          for(k in 1:nrow(LCICs)){
             modelNo <- LCICs[k, 1]
             positions <- which(LCICs[k, -1] == 1)
             startIdx <- (modelNo - 1)*nIC + 1
