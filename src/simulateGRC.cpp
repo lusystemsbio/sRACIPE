@@ -234,6 +234,41 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 
 }
 
+//Generate a vector of multipliers to adjust parameters as functions 
+// of time. pointVals is a vector of user-provided points which are 
+// automatically assumed to be evenly distributed along the simulation time.
+// TODO: May want to add interpolation options
+std::vector<double> calcSigValues(const double &totTime,
+                                    const double &h,
+                                    const std::vector<double> &pointVals)
+{
+  int nSteps = totTime / h;
+  int nVals = pointVals.size();
+  int nIntervals = nVals; //Here for if interpolation is added later
+  double intervalSize = ceil(nSteps/nIntervals);
+  //We separate and truncate the last interval incase nSteps % nIntervals !=0
+  double lastIntervalSize;
+  if((nSteps % nIntervals) == 0){
+    lastIntervalSize = intervalSize;
+  } else{
+    lastIntervalSize = nSteps % nIntervals;
+  }
+
+  std::vector<double> sigVals(nSteps);
+  
+  for(int i=0; i<(nIntervals-1);i++){
+    for(int j=0; j<intervalSize; j++){
+      sigVals[intervalSize*i + j] = pointVals[i];
+    }
+  }
+
+  for(int j=0;j<lastIntervalSize;j++){
+    sigVals[intervalSize*(nIntervals - 1) + j] = pointVals[nVals-1];
+  }
+
+  return sigVals;
+}
+
 
 // [[Rcpp::export]]
 
