@@ -52,7 +52,9 @@
 #' @param hillCoeffMax (optional) integer. Default 6. Maximum hill coefficient.
 #' @param integrateStepSize (optional) numeric. Default 0.02. step size for
 #' integration using "EM" and "RK4" steppers.
-#' @param simulationTime (optional) numeric. Total simulation time.
+#' @param simulationTime (optional) numeric. Default 50. Total simulation time.
+#' Only used for stochastic and time series simulations. For adjusting
+#' deterministic simulation run times, see numConvergenceTests.
 #' @param nIC (optional) integer. Default 1. Number of initial conditions to be
 #' simulated for each model.
 #' @param ... Other arguments
@@ -128,10 +130,17 @@
 #' @param signalRate (optional) numeric. Default \code{10}. The factor by which
 #' the differential equations for fast genes are multiplied by. Fast genes only
 #' have inward signaling interactions of types 5 or 6
+#' @param uniqueDigits (optional) integer. Default \code{4}. Deterministic
+#' simulations with nIC > 1 count the number of unique steady states per model
+#' by truncating the expression by this many digits and counting the number of
+#' unique expressions
 #' @param convergThresh (optional) numeric. Default \code{1e-12}. The threshold
 #' for convergence to a steady state for deterministic simulations.
-#' @param numStepConverge (optional) numeric. Default \code{500}. The number of
+#' @param numStepConverge (optional) integer Default \code{500}. The number of
 #' integration steps between convergence tests for deterministic simulations.
+#' @param numConvergenceTests (optional) integer Default \code{25}. The total
+#' number of convergence tests run per model initial condition in deterministic
+#' simulations.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
@@ -161,7 +170,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       plotToFile = FALSE,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
-                      signalRate = 10.0, convergThresh = 1e-12, uniqueDigits = 4,
+                      signalRate = 10.0, uniqueDigits = 4, convergThresh = 1e-12,
                       numStepsConverge = 500, numConvergenceTests = 25,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
