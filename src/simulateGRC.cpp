@@ -382,15 +382,14 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     //vector containing source and type of nth interaction
     std::vector<std::pair<size_t,size_t> > intSrcTypeTmp;
 
-  // Create even partition of the simulation time depending on the number of
-  // signal values provided by the user
+  // Check if parameters are being time-varied, and load time points if so
   bool isTimeVarying = false;
   int nVals = signalVals.nrow();
-  std::vector<double> timePoints(nVals+1);
+  std::vector<double> timePoints(nVals);
   if(signalVals( 0 , 0 ) > -1){
     isTimeVarying = true;
-    for(int t = 0; t<(nVals+1); t++){
-      timePoints[t] = t*(simulationTime/nVals);
+    for(int t = 0; t<nVals; t++){
+      timePoints[t] = signalVals( t , 0 );
     }
   }
 
