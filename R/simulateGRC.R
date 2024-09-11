@@ -138,9 +138,19 @@
 #' for convergence to a steady state for deterministic simulations.
 #' @param numStepConverge (optional) integer Default \code{500}. The number of
 #' integration steps between convergence tests for deterministic simulations.
-#' @param numConvergenceTests (optional) integer Default \code{25}. The total
+#' @param numConvergenceTests (optional) integer. Default \code{25}. The total
 #' number of convergence tests run per model initial condition in deterministic
 #' simulations.
+#' @param limitcycles (optional) logical. Default \code{FALSE}.
+#' @param LCSimTime (optional) numeric. Default \code{10}.
+#' @param LCSimStepSize (optional) numeric. Default \code{0.01}.
+#' @param maxLCs (optional) integer. Default \code{10}.
+#' @param LCIter (optional) integer. Default \code{20}.
+#' @param MaxPeriods (optional) integer. Default \code{100}.
+#' @param NumSampledPeriods (optional) integer. Default \code{3}.
+#' @param AllowedPeriodError (optional) integer. Default \code{3}.
+#' @param SamePointProximity (optional) numeric. Default \code{0.1}.
+#' @param LCStepper (optional) Character.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
