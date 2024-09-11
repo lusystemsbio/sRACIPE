@@ -9,7 +9,7 @@ limitcyclesGRC <- function(geneInteraction, outFileLC, outFileLCIC, config, mode
     .Call('_sRACIPE_limitcyclesGRC', PACKAGE = 'sRACIPE', geneInteraction, outFileLC, outFileLCIC, config, modelConverg, inFileParams, inFileGE, geneTypes, stepper)
 }
 
-simulateGRCCpp <- function(geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, stepper = 1L) {
-    .Call('_sRACIPE_simulateGRCCpp', PACKAGE = 'sRACIPE', geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, stepper)
+simulateGRCCpp <- function(geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, signalVals, signalingTypes, stepper = 1L) {
+    .Call('_sRACIPE_simulateGRCCpp', PACKAGE = 'sRACIPE', geneInteraction, config, outFileGE, outFileParams, outFileIC, outFileConverge, geneTypes, signalVals, signalingTypes, stepper)
 }
 

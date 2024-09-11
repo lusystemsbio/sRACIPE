@@ -57,7 +57,11 @@ void stepEM( std::vector <double> &expression_gene,
              const double &D,
              const double &h,
              const double &signalRate,
-             const Rcpp::NumericVector &geneTypes);
+             const Rcpp::NumericVector &geneTypes,
+             const bool &isTimeVarying,
+             const std::vector<double> &timePoints,
+             const Rcpp::NumericMatrix &signalVals,
+             const Rcpp::NumericVector &signalingTypes);
 void stepEM_OU( std::vector <double> &expression_gene,
             std::ofstream &out_GE,
             const double &tot_time,
@@ -79,7 +83,11 @@ void stepEM_OU( std::vector <double> &expression_gene,
             const double &h,
             const double &ouNoise_tcorr,
             const double &signalRate,
-            const Rcpp::NumericVector &geneTypes);
+            const Rcpp::NumericVector &geneTypes,
+            const bool &isTimeVarying,
+            const std::vector<double> &timePoints,
+            const Rcpp::NumericMatrix &signalVals,
+            const Rcpp::NumericVector &signalingTypes);
 void stepRK4( std::vector <double> &expression_gene,
         std::ofstream &out_GE,
         const double &tot_time,
@@ -96,7 +104,11 @@ void stepRK4( std::vector <double> &expression_gene,
         const double &print_start, const double &print_interval,
         const double &h,
         const double &signalRate,
-        const Rcpp::NumericVector &geneTypes);
+        const Rcpp::NumericVector &geneTypes,
+        const bool &isTimeVarying,
+        const std::vector<double> &timePoints,
+        const Rcpp::NumericMatrix &signalVals,
+        const Rcpp::NumericVector &signalingTypes);
 
  void stepDP( std::vector <double> &expression_gene,
           std::ofstream &out_GE,
@@ -114,7 +126,11 @@ void stepRK4( std::vector <double> &expression_gene,
           const double &print_start, const double &print_interval,
           double h, const double &rk_tolerance,
           const double &signalRate,
-          const Rcpp::NumericVector &geneTypes);
+          const Rcpp::NumericVector &geneTypes,
+          const bool &isTimeVarying,
+          const std::vector<double> &timePoints,
+          const Rcpp::NumericMatrix &signalVals,
+          const Rcpp::NumericVector &signalingTypes);
 
 void stepEMconv( std::vector <double> &expression_gene,
              std::ofstream &out_GE,

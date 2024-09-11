@@ -186,6 +186,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
                       SamePointProximity = 0.1, LCStepper = "RK4",
+                      paramSignalVals = data.frame(),
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -502,7 +503,7 @@ if(missing(nNoise)){
     }
   }
   #Checking whether or not to do convergence tests
-  if(all(simDet, nNoise==0L, !timeSeries)){
+  if(all(simDet, nNoise==0L, !timeSeries, nrow(paramSignalVals)==0)){
     convergTesting <- TRUE
     message("Running with convergence tests")
   }else {convergTesting <- FALSE}
@@ -520,6 +521,34 @@ if(missing(nNoise)){
     if(configuration$stepper == "DP") {stepperInt <- 51L}
   }
 
+  numberGene <- nrow(geneInteraction)
+  paramSignalTypes <- numeric(numberGene)
+  if(nrow(paramSignalVals)>0){ #Determining which genes are being varied, if an input is given
+    metadataTmp$paramSignalVals <- paramSignalVals
+    paramName <- sracipeGenParamNames(rSet)
+    prodParams <- paramName[1:numberGene]
+    degParams <- paramName[(numberGene+1):(2*numberGene)]
+    variedParams <- colnames(paramSignalVals)
+    for(param in variedParams){
+      if(param %in% prodParams){
+        geneIdx <- which(prodParams == param)
+        paramSignalTypes[geneIdx] <- 1
+      }
+      else if(param %in% degParams){
+        geneIdx <- which(degParams == param)
+        paramSignalTypes[geneIdx] <- 2
+      }
+      else{
+        message("Invalid Param names given in paramSignalVals")
+        return()
+      }
+
+    }
+  }else{
+    #If no paramSignalVals dataframe provided, create a dummy data frame to pass to C++
+    paramSignalVals <- data.frame(temp1 = c(-1,-1), temp2 = c(-1, -1))
+  }
+  paramSignalValsTmp <- as.matrix(paramSignalVals)
 
   if(configuration$stochParams["nNoise"] > 0) {
     if(stepper != "EM" && stepper != "EM_OU"){
@@ -539,7 +568,9 @@ if(missing(nNoise)){
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
   Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, outFileConverge, metadataTmp$geneTypes, stepperInt)
+                                       outFileParams,outFileIC, outFileConverge,
+                                       metadataTmp$geneTypes, paramSignalValsTmp,
+                                       paramSignalTypes, stepperInt)
 
     if(configuration$options["integrate"]){
 
@@ -687,7 +718,7 @@ if(missing(nNoise)){
       converge<- utils::read.table(outFileConverge, header = FALSE)
       colnames(converge)<-c("Model Convergence", "Tests Done")
 
-      if(nIC > 1){
+      if(nIC > 1){#Counts unique states per model
         geneExpressionRounded <- round(geneExpression, digits = uniqueDigits)
         uniqueStates <- numeric(numModels) #store number of unique states in a vector
         for(modelCount in seq_len(numModels)){

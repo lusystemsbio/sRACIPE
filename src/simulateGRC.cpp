@@ -234,40 +234,6 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 
 }
 
-//Generate a vector of multipliers to adjust parameters as functions 
-// of time. pointVals is a vector of user-provided points which are 
-// automatically assumed to be evenly distributed along the simulation time.
-// TODO: May want to add interpolation options
-std::vector<double> calcSigValues(const double &totTime,
-                                    const double &h,
-                                    const std::vector<double> &pointVals)
-{
-  int nSteps = totTime / h;
-  int nVals = pointVals.size();
-  int nIntervals = nVals; //Here for if interpolation is added later
-  double intervalSize = ceil(nSteps/nIntervals);
-  //We separate and truncate the last interval incase nSteps % nIntervals !=0
-  double lastIntervalSize;
-  if((nSteps % nIntervals) == 0){
-    lastIntervalSize = intervalSize;
-  } else{
-    lastIntervalSize = nSteps % nIntervals;
-  }
-
-  std::vector<double> sigVals(nSteps);
-  
-  for(int i=0; i<(nIntervals-1);i++){
-    for(int j=0; j<intervalSize; j++){
-      sigVals[intervalSize*i + j] = pointVals[i];
-    }
-  }
-
-  for(int j=0;j<lastIntervalSize;j++){
-    sigVals[intervalSize*(nIntervals - 1) + j] = pointVals[nVals-1];
-  }
-
-  return sigVals;
-}
 
 
 // [[Rcpp::export]]
@@ -276,6 +242,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                 Rcpp::List config, String outFileGE, String outFileParams,
                 String outFileIC, String outFileConverge,
                 Rcpp::NumericVector geneTypes,
+                Rcpp::NumericMatrix signalVals,
+                Rcpp::NumericVector signalingTypes,
               const int stepper = 1)
 
 {
@@ -413,6 +381,18 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     std::vector<size_t> tgtGeneTmp;
     //vector containing source and type of nth interaction
     std::vector<std::pair<size_t,size_t> > intSrcTypeTmp;
+
+  // Create even partition of the simulation time depending on the number of
+  // signal values provided by the user
+  bool isTimeVarying = false;
+  int nVals = signalVals.nrows();
+  std::vector<double> timePoints(nVals+1);
+  if(signalVals[0][0] > -1){
+    isTimeVarying = true;
+    for(size_t t = 0; t<(nVals+1); t++){
+      timePoints[t] = t*(simulationTime/nVals);
+    }
+  }
 
   //  size_t  nInteractions = convertAdjMatToVector(geneInteraction,
   //                                                tgtGeneTmp, intSrcTypeTmp);
@@ -563,7 +543,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h, 
-                    signalRate, geneTypes);
+                    signalRate, geneTypes, isTimeVarying, timePoints,
+                    signalVals, signalingTypes);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -574,7 +555,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        sdFactor,
                        outputPrecision,
                        printStart,  printInterval, h,
-                       signalRate, geneTypes);
+                       signalRate, geneTypes, isTimeVarying,
+                       timePoints, signalVals, signalingTypes);
               break;
 
             case 5:
@@ -586,7 +568,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       sdFactor,
                       outputPrecision,printStart, printInterval,h,
                       rkTolerance,
-                      signalRate, geneTypes);
+                      signalRate, geneTypes, isTimeVarying,
+                      timePoints, signalVals, signalingTypes);
               break;
 
             case 6:
@@ -597,7 +580,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h,
-                    ou_tcorr, signalRate, geneTypes);
+                    ou_tcorr, signalRate, geneTypes, isTimeVarying,
+                    timePoints, signalVals, signalingTypes);
               break;
 
             case 11:
