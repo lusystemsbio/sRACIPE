@@ -387,7 +387,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   bool isTimeVarying = false;
   int nVals = signalVals.nrow();
   std::vector<double> timePoints(nVals+1);
-  if(signalVals[0][0] > -1){
+  if(signalVals( 0 , 0 ) > -1){
     isTimeVarying = true;
     for(int t = 0; t<(nVals+1); t++){
       timePoints[t] = t*(simulationTime/nVals);
