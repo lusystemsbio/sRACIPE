@@ -528,7 +528,13 @@ if(missing(nNoise)){
     paramName <- sracipeGenParamNames(rSet)
     prodParams <- paramName[1:numberGene]
     degParams <- paramName[(numberGene+1):(2*numberGene)]
-    variedParams <- colnames(paramSignalVals)
+    variedParams <- colnames(paramSignalVals[,2:ncol(paramSignalVals)]) #First column is time  points
+
+    if(paramSignalVals[1,1] != 0 | paramSignalVals[nrow(paramSignalVals), 1] != simulationTime){
+      message("The first and last time points for parameter variation must be 0 and simulationTime respectively")
+      return()
+    }
+
     for(param in variedParams){
       if(param %in% prodParams){
         geneIdx <- which(prodParams == param)

@@ -76,12 +76,13 @@ void calcMultiplier(const int& geneCount1, const int& geneCount2,
 void calcSigValues(const std::vector<double> &timePoints,
                                     const double &t,
                                     const Rcpp::NumericVector &signalVals,
-                                    double currVal){
+                                    double &currVal){
     
     int nVals = signalVals.size();
     for(int i=0; i<nVals; i++){
       if(t <= timePoints[i+1]){
-          currVal = signalVals[i];
+          currVal = signalVals[i] + ((t-timePoints[i])/(timePoints[i+1]-timePoints[i]))
+            *(signalVals[i+1]-signalVals[i]);
           break;
       }
     }
