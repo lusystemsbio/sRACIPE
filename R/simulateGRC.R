@@ -534,6 +534,10 @@ if(missing(nNoise)){
       message("The first and last time points for parameter variation must be 0 and simulationTime respectively")
       return()
     }
+    if(!(identical(paramSignalVals[,1], sort(paramSignalVals[,1])))){
+      message("Time points for parameter variation must be given in ascending order")
+      return()
+    }
 
     for(param in variedParams){
       if(param %in% prodParams){
