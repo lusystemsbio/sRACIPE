@@ -403,6 +403,7 @@ do
     exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier
       *gMults[geneCount1] -kGene[geneCount1]*kMults[geneCount1]*
       exprxGene[geneCount1]*degMultiplier);
+    Rcout << degMultiplier << "\n";
   }
 
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -427,8 +428,8 @@ do
       degMultiplier = degMultiplier*signalRate;
     }
 
-    exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
-      growthMultiplier*gMults[geneCount1]-
+    exprxGeneH2[geneCount1]=h*((gGene[geneCount1])
+      *growthMultiplier*gMults[geneCount1]-
       kGene[geneCount1]*kMults[geneCount1]*(exprxGene[geneCount1] +
       0.5*exprxGeneH1[geneCount1])*degMultiplier);
   }
@@ -456,8 +457,8 @@ do
     }
 
     exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier
-      *gMults[geneCount1]-kGene[geneCount1]*
-      kMults[geneCount1]*(exprxGene[geneCount1] +
+      *gMults[geneCount1]-kGene[geneCount1]
+      *kMults[geneCount1]*(exprxGene[geneCount1] +
       0.5*exprxGeneH2[geneCount1])*degMultiplier);
   }
 
@@ -484,9 +485,9 @@ do
       degMultiplier = degMultiplier*signalRate;
     }
 
-    exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier*
-      gMults[geneCount1]-kGene[geneCount1]*
-      kMults[geneCount1]*(exprxGene[geneCount1]+
+    exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier
+      *gMults[geneCount1]-kGene[geneCount1]
+      *kMults[geneCount1]*(exprxGene[geneCount1]+
       exprxGeneH3[geneCount1])*degMultiplier);
   }
 
