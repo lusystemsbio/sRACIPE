@@ -361,11 +361,11 @@ do
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         if(signalingTypes[geneCount1] == 1){ //g signaling
           calcSigValues(timePoints, i, 
-            signalVals( _ , geneCount1), gMults[geneCount1]);
+            signalVals( _ , (geneCount1+1)), gMults[geneCount1]);
         }
         else if(signalingTypes[geneCount1] == 2){ //k signaling
           calcSigValues(timePoints, i, 
-            signalVals( _ , geneCount1), kMults[geneCount1]);
+            signalVals( _ , (geneCount1+1)), kMults[geneCount1]);
         }
     }
   }
@@ -564,11 +564,11 @@ void stepDP( std::vector <double> &exprxGene,
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
           if(signalingTypes[geneCount1] == 1){ //g signaling
             calcSigValues(timePoints, i, 
-              signalVals( _ , geneCount1), gMults[geneCount1]);
+              signalVals( _ , (geneCount1+1)), gMults[geneCount1]);
           }
           else if(signalingTypes[geneCount1] == 2){ //k signaling
             calcSigValues(timePoints, i, 
-              signalVals( _ , geneCount1), kMults[geneCount1]);
+              signalVals( _ , (geneCount1+1)), kMults[geneCount1]);
           }
       }
     }
