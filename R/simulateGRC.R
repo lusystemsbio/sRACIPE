@@ -204,10 +204,12 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
    if((methods::is(circuit,"character")) | (methods::is(circuit, "data.frame")))
   {
     sracipeCircuit(rSet) <- circuit
+    circuitTmp <- sracipeCircuit(rSet)
     metadataTmp$geneTypes <- metadata(rSet)$geneTypes
+    metadataTmp$nInteractions <- length(circuitTmp[,1])
+
     if(methods::is(circuit, "data.frame")){
       metadataTmp$annotation <- deparse(substitute(circuit))
-      metadataTmp$nInteractions <- length(circuit[,1])
       }
 
    }
