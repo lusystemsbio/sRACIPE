@@ -186,6 +186,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
         kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+      if(exprxGeneH1[geneCount1]<0) exprxGeneH1[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -213,6 +214,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
         growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
         0.5*exprxGeneH1[geneCount1])*degMultiplier);
+      if(exprxGeneH2[geneCount1]<0) exprxGeneH2[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -240,6 +242,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1] +
         0.5*exprxGeneH2[geneCount1])*degMultiplier);
+      if(exprxGeneH3[geneCount1]<0) exprxGeneH3[geneCount1]=0;
     }
 
 
@@ -268,6 +271,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+
         exprxGeneH3[geneCount1])*degMultiplier);
+      if(exprxGeneH4[geneCount1]<0) exprxGeneH4[geneCount1]=0;
     }
       /////////////////////////////////////////////////////////////
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
