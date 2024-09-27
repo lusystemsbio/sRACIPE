@@ -299,6 +299,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
         outGE<<std::setprecision(outputPrecision)
         <<exprxGene[geneCount1]<<"\t";
         }
+      isConverged = true;  //Necessary to stop double reporting
       outConv<<3<<"\t" << testIter <<"\n";
       break;
     }
