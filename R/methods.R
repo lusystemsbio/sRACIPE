@@ -1027,6 +1027,12 @@ setMethod(f="sracipeConvergeDist",
               numExprx <- numExprx - numLCICs
             }
 
+            #Removing models with NaN values
+            if(!all(convergenceData[, 1] != 3)){
+              numNaN <- sum(convergenceData[, 1] == 3)
+              numExprx <- numExprx - numNaN
+            }
+
             for (i in 1:numConvergenceTests){
               convergedProportions[i] <- sum(testScores <= i) / numExprx
             }

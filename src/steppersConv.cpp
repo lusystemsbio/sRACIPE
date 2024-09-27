@@ -152,6 +152,7 @@ for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
 }
 double i=0.0;
 bool isConverged = false;
+bool isBlowup = false; //Checking for explosions due to stiffness
 
 //For each test, we run the simulation for numStepsConverge iterations
 //and check if the system has changed state in that time
@@ -186,7 +187,6 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
         kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
-      if(exprxGeneH1[geneCount1]<0) exprxGeneH1[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -214,7 +214,6 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
         growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
         0.5*exprxGeneH1[geneCount1])*degMultiplier);
-      if(exprxGeneH2[geneCount1]<0) exprxGeneH2[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -242,7 +241,6 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1] +
         0.5*exprxGeneH2[geneCount1])*degMultiplier);
-      if(exprxGeneH3[geneCount1]<0) exprxGeneH3[geneCount1]=0;
     }
 
 
@@ -271,7 +269,6 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
         kGene[geneCount1]*(exprxGene[geneCount1]+
         exprxGeneH3[geneCount1])*degMultiplier);
-      if(exprxGeneH4[geneCount1]<0) exprxGeneH4[geneCount1]=0;
     }
       /////////////////////////////////////////////////////////////
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -279,6 +276,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
         (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
         2*exprxGeneH3[geneCount1]+exprxGeneH4[geneCount1])/6;
       if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
+      if(std::isinf(exprxGene[geneCount1])) isBlowup = true;
     }
   }
 
@@ -295,6 +293,15 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       outConv<<isConverged<<"\t" << testIter <<"\n";
       break;
       }
+    else if(isBlowup){
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+        {
+        outGE<<std::setprecision(outputPrecision)
+        <<exprxGene[geneCount1]<<"\t";
+        }
+      outConv<<3<<"\t" << testIter <<"\n";
+      break;
+    }
 
 };
 if(isConverged == false){

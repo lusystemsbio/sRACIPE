@@ -141,7 +141,8 @@
 #' @param numConvergenceTests (optional) integer. Default \code{25}. The total
 #' number of convergence tests run per model initial condition in deterministic
 #' simulations.
-#' @param limitcycles (optional) logical. Default \code{FALSE}.
+#' @param limitcycles (optional) logical. Default \code{FALSE}. Whether to check
+#' for limit cycles
 #' @param LCSimTime (optional) numeric. Default \code{10}.
 #' @param LCSimStepSize (optional) numeric. Default \code{0.01}.
 #' @param maxLCs (optional) integer. Default \code{10}.
@@ -642,6 +643,10 @@ if(missing(nNoise)){
         return(rSet)
       }
     geneExpression <- utils::read.table(outFileGE, header = FALSE)
+    if(all(!(is.na(geneExpression)))){ #Checking if any models had problematic results
+      warnings("NaN in expression data. Likely due to stiff equations. Try
+               lowering step size to fix")
+    }
 
     if(
       (configuration$simParams["printStart"] +
