@@ -644,8 +644,9 @@ if(missing(nNoise)){
       }
     geneExpression <- utils::read.table(outFileGE, header = FALSE)
     if(!all(!(is.na(geneExpression)))){ #Checking if any models had problematic results
+      cat("\n")
       message("NaN in expression data. Likely due to stiff equations. Try
-               lowering step size to fix")
+               lowering step size to fix it.")
     }
 
     if(
