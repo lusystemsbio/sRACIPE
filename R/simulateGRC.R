@@ -152,6 +152,9 @@
 #' @param AllowedPeriodError (optional) integer. Default \code{3}.
 #' @param SamePointProximity (optional) numeric. Default \code{0.1}.
 #' @param LCStepper (optional) Character.
+#' @param paramSignalVals (optional) Data Frame. Default data.frame(). The
+#' first column must be a vector of time values with the first element as 0 and
+#' the last element as simulationTime.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
@@ -549,7 +552,12 @@ if(missing(nNoise)){
       }
       else if(param %in% degParams){
         geneIdx <- which(degParams == param)
-        paramSignalTypes[geneIdx] <- 2
+        if(paramSignalTypes[geneIdx] == 1){
+          paramSignalTypes[geneIdx] <- 3 #Both deg and prod being varied
+        }
+        else {
+          paramSignalTypes[geneIdx] <- 2
+        }
       }
       else{
         message("Invalid Param names given in paramSignalVals")
@@ -557,6 +565,21 @@ if(missing(nNoise)){
       }
 
     }
+    #Sorting paramSignalVals columns dataframe to be read in C++
+    tempIdxArray <- data.frame(value = variedParams,
+                               Idx1 = match(variedParams, prodParams),
+                               Idx2 = match(variedParams, degParams))
+    #Replace NaN vals with Inf for sorting
+    tempIdxArray$Idx1[is.na(tempIdxArray$Idx1)] <- Inf
+    tempIdxArray$Idx2[is.na(tempIdxArray$Idx2)] <- Inf
+
+    tempIdxArray <- tempIdxArray[order(pmin(tempIdxArray$Idx1, tempIdxArray$Idx2), tempIdxArray$Idx1 < Inf,
+                                       tempIdxArray$Idx1, tempIdxArray$Idx2), ]
+
+    variedParams <- tempIdxArray$values
+
+    paramSignalVals <- paramSignalVals[, variedParams] #Sorted for C++ steppers
+
   }else{
     #If no paramSignalVals dataframe provided, create a dummy data frame to pass to C++
     paramSignalVals <- data.frame(temp1 = c(-1,-1), temp2 = c(-1, -1))
