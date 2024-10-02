@@ -578,13 +578,10 @@ if(missing(nNoise)){
 
     tempIdxArray <- tempIdxArray[order(pmin(tempIdxArray$Idx1, tempIdxArray$Idx2), tempIdxArray$Idx1 < Inf,
                                        tempIdxArray$Idx1, tempIdxArray$Idx2), ]
-    print(tempIdxArray)
 
-    variedParams <- tempIdxArray$values
-    print(variedParams)
+    variedParams <- tempIdxArray$value
 
     paramSignalVals <- paramSignalVals[, c(colnames(paramSignalVals[,1]),variedParams)] #Sorted for C++ steppers
-    print(paramSignalVals)
 
   }else{
     #If no paramSignalVals dataframe provided, create a dummy data frame to pass to C++
