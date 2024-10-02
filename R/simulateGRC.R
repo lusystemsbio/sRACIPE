@@ -142,10 +142,13 @@
 #' number of convergence tests run per model initial condition in deterministic
 #' simulations.
 #' @param limitcycles (optional) logical. Default \code{FALSE}. Whether to check
-#' for limit cycles
-#' @param LCSimTime (optional) numeric. Default \code{10}.
-#' @param LCSimStepSize (optional) numeric. Default \code{0.01}.
-#' @param maxLCs (optional) integer. Default \code{10}.
+#' for limit cycles in deterministic simulations.
+#' @param LCSimTime (optional) numeric. Default \code{10}. The runtime for the
+#' secondary limit cycle simulation.
+#' @param LCSimStepSize (optional) numeric. Default \code{0.01}. The integration
+#' step size for the secondary limit cycle simulation.
+#' @param maxLCs (optional) integer. Default \code{10}. The maximum allowable
+#' number of limit cycles that can be detected for each model.
 #' @param LCIter (optional) integer. Default \code{20}.
 #' @param MaxPeriods (optional) integer. Default \code{100}.
 #' @param NumSampledPeriods (optional) integer. Default \code{3}.
@@ -575,8 +578,10 @@ if(missing(nNoise)){
 
     tempIdxArray <- tempIdxArray[order(pmin(tempIdxArray$Idx1, tempIdxArray$Idx2), tempIdxArray$Idx1 < Inf,
                                        tempIdxArray$Idx1, tempIdxArray$Idx2), ]
+    print(tempIdxArray)
 
     variedParams <- tempIdxArray$values
+    print(variedParams)
 
     paramSignalVals <- paramSignalVals[, c(colnames(paramSignalVals[,1]),variedParams)] #Sorted for C++ steppers
     print(paramSignalVals)
