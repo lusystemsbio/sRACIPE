@@ -403,7 +403,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   std::unordered_map<int, std::vector<double>> clampMap;
   if(!noClamps) {
     int clampIdx = 0;
-    for(int i = 0; i < numberGene; i++) {
+    for(size_t i = 0; i < numberGene; i++) {
       if(clampedGenes[i] == 1) {
         // Create a vector to store the row elements
         std::vector<double> colVec(clampVals.nrow());
