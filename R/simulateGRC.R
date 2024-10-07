@@ -157,7 +157,16 @@
 #' @param LCStepper (optional) Character.
 #' @param paramSignalVals (optional) Data Frame. Default data.frame(). The
 #' first column must be a vector of time values with the first element as 0 and
+#' the last element as simulationTime. The other column names must be valid
+#' production or degradation parameter names for the circuit. Use
+#' sracipeGenParamNames() to generate valid parameter names. The
+#' first column must be a vector of time values with the first element as 0 and
 #' the last element as simulationTime.
+#' @param geneClamping (optional) Data Frame. Default data.frame(). The column
+#' names must be genes in the circuit. The number of columns must either be one
+#' or equal to numModels. If the number of columns is one, the selected genes
+#' are clamped to those values for every model. Otherwise, the gene is clamped
+#' to the value of the corresponding row for a particular model.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
@@ -193,7 +202,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
                       SamePointProximity = 0.1, LCStepper = "RK4",
-                      paramSignalVals = data.frame(),
+                      paramSignalVals = data.frame(), geneClamping = data.frame(),
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -530,13 +539,12 @@ if(missing(nNoise)){
     if(configuration$stepper == "DP") {stepperInt <- 51L}
   }
 
-  numberGene <- nrow(geneInteraction)
-  paramSignalTypes <- numeric(numberGene)
+  paramSignalTypes <- numeric(nGenes)
   if(nrow(paramSignalVals)>0){ #Determining which genes are being varied, if an input is given
     metadataTmp$paramSignalVals <- paramSignalVals
     paramName <- sracipeGenParamNames(rSet)
-    prodParams <- paramName[1:numberGene]
-    degParams <- paramName[(numberGene+1):(2*numberGene)]
+    prodParams <- paramName[1:nGenes]
+    degParams <- paramName[(nGenes+1):(2*nGenes)]
     variedParams <- colnames(paramSignalVals[,2:ncol(paramSignalVals)]) #First column is time  points
 
     if(paramSignalVals[1,1] != 0 | paramSignalVals[nrow(paramSignalVals), 1] != simulationTime){
@@ -588,6 +596,27 @@ if(missing(nNoise)){
     paramSignalVals <- data.frame(temp1 = c(-1,-1), temp2 = c(-1, -1))
   }
   paramSignalValsTmp <- as.matrix(paramSignalVals)
+
+  #gene clamping
+  clampedGenes <- rep(0, nGenes)
+  if(nrow(geneClamping)>0){
+    clampedIdx <- match(colnames(geneClamping), geneNames)
+    clampedGenes[clampedIdx] <- 1
+    message(paste0("clamped genes: ",paste0(clampedGenes, collapse = ",")))
+
+    if(nrow(geneClamping) == 1){
+      clampVals <- t(matrix(rep(geneClamping, numModels), nrow = numModels))
+      configuration$clampVals <- clampVals
+    }else if(nrow(geneClamping) == numModels){
+      configuration$clampVals <- as.matrix(geneClamping)
+    }else{
+      message("geneClamping must have a number of rows equal to 1 or numModels")
+      return(rSet)
+    }
+  }else{
+    configuration$clampVals <- as.matrix(c(-1))
+  }
+  configuration$clampedGenes <- clampedGenes
 
   if(configuration$stochParams["nNoise"] > 0) {
     if(stepper != "EM" && stepper != "EM_OU"){

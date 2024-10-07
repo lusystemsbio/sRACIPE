@@ -25,7 +25,9 @@ void stepEMconv( std::vector <double> &exprxGene,
              const NumericVector &geneTypes,
              const long double &convergThresh,
              const int &numStepsConverge,
-             const int &numConvergenceTests){
+             const int &numConvergenceTests,
+             std::unordered_map<int, std::vector<double>> &clamps,
+             const int &modelNo){
 
   double exprxGeneH[numberGene]; //array for temp gene expression values
   std::vector<double> prevExprxGene(numberGene);
@@ -46,25 +48,33 @@ void stepEMconv( std::vector <double> &exprxGene,
     
     for(int j=0;j<numStepsConverge;j++){
         i+=h;
+
         for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
         {
           double growthMultiplier=1;
           double degMultiplier=1;
 
-          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-          {
-          double geneValue=exprxGene[geneCount2];
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                            geneValue, geneInteraction, geneN, geneLambda,
-                            geneThreshold);
+          auto it = clamps.find(geneCount1);
+          if (it != clamps.end()){
+            // If clamped, set to the clamped value
+            exprxGeneH[geneCount1] = it->second[modelNo];
+          }else{
+            for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+            {
+              double geneValue=exprxGene[geneCount2];
+              double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+              int geneN=NGene[geneCount1][geneCount2];
+              double geneLambda=lambda_gene[geneCount1][geneCount2];
+              calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                                geneValue, geneInteraction, geneN, geneLambda,
+                                geneThreshold);
+            }
+            if (geneTypes[geneCount1] == 2){
+              growthMultiplier = growthMultiplier*signalRate;
+              degMultiplier = degMultiplier*signalRate;
+            }
           }
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
+
         exprxGeneH[geneCount1] = exprxGene[geneCount1] +
           h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
           exprxGene[geneCount1]*degMultiplier) +
@@ -134,7 +144,9 @@ void stepRK4conv( std::vector <double> &exprxGene,
              const NumericVector &geneTypes,
              const long double &convergThresh,
              const int &numStepsConverge,
-             const int &numConvergenceTests){
+             const int &numConvergenceTests,
+             std::unordered_map<int, std::vector<double>> &clamps,
+             const int &modelNo){
 
 double exprxGeneH1[numberGene]; //array for temp gene expression values
 double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -169,24 +181,30 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       double growthMultiplier=1;
       double degMultiplier=1;
 
-      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-      {
-        double geneValue=exprxGene[geneCount2];
-        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-        int geneN=NGene[geneCount1][geneCount2];
-        double geneLambda=lambda_gene[geneCount1][geneCount2];
-        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                       geneValue, geneInteraction, geneN, geneLambda,
-                       geneThreshold);
-      }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH1[geneCount1] = it->second[modelNo];
+      }else{
+        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+        {
+          double geneValue=exprxGene[geneCount2];
+          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+          int geneN=NGene[geneCount1][geneCount2];
+          double geneLambda=lambda_gene[geneCount1][geneCount2];
+          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
 
-      if (geneTypes[geneCount1] == 2){
-        growthMultiplier = growthMultiplier*signalRate;
-        degMultiplier = degMultiplier*signalRate;
-      }
+        if (geneTypes[geneCount1] == 2){
+          growthMultiplier = growthMultiplier*signalRate;
+          degMultiplier = degMultiplier*signalRate;
+        }
 
-      exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
-        kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+        exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier -
+          kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+      }
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -194,26 +212,32 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       double growthMultiplier=1;
       double degMultiplier=1;
 
-      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-      {
-        double geneValue=exprxGene[geneCount2] +
-          0.5*exprxGeneH1[geneCount2];
-        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-        int geneN=NGene[geneCount1][geneCount2];
-        double geneLambda=lambda_gene[geneCount1][geneCount2];
-        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                       geneValue, geneInteraction, geneN, geneLambda,
-                       geneThreshold);
-      }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH2[geneCount1] = it->second[modelNo];
+      }else{
+        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+        {
+          double geneValue=exprxGene[geneCount2] +
+            0.5*exprxGeneH1[geneCount2];
+          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+          int geneN=NGene[geneCount1][geneCount2];
+          double geneLambda=lambda_gene[geneCount1][geneCount2];
+          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
 
-      if (geneTypes[geneCount1] == 2){
-        growthMultiplier = growthMultiplier*signalRate;
-        degMultiplier = degMultiplier*signalRate;
-      }
+        if (geneTypes[geneCount1] == 2){
+          growthMultiplier = growthMultiplier*signalRate;
+          degMultiplier = degMultiplier*signalRate;
+        }
 
-      exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
-        growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
-        0.5*exprxGeneH1[geneCount1])*degMultiplier);
+        exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*
+          growthMultiplier-kGene[geneCount1]*(exprxGene[geneCount1] +
+          0.5*exprxGeneH1[geneCount1])*degMultiplier);
+      }
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -221,26 +245,32 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       double growthMultiplier=1;
       double degMultiplier=1;
 
-      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-      {
-        double geneValue=exprxGene[geneCount2] +
-          0.5*exprxGeneH2[geneCount2];
-        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-        int geneN=NGene[geneCount1][geneCount2];
-        double geneLambda=lambda_gene[geneCount1][geneCount2];
-        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                       geneValue, geneInteraction, geneN, geneLambda,
-                       geneThreshold);
-      }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH3[geneCount1] = it->second[modelNo];
+      }else{
+        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+        {
+          double geneValue=exprxGene[geneCount2] +
+            0.5*exprxGeneH2[geneCount2];
+          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+          int geneN=NGene[geneCount1][geneCount2];
+          double geneLambda=lambda_gene[geneCount1][geneCount2];
+          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                         geneValue, geneInteraction, geneN, geneLambda,
+                         geneThreshold);
+        }
 
-      if (geneTypes[geneCount1] == 2){
-        growthMultiplier = growthMultiplier*signalRate;
-        degMultiplier = degMultiplier*signalRate;
-      }
+        if (geneTypes[geneCount1] == 2){
+          growthMultiplier = growthMultiplier*signalRate;
+          degMultiplier = degMultiplier*signalRate;
+        }
 
-      exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-        kGene[geneCount1]*(exprxGene[geneCount1] +
-        0.5*exprxGeneH2[geneCount1])*degMultiplier);
+        exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+          kGene[geneCount1]*(exprxGene[geneCount1] +
+          0.5*exprxGeneH2[geneCount1])*degMultiplier);
+      }
     }
 
 
@@ -249,26 +279,32 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       double growthMultiplier=1;
       double degMultiplier=1;
 
-      for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-      {
-        double geneValue=exprxGene[geneCount2] +
-          exprxGeneH3[geneCount2];
-        double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-        int geneN=NGene[geneCount1][geneCount2];
-        double geneLambda=lambda_gene[geneCount1][geneCount2];
-        calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                      geneValue, geneInteraction, geneN, geneLambda,
-                      geneThreshold);
-      }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH4[geneCount1] = it->second[modelNo];
+      }else{
+        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+        {
+          double geneValue=exprxGene[geneCount2] +
+            exprxGeneH3[geneCount2];
+          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+          int geneN=NGene[geneCount1][geneCount2];
+          double geneLambda=lambda_gene[geneCount1][geneCount2];
+          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                        geneValue, geneInteraction, geneN, geneLambda,
+                        geneThreshold);
+        }
 
-      if (geneTypes[geneCount1] == 2){
-        growthMultiplier = growthMultiplier*signalRate;
-        degMultiplier = degMultiplier*signalRate;
-      }
+        if (geneTypes[geneCount1] == 2){
+          growthMultiplier = growthMultiplier*signalRate;
+          degMultiplier = degMultiplier*signalRate;
+        }
 
-      exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-        kGene[geneCount1]*(exprxGene[geneCount1]+
-        exprxGeneH3[geneCount1])*degMultiplier);
+        exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+          kGene[geneCount1]*(exprxGene[geneCount1]+
+          exprxGeneH3[geneCount1])*degMultiplier);
+      }
     }
       /////////////////////////////////////////////////////////////
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -339,7 +375,9 @@ void stepDPconv( std::vector <double> &exprxGene,
               const long double &convergThresh,
               const int &numStepsConverge,
               const int &numConvergenceTests,
-              const double &testTime){
+              const double &testTime,
+              std::unordered_map<int, std::vector<double>> &clamps,
+              const int &modelNo){
   double exprxGeneH[numberGene]; //array for temp gene expression values
   double exprxGeneH1[numberGene]; //array for temp gene expression values
   double exprxGeneH2[numberGene]; //array for temp gene expression values
@@ -379,24 +417,30 @@ void stepDPconv( std::vector <double> &exprxGene,
         double growthMultiplier=1;
         double degMultiplier=1;
 
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2];
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH1[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2];
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
 
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
 
-        exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier-
-          kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+          exprxGeneH1[geneCount1]=h*(gGene[geneCount1]*growthMultiplier-
+            kGene[geneCount1]*exprxGene[geneCount1]*degMultiplier);
+        }
       }
 
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -404,26 +448,32 @@ void stepDPconv( std::vector <double> &exprxGene,
         double growthMultiplier=1;
         double degMultiplier=1;
 
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+
-            0.2*exprxGeneH1[geneCount2];
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH2[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+
+              0.2*exprxGeneH1[geneCount2];
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
 
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
 
-        exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1] +
-          0.2*exprxGeneH1[geneCount1])*degMultiplier);
+          exprxGeneH2[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1] +
+            0.2*exprxGeneH1[geneCount1])*degMultiplier);
+        }
       }
 
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
@@ -431,94 +481,34 @@ void stepDPconv( std::vector <double> &exprxGene,
         double growthMultiplier=1;
         double degMultiplier=1;
 
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+
-            (0.25*exprxGeneH1[geneCount2]+
-            0.75*exprxGeneH2[geneCount2])*0.3;
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH3[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+
+              (0.25*exprxGeneH1[geneCount2]+
+              0.75*exprxGeneH2[geneCount2])*0.3;
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
+
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
+
+          exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1]+
+            (0.25*exprxGeneH1[geneCount1]+
+            0.75*exprxGeneH2[geneCount1])*0.3)*degMultiplier);
         }
-
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
-
-        exprxGeneH3[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1]+
-          (0.25*exprxGeneH1[geneCount1]+
-          0.75*exprxGeneH2[geneCount1])*0.3)*degMultiplier);
-      }
-
-
-      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
-      {
-        double growthMultiplier=1;
-        double degMultiplier=1;
-
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+
-            0.8*(((11./9.)*exprxGeneH1[geneCount2]+
-            (-14./3.)*exprxGeneH2[geneCount2])+
-            (40./9.)*exprxGeneH3[geneCount2]);
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
-
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
-
-        exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1]+
-          0.8*(((11./9.)*exprxGeneH1[geneCount1]+
-          (-14./3.)*exprxGeneH2[geneCount1])+
-          (40./9.)*exprxGeneH3[geneCount1]))*degMultiplier);
-      }
-
-      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
-      {
-        double growthMultiplier=1;
-        double degMultiplier=1;
-
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+(8./9.)*
-            ((4843./1458.)*exprxGeneH1[geneCount2]+
-            (-3170./243.)*exprxGeneH2[geneCount2]+
-            (8056./729.)*exprxGeneH3[geneCount2]+
-            (-53./162.)*exprxGeneH4[geneCount2]);
-
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
-
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
-
-        exprxGeneH5[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1]+(8./9.)*
-          ((4843./1458.)*exprxGeneH1[geneCount1]+
-          (-3170./243.)*exprxGeneH2[geneCount1]+
-          (8056./729.)*exprxGeneH3[geneCount1]+
-          (-53./162.)*exprxGeneH4[geneCount1]))*degMultiplier);
       }
 
 
@@ -527,34 +517,118 @@ void stepDPconv( std::vector <double> &exprxGene,
         double growthMultiplier=1;
         double degMultiplier=1;
 
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+
-            ((9017./3168.)*exprxGeneH1[geneCount2]+
-            (-355./33.)*exprxGeneH2[geneCount2]+
-            (46732./5247.)*exprxGeneH3[geneCount2]+
-            (49./176.)*exprxGeneH4[geneCount2]+
-            (-5103./18656.)*exprxGeneH5[geneCount2]);
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH4[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+
+              0.8*(((11./9.)*exprxGeneH1[geneCount2]+
+              (-14./3.)*exprxGeneH2[geneCount2])+
+              (40./9.)*exprxGeneH3[geneCount2]);
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
 
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
 
-        exprxGeneH6[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1]+
-          (9017./3168.)*exprxGeneH1[geneCount1]+
-          (-355./33.)*exprxGeneH2[geneCount1]+
-          (46732./5247.)*exprxGeneH3[geneCount1]+
-          (49./176.)*exprxGeneH4[geneCount1]+
-          (-5103./18656.)*exprxGeneH5[geneCount1])*degMultiplier);
+          exprxGeneH4[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1]+
+            0.8*(((11./9.)*exprxGeneH1[geneCount1]+
+            (-14./3.)*exprxGeneH2[geneCount1])+
+            (40./9.)*exprxGeneH3[geneCount1]))*degMultiplier);
+        }
+      }
+
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+      {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH5[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+(8./9.)*
+              ((4843./1458.)*exprxGeneH1[geneCount2]+
+              (-3170./243.)*exprxGeneH2[geneCount2]+
+              (8056./729.)*exprxGeneH3[geneCount2]+
+              (-53./162.)*exprxGeneH4[geneCount2]);
+
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
+
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
+
+          exprxGeneH5[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1]+(8./9.)*
+            ((4843./1458.)*exprxGeneH1[geneCount1]+
+            (-3170./243.)*exprxGeneH2[geneCount1]+
+            (8056./729.)*exprxGeneH3[geneCount1]+
+            (-53./162.)*exprxGeneH4[geneCount1]))*degMultiplier);
+        }
+      }
+
+
+      for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+      {
+        double growthMultiplier=1;
+        double degMultiplier=1;
+
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH6[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+
+              ((9017./3168.)*exprxGeneH1[geneCount2]+
+              (-355./33.)*exprxGeneH2[geneCount2]+
+              (46732./5247.)*exprxGeneH3[geneCount2]+
+              (49./176.)*exprxGeneH4[geneCount2]+
+              (-5103./18656.)*exprxGeneH5[geneCount2]);
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
+
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
+
+          exprxGeneH6[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1]+
+            (9017./3168.)*exprxGeneH1[geneCount1]+
+            (-355./33.)*exprxGeneH2[geneCount1]+
+            (46732./5247.)*exprxGeneH3[geneCount1]+
+            (49./176.)*exprxGeneH4[geneCount1]+
+           (-5103./18656.)*exprxGeneH5[geneCount1])*degMultiplier);
+        }
       }
 
 
@@ -564,34 +638,40 @@ void stepDPconv( std::vector <double> &exprxGene,
         double growthMultiplier=1;
         double degMultiplier=1;
 
-        for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
-        {
-          double geneValue=exprxGene[geneCount2]+
-            ((35./384.)*exprxGeneH1[geneCount2]+
-            (500./113.)*exprxGeneH3[geneCount2]+
-            (125./192.)*exprxGeneH4[geneCount2]+
-            (-2187./6784.)*exprxGeneH5[geneCount2]+
-            (11./84.)*exprxGeneH6[geneCount2]);
-          double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
-          int geneN=NGene[geneCount1][geneCount2];
-          double geneLambda=lambda_gene[geneCount1][geneCount2];
-          calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
-                         geneValue, geneInteraction, geneN, geneLambda,
-                         geneThreshold);
-        }
+        auto it = clamps.find(geneCount1);
+        if (it != clamps.end()){
+          // If clamped, set to the clamped value
+          exprxGeneH7[geneCount1] = it->second[modelNo];
+        }else{
+          for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
+          {
+            double geneValue=exprxGene[geneCount2]+
+              ((35./384.)*exprxGeneH1[geneCount2]+
+              (500./113.)*exprxGeneH3[geneCount2]+
+              (125./192.)*exprxGeneH4[geneCount2]+
+              (-2187./6784.)*exprxGeneH5[geneCount2]+
+                (11./84.)*exprxGeneH6[geneCount2]);
+            double geneThreshold=threshold_gene_log[geneCount1][geneCount2];
+            int geneN=NGene[geneCount1][geneCount2];
+            double geneLambda=lambda_gene[geneCount1][geneCount2];
+            calcMultiplier(geneCount1, geneCount2, growthMultiplier, degMultiplier,
+                           geneValue, geneInteraction, geneN, geneLambda,
+                           geneThreshold);
+          }
 
-        if (geneTypes[geneCount1] == 2){
-          growthMultiplier = growthMultiplier*signalRate;
-          degMultiplier = degMultiplier*signalRate;
-        }
+          if (geneTypes[geneCount1] == 2){
+            growthMultiplier = growthMultiplier*signalRate;
+            degMultiplier = degMultiplier*signalRate;
+          }
 
-        exprxGeneH7[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
-          kGene[geneCount1]*(exprxGene[geneCount1]+
-          (35./384.)*exprxGeneH1[geneCount1]+
-          (500./113.)*exprxGeneH3[geneCount1]+
-          (125./192.)*exprxGeneH4[geneCount1]+
-            (-2187./6784.)*exprxGeneH5[geneCount1]+
-          (11./84.)*exprxGeneH6[geneCount1])*degMultiplier);
+          exprxGeneH7[geneCount1]=h*((gGene[geneCount1])*growthMultiplier-
+            kGene[geneCount1]*(exprxGene[geneCount1]+
+            (35./384.)*exprxGeneH1[geneCount1]+
+            (500./113.)*exprxGeneH3[geneCount1]+
+            (125./192.)*exprxGeneH4[geneCount1]+
+              (-2187./6784.)*exprxGeneH5[geneCount1]+
+            (11./84.)*exprxGeneH6[geneCount1])*degMultiplier);
+        }
       }
       double max_diff_o4_o5=0;
       /////////////////////////////////////////////////////////////

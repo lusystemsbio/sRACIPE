@@ -262,6 +262,10 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   NumericVector hyperParameters =
     as<NumericVector>(config["hyperParams"]);
   LogicalVector options = as<LogicalVector>(config["options"]);
+  NumericVector clampedGenes =
+    as<NumericVector>(config["clampedGenes"]);
+  NumericMatrix clampVals =
+    as<NumericMatrix>(config["clampVals"]);
 
   size_t numModels = static_cast<size_t>(simulationParameters[0]);
   double simulationTime = simulationParameters[1];
@@ -393,6 +397,28 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     }
   }
 
+  //Check for gene clamping and set it up
+  bool noClamps = std::all_of(clampGenes.begin(), 
+                  clampGenes.end(), [](int i) { return i==0; });
+  std::unordered_map<int, std::vector<double>> clampMap;
+  if(!noClamps) {
+    int clampIdx = 0;
+    for(int i = 0; i < numberGene; i++) {
+      if(clampGenes[i] == 1) {
+        // Create a vector to store the row elements
+        std::vector<double> colVec(clampValues.nrow());
+        // Copy the elements from the matrix row to the vector
+        for (int j = 0; j < clampValues.nrow(); ++j) {
+          colVec[j] = clampValues(j, clampIdx);
+        }
+        
+        clampMap[i] = colVec;
+        clampIdx++;
+      }
+    }
+    
+  }
+
   //  size_t  nInteractions = convertAdjMatToVector(geneInteraction,
   //                                                tgtGeneTmp, intSrcTypeTmp);
 
@@ -486,10 +512,15 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
           {
             for(size_t geneCount1=0;geneCount1<numberGene;geneCount1++)
             {
-              expressionGene0[geneCount1]=exp(std::log(minGene[geneCount1]) +
-                (std::log(maxGene[geneCount1]) -
-                std::log(minGene[geneCount1]))*u_distribution(u_generator));
-
+              //If clamped, set it to clamped value
+              auto it = clampMap.find(geneCount1);
+              if (it != clampMap.end()){
+                expressionGene0[geneCount1] = it->second[modelCount];
+              } else{
+                expressionGene0[geneCount1]=exp(std::log(minGene[geneCount1]) +
+                  (std::log(maxGene[geneCount1]) -
+                  std::log(minGene[geneCount1]))*u_distribution(u_generator));
+              }
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -543,7 +574,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h, 
                     signalRate, geneTypes, isTimeVarying, timePoints,
-                    signalVals, signalingTypes);
+                    signalVals, signalingTypes, clampMap, modelCount);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -555,7 +586,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        outputPrecision,
                        printStart,  printInterval, h,
                        signalRate, geneTypes, isTimeVarying,
-                       timePoints, signalVals, signalingTypes);
+                       timePoints, signalVals, signalingTypes,
+                       clampMap, modelCount);
               break;
 
             case 5:
@@ -568,7 +600,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       outputPrecision,printStart, printInterval,h,
                       rkTolerance,
                       signalRate, geneTypes, isTimeVarying,
-                      timePoints, signalVals, signalingTypes);
+                      timePoints, signalVals, signalingTypes,
+                      clampMap, modelCount);
               break;
 
             case 6:
@@ -580,7 +613,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h,
                     ou_tcorr, signalRate, geneTypes, isTimeVarying,
-                    timePoints, signalVals, signalingTypes);
+                    timePoints, signalVals, signalingTypes,
+                    clampMap, modelCount);
               break;
 
             case 11:
@@ -591,7 +625,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, D, h, 
                     signalRate, geneTypes, convergThresh, 
-                    numStepsConverge, numConvergenceTests);
+                    numStepsConverge, numConvergenceTests,
+                    clampMap, modelCount);
               break;
             case 41:
               //fourth order Runge-Kutta with convergence testing
@@ -602,7 +637,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        sdFactor,
                        outputPrecision,
                        h, signalRate, geneTypes, convergThresh,
-                       numStepsConverge, numConvergenceTests);
+                       numStepsConverge, numConvergenceTests,
+                       clampMap, modelCount);
               break;
 
             case 51:
@@ -616,7 +652,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       rkTolerance,
                       signalRate, geneTypes, convergThresh,
                       numStepsConverge, numConvergenceTests,
-                      testTime);
+                      testTime, clampMap, modelCount);
               break;
 
             default:

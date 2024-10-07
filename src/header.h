@@ -61,7 +61,9 @@ void stepEM( std::vector <double> &expression_gene,
              const bool &isTimeVarying,
              const std::vector<double> &timePoints,
              const Rcpp::NumericMatrix &signalVals,
-             const Rcpp::NumericVector &signalingTypes);
+             const Rcpp::NumericVector &signalingTypes,
+             std::unordered_map<int, std::vector<double>> &clamps,
+             const int &modelNo);
 void stepEM_OU( std::vector <double> &expression_gene,
             std::ofstream &out_GE,
             const double &tot_time,
@@ -87,7 +89,9 @@ void stepEM_OU( std::vector <double> &expression_gene,
             const bool &isTimeVarying,
             const std::vector<double> &timePoints,
             const Rcpp::NumericMatrix &signalVals,
-            const Rcpp::NumericVector &signalingTypes);
+            const Rcpp::NumericVector &signalingTypes,
+            std::unordered_map<int, std::vector<double>> &clamps,
+            const int &modelNo);
 void stepRK4( std::vector <double> &expression_gene,
         std::ofstream &out_GE,
         const double &tot_time,
@@ -108,7 +112,9 @@ void stepRK4( std::vector <double> &expression_gene,
         const bool &isTimeVarying,
         const std::vector<double> &timePoints,
         const Rcpp::NumericMatrix &signalVals,
-        const Rcpp::NumericVector &signalingTypes);
+        const Rcpp::NumericVector &signalingTypes,
+        std::unordered_map<int, std::vector<double>> &clamps,
+        const int &modelNo);
 
  void stepDP( std::vector <double> &expression_gene,
           std::ofstream &out_GE,
@@ -130,7 +136,9 @@ void stepRK4( std::vector <double> &expression_gene,
           const bool &isTimeVarying,
           const std::vector<double> &timePoints,
           const Rcpp::NumericMatrix &signalVals,
-          const Rcpp::NumericVector &signalingTypes);
+          const Rcpp::NumericVector &signalingTypes,
+          std::unordered_map<int, std::vector<double>> &clamps,
+          const int &modelNo);
 
 void stepEMconv( std::vector <double> &expression_gene,
              std::ofstream &out_GE,
@@ -153,7 +161,9 @@ void stepEMconv( std::vector <double> &expression_gene,
              const Rcpp::NumericVector &geneTypes,
              const long double &convergThresh,
              const int &numStepsConverge,
-             const int &numConvergenceTests);
+             const int &numConvergenceTests,
+             std::unordered_map<int, std::vector<double>> &clamps,
+             const int &modelNo);
 void stepRK4conv( std::vector <double> &expression_gene,
         std::ofstream &out_GE,
         std::ofstream &out_Conv,
@@ -172,7 +182,9 @@ void stepRK4conv( std::vector <double> &expression_gene,
         const Rcpp::NumericVector &geneTypes,
         const long double &convergThresh,
         const int &numStepsConverge,
-        const int &numConvergenceTests);
+        const int &numConvergenceTests,
+        std::unordered_map<int, std::vector<double>> &clamps,
+        const int &modelNo);
 
  void stepDPconv( std::vector <double> &expression_gene,
           std::ofstream &out_GE,
@@ -193,7 +205,9 @@ void stepRK4conv( std::vector <double> &expression_gene,
           const long double &convergThresh,
           const int &numStepsConverge,
           const int &numConvergenceTests,
-          const double &testTime);
+          const double &testTime,
+          std::unordered_map<int, std::vector<double>> &clamps,
+          const int &modelNo);
 
 
 extern size_t convertAdjMatToVector(
