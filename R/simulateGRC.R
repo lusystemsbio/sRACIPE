@@ -588,7 +588,6 @@ if(missing(nNoise)){
                                        tempIdxArray$Idx1, tempIdxArray$Idx2), ]
 
     variedParams <- tempIdxArray$value
-
     paramSignalVals <- paramSignalVals[, c(colnames(paramSignalVals)[1],variedParams)] #Sorted for C++ steppers
 
   }else{

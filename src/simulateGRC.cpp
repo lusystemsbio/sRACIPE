@@ -398,18 +398,18 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   }
 
   //Check for gene clamping and set it up
-  bool noClamps = std::all_of(clampGenes.begin(), 
-                  clampGenes.end(), [](int i) { return i==0; });
+  bool noClamps = std::all_of(clampedGenes.begin(), 
+                  clampedGenes.end(), [](int i) { return i==0; });
   std::unordered_map<int, std::vector<double>> clampMap;
   if(!noClamps) {
     int clampIdx = 0;
     for(int i = 0; i < numberGene; i++) {
-      if(clampGenes[i] == 1) {
+      if(clampedGenes[i] == 1) {
         // Create a vector to store the row elements
-        std::vector<double> colVec(clampValues.nrow());
+        std::vector<double> colVec(clampVals.nrow());
         // Copy the elements from the matrix row to the vector
         for (int j = 0; j < clampValues.nrow(); ++j) {
-          colVec[j] = clampValues(j, clampIdx);
+          colVec[j] = clampVals(j, clampIdx);
         }
         
         clampMap[i] = colVec;
