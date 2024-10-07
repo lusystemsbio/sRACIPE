@@ -408,7 +408,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
         // Create a vector to store the row elements
         std::vector<double> colVec(clampVals.nrow());
         // Copy the elements from the matrix row to the vector
-        for (int j = 0; j < clampValues.nrow(); ++j) {
+        for (int j = 0; j < clampVals.nrow(); ++j) {
           colVec[j] = clampVals(j, clampIdx);
         }
         
