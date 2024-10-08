@@ -418,8 +418,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH1[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH1[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -449,8 +449,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH2[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH2[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -482,8 +482,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH3[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH3[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -518,8 +518,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH4[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH4[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -555,8 +555,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH5[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH5[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -596,8 +596,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH6[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH6[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
@@ -639,8 +639,8 @@ void stepDPconv( std::vector <double> &exprxGene,
 
         auto it = clamps.find(geneCount1);
         if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH7[geneCount1] = it->second[modelNo];
+          // If clamped, set derivative to 0
+          exprxGeneH7[geneCount1] = 0.0;
         }else{
           for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
           {
