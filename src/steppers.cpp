@@ -178,16 +178,15 @@ void stepEM( std::vector <double> &exprxGene,
           growthMultiplier = growthMultiplier*signalRate;
           degMultiplier = degMultiplier*signalRate;
         }
+        exprxGeneH[geneCount1] = exprxGene[geneCount1] +
+          h*(gGene[geneCount1]*growthMultiplier*gMults[geneCount1]
+          -kGene[geneCount1]*kMults[geneCount1]*
+          exprxGene[geneCount1]*degMultiplier) +
+          D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
+          D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
+          Darray[geneCount1]*exprxGene[geneCount1];
+        if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
       }
- 
-      exprxGeneH[geneCount1] = exprxGene[geneCount1] +
-        h*(gGene[geneCount1]*growthMultiplier*gMults[geneCount1]
-        -kGene[geneCount1]*kMults[geneCount1]*
-        exprxGene[geneCount1]*degMultiplier) +
-        D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
-        D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
-        Darray[geneCount1]*exprxGene[geneCount1];
-      if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
@@ -312,16 +311,15 @@ void stepEM_OU( std::vector <double> &exprxGene,
           growthMultiplier = growthMultiplier*signalRate;
           degMultiplier = degMultiplier*signalRate;
         }
+        exprxGeneH[geneCount1] = exprxGene[geneCount1] +
+          h*(gGene[geneCount1]*growthMultiplier*gMults[geneCount1]
+          -kGene[geneCount1]*kMults[geneCount1]*
+          exprxGene[geneCount1]*degMultiplier) +
+          h*currNoise[geneCount1]+
+          D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
+          Darray[geneCount1]*exprxGene[geneCount1];
+        if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
       }
-
-      exprxGeneH[geneCount1] = exprxGene[geneCount1] +
-        h*(gGene[geneCount1]*growthMultiplier*gMults[geneCount1]
-        -kGene[geneCount1]*kMults[geneCount1]*
-        exprxGene[geneCount1]*degMultiplier) +
-        h*currNoise[geneCount1]+
-        D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
-        Darray[geneCount1]*exprxGene[geneCount1];
-      if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
     }
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){

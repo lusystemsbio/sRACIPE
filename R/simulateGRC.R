@@ -606,6 +606,7 @@ if(missing(nNoise)){
     if(nrow(geneClamping) == 1){
       clampVals <- t(matrix(rep(geneClamping, numModels), nrow = numModels))
       configuration$clampVals <- clampVals
+      print(clampVals)
     }else if(nrow(geneClamping) == numModels){
       configuration$clampVals <- as.matrix(geneClamping)
     }else{

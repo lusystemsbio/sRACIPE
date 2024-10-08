@@ -73,15 +73,14 @@ void stepEMconv( std::vector <double> &exprxGene,
               growthMultiplier = growthMultiplier*signalRate;
               degMultiplier = degMultiplier*signalRate;
             }
+            exprxGeneH[geneCount1] = exprxGene[geneCount1] +
+              h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
+              exprxGene[geneCount1]*degMultiplier) +
+              D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
+              D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
+              Darray[geneCount1]*exprxGene[geneCount1];
+            if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
           }
-
-        exprxGeneH[geneCount1] = exprxGene[geneCount1] +
-          h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
-          exprxGene[geneCount1]*degMultiplier) +
-          D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
-          D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
-          Darray[geneCount1]*exprxGene[geneCount1];
-        if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
       }
         for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         exprxGene[geneCount1]=exprxGeneH[geneCount1];}
@@ -183,8 +182,8 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
-        // If clamped, set to the clamped value
-        exprxGeneH1[geneCount1] = it->second[modelNo];
+        // If clamped, set derivative to 0
+        exprxGeneH1[geneCount1] = it->0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -214,8 +213,8 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
-        // If clamped, set to the clamped value
-        exprxGeneH2[geneCount1] = it->second[modelNo];
+        // If clamped, derivative to 0
+        exprxGeneH2[geneCount1] = it->0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -247,8 +246,8 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
-        // If clamped, set to the clamped value
-        exprxGeneH3[geneCount1] = it->second[modelNo];
+        // If clamped, set derivative to 0
+        exprxGeneH3[geneCount1] = it->0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -281,8 +280,8 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
 
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
-        // If clamped, set to the clamped value
-        exprxGeneH4[geneCount1] = it->second[modelNo];
+        // If clamped, set derivative to 0
+        exprxGeneH4[geneCount1] = it->0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
