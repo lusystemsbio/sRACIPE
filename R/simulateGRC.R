@@ -604,7 +604,7 @@ if(missing(nNoise)){
     message(paste0("clamped genes: ",paste0(clampedGenes, collapse = ",")))
 
     if(nrow(geneClamping) == 1){
-      clampVals <- matrix(rep(geneClamping, each = numModels), nrow = numModels)
+      clampVals <- as.matrix(do.call(rbind, replicate(numModels, geneClamping, simplify = FALSE)))
       configuration$clampVals <- clampVals
     }else if(nrow(geneClamping) == numModels){
       configuration$clampVals <- as.matrix(geneClamping)
