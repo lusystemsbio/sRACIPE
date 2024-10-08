@@ -183,7 +183,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
         // If clamped, set derivative to 0
-        exprxGeneH1[geneCount1] = it->0;
+        exprxGeneH1[geneCount1] = 0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -214,7 +214,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
         // If clamped, derivative to 0
-        exprxGeneH2[geneCount1] = it->0.0;
+        exprxGeneH2[geneCount1] = 0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -247,7 +247,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
         // If clamped, set derivative to 0
-        exprxGeneH3[geneCount1] = it->0.0;
+        exprxGeneH3[geneCount1] = 0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -281,7 +281,7 @@ for(int testIter=0; testIter<numConvergenceTests; testIter++){
       auto it = clamps.find(geneCount1);
       if (it != clamps.end()){
         // If clamped, set derivative to 0
-        exprxGeneH4[geneCount1] = it->0.0;
+        exprxGeneH4[geneCount1] = 0.0;
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
