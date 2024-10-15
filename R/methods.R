@@ -1107,14 +1107,14 @@ setMethod(f="sracipeCombineRacipeSE",
                 return()
               }
 
-              statesList <- c(statesList, assay(racipeObj))
-              paramsList <- c(paramsList, sracipeParams(racipeObj))
-              icList <- c(icList, sracipeIC(racipeObj))
+              statesList <- c(statesList, list(assay(racipeObj)))
+              paramsList <- c(paramsList, list(sracipeParams(racipeObj)))
+              icList <- c(icList, list(sracipeIC(racipeObj)))
               if(validOptions["convergTesting"]){
                 objMetadata <- metadata(racipeObj)
-                convergList <- c(convergList, objMetadata$modelConvergence)
+                convergList <- c(convergList, list(objMetadata$modelConvergence))
                 if(nIC > 1){
-                  uniqueCountList <- c(uniqueCountList, objMetadata$uniqueStateCounts)
+                  uniqueCountList <- c(uniqueCountList, list(objMetadata$uniqueStateCounts))
                 }
                 if(validOptions["limitcycles"]){
                   if(!("LCData" %in% names(objMetadata))){
@@ -1127,7 +1127,7 @@ setMethod(f="sracipeCombineRacipeSE",
                   if(objIdx > 1){
                     objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
                   }
-                  LCList <- c(LCList, objLC)
+                  LCList <- c(LCList, list(objLC))
                   LCNum <- LCNum + objMetadata["totalNumofLCs"]
                 }
               }
@@ -1138,7 +1138,6 @@ setMethod(f="sracipeCombineRacipeSE",
             combinedParams <- do.call(rbind, paramsList)
             combinedICs <- do.call(cbind, icList)
 
-            return(list(combinedParams, combinedICs, paramsList, icList))
             col <- cbind(combinedParams, t(combinedICs))
 
             metadataTmp <- metadata(.object[[1]])
