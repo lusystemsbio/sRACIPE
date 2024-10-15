@@ -1125,7 +1125,7 @@ setMethod(f="sracipeCombineRacipeSE",
 
                   #Adjusting modelCount info in LCData for each object
                   if(objIdx > 1){
-                    objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
+                    objLC[,1] <- objLC[,1]+(objIdx-1)*numModels
                   }
                   LCList <- c(LCList, list(objLC))
 
