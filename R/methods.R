@@ -1128,7 +1128,9 @@ setMethod(f="sracipeCombineRacipeSE",
                     objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
                   }
                   LCList <- c(LCList, list(objLC))
-                  LCNum <- LCNum + objMetadata["totalNumofLCs"]
+
+                  #totalNumofLCs is a list with length 1
+                  LCNum <- LCNum + objMetadata["totalNumofLCs"][[1]]
                 }
               }
               objIdx <- objIdx + 1
