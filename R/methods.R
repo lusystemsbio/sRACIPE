@@ -1134,13 +1134,11 @@ setMethod(f="sracipeCombineRacipeSE",
             }
 
             #Gluing things together
-            print("here1")
             combinedStates <- do.call(cbind, statesList)
             combinedParams <- do.call(rbind, paramsList)
-            print("here2")
             combinedICs <- do.call(cbind, icList)
 
-            print("here3")
+            return(c(combinedParams, combinedICs))
             col <- cbind(combinedParams, t(combinedICs))
 
             metadataTmp <- metadata(.object[[1]])
