@@ -1138,7 +1138,7 @@ setMethod(f="sracipeCombineRacipeSE",
             combinedParams <- do.call(rbind, paramsList)
             combinedICs <- do.call(cbind, icList)
 
-            return(list(combinedParams, combinedICs))
+            return(list(combinedParams, combinedICs, paramsList, icList))
             col <- cbind(combinedParams, t(combinedICs))
 
             metadataTmp <- metadata(.object[[1]])
