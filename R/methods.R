@@ -1086,10 +1086,10 @@ setMethod(f="sracipeCombineRacipeSE",
             statesList <- list()
             paramsList <- list()
             icList <- list()
-            if(validOptions$convergTesting){
+            if(validOptions["convergTesting"]){
               convergList <- list()
-              if(validSim$nIC > 1){uniqueCountList <- list()}
-              if(validOptions$limitcycles){
+              if(nIC > 1){uniqueCountList <- list()}
+              if(validOptions["limitcycles"]){
                 LCList <- list()
                 LCNum <- 0
               }
@@ -1110,13 +1110,13 @@ setMethod(f="sracipeCombineRacipeSE",
               statesList <- c(statesList, assay(racipeObj))
               paramsList <- c(paramsList, sracipeParams(racipeObj))
               icList <- c(icList, sracipeIC(racipeObj))
-              if(validOptions$convergTesting){
+              if(validOptions["convergTesting"]){
                 objMetadata <- metadata(racipeObj)
                 convergList <- c(convergList, objMetadata$modelConvergence)
                 if(nIC > 1){
                   uniqueCountList <- c(uniqueCountList, objMetadata$uniqueStateCounts)
                 }
-                if(validOptions$limitcycles){
+                if(validOptions["limitcycles"]){
                   if(!("LCData" %in% names(objMetadata))){
                     next
                   }
@@ -1128,7 +1128,7 @@ setMethod(f="sracipeCombineRacipeSE",
                     objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
                   }
                   LCList <- c(LCList, objLC)
-                  LCNum <- LCNum + objMetadata$totalNumofLCs
+                  LCNum <- LCNum + objMetadata["totalNumofLCs"]
                 }
               }
             }
@@ -1141,14 +1141,14 @@ setMethod(f="sracipeCombineRacipeSE",
             col <- cbind(combinedParams, t(combinedICs))
 
             metadataTmp <- metadata(.object[[1]])
-            if(validOptions$convergTesting){
+            if(validOptions["convergTesting"]){
               metadataTmp$modelConvergence <- do.call(rbind, convergList)
               if(nIC > 1){
                 combinedUniqueCounts <- do.call(rbind, uniqueCountList)
                 combinedUniqueCounts[,1] <- seq_len(numModels*(length(.object)))
                 metadataTmp$uniqueStateCounts <- combinedUniqueCounts
               }
-              if(validOptions$limitcycles){
+              if(validOptions["limitcycles"]){
                 metadataTmp$LCData <- do.call(rbind, LCList)
               }
             }
