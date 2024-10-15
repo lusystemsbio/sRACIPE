@@ -1095,6 +1095,7 @@ setMethod(f="sracipeCombineRacipeSE",
               }
             }
 
+            objIdx <- 1
             for(racipeObj in .object){
               #validation
               objConfig <- sracipeConfig(racipeObj)
@@ -1122,8 +1123,7 @@ setMethod(f="sracipeCombineRacipeSE",
                   }
                   objLC <- objMetadata$LCData
 
-                  #Fixing modelCount info in LCData for each object
-                  objIdx <- which(.object == racipeObj)
+                  #Adjusting modelCount info in LCData for each object
                   if(objIdx > 1){
                     objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
                   }
@@ -1131,6 +1131,7 @@ setMethod(f="sracipeCombineRacipeSE",
                   LCNum <- LCNum + objMetadata["totalNumofLCs"]
                 }
               }
+              objIdx <- objIdx + 1
             }
 
             #Gluing things together
