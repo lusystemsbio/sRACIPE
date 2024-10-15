@@ -1060,3 +1060,104 @@ setMethod(f="sracipeConvergeDist",
           }
 
 )
+
+#' @export
+#' @rdname sracipeCombineRacipeSE
+#' @aliases sracipeCombineRacipeSE
+setMethod(f="sracipeCombineRacipeSE",
+          signature = "list",
+          definition = function(.object){
+            #Validate sameness of objects using first element
+            validationConfig <- sracipeConfig(.object[[1]])
+            validCircuit <- sracipeCircuit(.object[[1]])
+
+            #Can't use full config for validation b/c threshold vals are expected
+            #to be different, so use param vectors instead
+            validSim <- validationConfig$simParams
+            validStoch <- validationConfig$stochParams
+            validHyper <- validationConfig$hyperParams
+            validOptions <- validationConfig$options
+            validLC <- validationConfig$LCParams
+
+            nIC <- validSim$nIC
+            numModels <- validSim$numModels / nIC
+
+            #Create lists for storing values
+            statesList <- list()
+            paramsList <- list()
+            icList <- list()
+            if(validOptions$convergTesting){
+              convergList <- list()
+              if(validSim$nIC > 1){uniqueCountList <- list()}
+              if(validOptions$limitcycles){
+                LCList <- list()
+                LCNum <- 0
+              }
+            }
+
+            for(racipeObj in .object){
+              #validation
+              objConfig <- sracipeConfig(racipeObj)
+              if(!all(sracipeCircuit(racipeObj) == validCircuit,
+                      objConfig$simParams == validSim, objConfig$stochParams == validStoch,
+                      objConfig$hyperParams == validHyper, objConfig$options == validOptions,
+                      objConfig$LCParams == validLC)){
+                message("One of the provided RacipeSE objects has different params or topo
+                        from the first object")
+                return()
+              }
+
+              statesList <- c(statesList, assay(racipeObj))
+              paramsList <- c(paramsList, sracipeParams(racipeObj))
+              icList <- c(icList, sracipeIC(racipeObj))
+              if(validOptions$convergTesting){
+                objMetadata <- metadata(racipeObj)
+                convergList <- c(convergList, objMetadata$modelConvergence)
+                if(nIC > 1){
+                  uniqueCountList <- c(uniqueCountList, objMetadata$uniqueStateCounts)
+                }
+                if(validOptions$limitcycles){
+                  if(!("LCData" %in% names(objMetadata))){
+                    next
+                  }
+                  objLC <- objMetadata$LCData
+
+                  #Fixing modelCount info in LCData for each object
+                  objIdx <- which(.object == racipeObj)
+                  if(objIdx > 1){
+                    objLC[,1] <- objLC[,1]*(objIdx-1)*numModels
+                  }
+                  LCList <- c(LCList, objLC)
+                  LCNum <- LCNum + objMetadata$totalNumofLCs
+                }
+              }
+            }
+
+            #Gluing things together
+            combinedStates <- do.call(cbind, statesList)
+            combinedParams <- do.call(rbind, paramsList)
+            combinedICs <- do.call(cbind, icList)
+
+            col <- cbind(combinedParams, t(combinedICs))
+
+            metadataTmp <- metadata(.object[[1]])
+            if(validOptions$convergTesting){
+              metadataTmp$modelConvergence <- do.call(rbind, convergList)
+              if(nIC > 1){
+                combinedUniqueCounts <- do.call(rbind, uniqueCountList)
+                combinedUniqueCounts[,1] <- seq_len(numModels*(length(.object)))
+                metadataTmp$uniqueStateCounts <- combinedUniqueCounts
+              }
+              if(validOptions$limitcycles){
+                metadataTmp$LCData <- do.call(rbind, LCList)
+              }
+            }
+
+
+            rSet <- RacipeSE(rowData = rowData(.object[[1]]), colData = col,
+                             assays = combinedStates, metadata = metadataTmp)
+
+            return(rSet)
+
+          }
+)

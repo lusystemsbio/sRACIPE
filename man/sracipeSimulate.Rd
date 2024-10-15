@@ -27,6 +27,7 @@ sracipeSimulate(
   initialNoise = 50,
   noiseScalingFactor = 0.5,
   shotNoise = 0,
+  ouNoise_t = 1,
   scaledNoise = FALSE,
   outputPrecision = 12L,
   printStart = 50,
@@ -41,6 +42,7 @@ sracipeSimulate(
   rkTolerance = 0.01,
   timeSeries = FALSE,
   signalRate = 10,
+  uniqueDigits = 4,
   convergThresh = 1e-12,
   numStepsConverge = 500,
   numConvergenceTests = 25,
@@ -53,6 +55,9 @@ sracipeSimulate(
   NumSampledPeriods = 3,
   AllowedPeriodError = 3,
   SamePointProximity = 0.1,
+  LCStepper = "RK4",
+  paramSignalVals = data.frame(),
+  geneClamping = data.frame(),
   ...
 )
 }
@@ -120,7 +125,9 @@ interactions.}
 \item{integrateStepSize}{(optional) numeric. Default 0.02. step size for
 integration using "EM" and "RK4" steppers.}
 
-\item{simulationTime}{(optional) numeric. Total simulation time.}
+\item{simulationTime}{(optional) numeric. Default 50. Total simulation time.
+Only used for stochastic and time series simulations. For adjusting
+deterministic simulation run times, see numConvergenceTests.}
 
 \item{nIC}{(optional) integer. Default 1. Number of initial conditions to be
 simulated for each model.}
@@ -214,12 +221,59 @@ RACIPE simulations.}
 the differential equations for fast genes are multiplied by. Fast genes only
 have inward signaling interactions of types 5 or 6}
 
+\item{uniqueDigits}{(optional) integer. Default \code{4}. Deterministic
+simulations with nIC > 1 count the number of unique steady states per model
+by truncating the expression by this many digits and counting the number of
+unique expressions}
+
 \item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
 for convergence to a steady state for deterministic simulations.}
 
+\item{numConvergenceTests}{(optional) integer. Default \code{25}. The total
+number of convergence tests run per model initial condition in deterministic
+simulations.}
+
+\item{limitcycles}{(optional) logical. Default \code{FALSE}. Whether to check
+for limit cycles in deterministic simulations.}
+
+\item{LCSimTime}{(optional) numeric. Default \code{10}. The runtime for the
+secondary limit cycle simulation.}
+
+\item{LCSimStepSize}{(optional) numeric. Default \code{0.01}. The integration
+step size for the secondary limit cycle simulation.}
+
+\item{maxLCs}{(optional) integer. Default \code{10}. The maximum allowable
+number of limit cycles that can be detected for each model.}
+
+\item{LCIter}{(optional) integer. Default \code{20}.}
+
+\item{MaxPeriods}{(optional) integer. Default \code{100}.}
+
+\item{NumSampledPeriods}{(optional) integer. Default \code{3}.}
+
+\item{AllowedPeriodError}{(optional) integer. Default \code{3}.}
+
+\item{SamePointProximity}{(optional) numeric. Default \code{0.1}.}
+
+\item{LCStepper}{(optional) Character.}
+
+\item{paramSignalVals}{(optional) Data Frame. Default data.frame(). The
+first column must be a vector of time values with the first element as 0 and
+the last element as simulationTime. The other column names must be valid
+production or degradation parameter names for the circuit. Use
+sracipeGenParamNames() to generate valid parameter names. The
+first column must be a vector of time values with the first element as 0 and
+the last element as simulationTime.}
+
+\item{geneClamping}{(optional) Data Frame. Default data.frame(). The column
+names must be genes in the circuit. The number of columns must either be one
+or equal to numModels. If the number of columns is one, the selected genes
+are clamped to those values for every model. Otherwise, the gene is clamped
+to the value of the corresponding row for a particular model.}
+
 \item{...}{Other arguments}
 
-\item{numStepConverge}{(optional) numeric. Default \code{500}. The number of
+\item{numStepConverge}{(optional) integer Default \code{500}. The number of
 integration steps between convergence tests for deterministic simulations.}
 }
 \value{
