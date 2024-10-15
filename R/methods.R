@@ -1079,8 +1079,8 @@ setMethod(f="sracipeCombineRacipeSE",
             validOptions <- validationConfig$options
             validLC <- validationConfig$LCParams
 
-            nIC <- validSim$nIC
-            numModels <- validSim$numModels / nIC
+            nIC <- validSim["nIC"]
+            numModels <- validSim["numModels"] / nIC
 
             #Create lists for storing values
             statesList <- list()
