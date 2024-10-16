@@ -1164,3 +1164,43 @@ setMethod(f="sracipeCombineRacipeSE",
 
           }
 )
+
+#' @export
+#' @rdname sracipeUniqueStates
+#' @aliases sracipeUniqueStates
+setMethod(f="sracipeUniqueStates",
+          signature = "RacipeSE",
+          definition = function(.object){
+            geneExpression <- assay(.object)
+            objMetadata <- metadata(.object)
+            converge <- objMetadata$modelConvergence
+            configuration <- objMetadata$config
+            nIC <- configuration$simParams["nIC"]
+            uniqueDigits <- configuration$simParams["uniqueDigits"]
+            numModels <- configuration$simParams["numModels"]/nIC #See RacipeSE constructor for explanation
+
+            uniqueExprxList <- list() #stores unique expressions in a list
+
+            for(modelCount in seq_len(numModels)){
+              modelStates <- data.frame()
+              #grab ICs and convergence data for each model
+              startIdx <- (modelCount - 1)*nIC + 1
+              endIdx <- modelCount*nIC
+
+              finalModelExpressions <- geneExpression[, startIdx:endIdx]
+              #filters out non-converging states
+              ICconvergences <- converge[startIdx:endIdx, 1]
+              convergedICs <- finalModelExpressions[, as.logical(ICconvergences)]
+
+              if(!is.null(ncol(convergedICs))){
+                #Taking unique states up until uniqueDigits
+                uniqueIdx <- which(!(duplicated(round(convergedICs, digits = uniqueDigits), MARGIN = 2)))
+                uniqueExprx <- convergedICs[,uniqueIdx]
+                uniqueExprxList[[modelCount]] <- as.data.frame(uniqueExprx)
+              }else{
+                uniqueExprxList[[modelCount]] <- data.frame()
+              }
+            }
+            return(uniqueExprxList)
+          }
+)

@@ -21,7 +21,10 @@ It is often the case that to save time, multiple simulations
 of the same topology with the same config file are run in parallel. However,
 one still wants to condense the results of the different simulations into one
 object. This method does that, combining the params, ics, and expressions
-of a list of objects into one.
+of a list of objects into one. If convergence testing is done, convergence
+data and unique state counts are combined as well. Limit cycle data is combined
+too. The method validates the RacipeSE objects as having essentially identical
+configurations compared to the first object provided
 }
 \section{Related Functions}{
 
@@ -33,8 +36,13 @@ of a list of objects into one.
 \examples{
 data("demoCircuit")
 \dontrun{
-rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
-integrateStepSize = 0.1, numConvergenceTests = 30)
-rSet <- sracipeConvergeDist(rSet)
+  data(democircuit)
+  for(i in 1:5){
+    rSet <- sracipeSimulate(demoCircuit, numModels = 100,
+                               numConvergenceTests = 20, nIC = 2)
+    racipeList <- c(racipeList, results)
+  }
+
+  combinedObject <- sracipeCombineRacipeSE(racipeList)
 }
 }
