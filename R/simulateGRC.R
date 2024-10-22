@@ -143,18 +143,32 @@
 #' simulations.
 #' @param limitcycles (optional) logical. Default \code{FALSE}. Whether to check
 #' for limit cycles in deterministic simulations.
-#' @param LCSimTime (optional) numeric. Default \code{10}. The runtime for the
-#' secondary limit cycle simulation.
+#' @param LCSimTime (optional) numeric. Default \code{10}. The length of each
+#' iteration for the secondary limit cycle simulation
 #' @param LCSimStepSize (optional) numeric. Default \code{0.01}. The integration
 #' step size for the secondary limit cycle simulation.
 #' @param maxLCs (optional) integer. Default \code{10}. The maximum allowable
 #' number of limit cycles that can be detected for each model.
-#' @param LCIter (optional) integer. Default \code{20}.
-#' @param MaxPeriods (optional) integer. Default \code{100}.
-#' @param NumSampledPeriods (optional) integer. Default \code{3}.
-#' @param AllowedPeriodError (optional) integer. Default \code{3}.
-#' @param SamePointProximity (optional) numeric. Default \code{0.1}.
-#' @param LCStepper (optional) Character.
+#' @param LCIter (optional) integer. Default \code{20}. The number of iterations
+#' to run in the secondary limit cycle simulation
+#' @param MaxPeriods (optional) integer. Default \code{100}. The number of periods
+#' to count in the distance function constructed by the limit cycle detection
+#' algorithm
+#' @param NumSampledPeriods (optional) integer. Default \code{3}. The number of
+#' times the limit cycle detection algorithm tries to calculate the period of the
+#' simulated trajectory using the local minima in a constructed distance function.
+#' @param AllowedPeriodError (optional) integer. Default \code{3}. The allowed
+#' difference in the sampled periods for a trajectory from the limit cycle
+#' detection algorithm. Decrease this value to make for more stringent limit
+#' cycle detection
+#' @param SamePointProximity (optional) numeric. Default \code{0.1}. The max
+#' allowed square euclidean difference between two minima of the distance function
+#' constructed by the limit cycle detection algorithm before they are considered
+#' different points in phase space.
+#' @param LCStepper (optional) Character. Default \code{"RK4"} The integration
+#' method used for the limit cycle simulation. The options include \code{"E"}
+#' for first order Euler and \code{"RK4"} for fourth order Runge Kutta. Any other
+#' input will cause the simulation to use the Euler method
 #' @param paramSignalVals (optional) Data Frame. Default data.frame(). The
 #' first column must be a vector of time values with the first element as 0 and
 #' the last element as simulationTime. The other column names must be valid
