@@ -67,7 +67,9 @@ One can use the topology stored in a text file or loaded
 as a dataframe. The typical format of the topology 
 file is a 3 column file where the first column is name of the source gene, 
 second column is name of the target gene and last column is 
-the interaction type (1 - activation, 2-inhibition). 
+the interaction type (1 - TF activation, 2- TF inhibition, 3- activation by 
+inhibiting degradation, 4- inhibition by activating degradation, 5- signalling
+activation, 6- signaling inhibition). 
 The first line should contain the header (Source Target Interaction). 
 We will work with a demo circuit from the package.
 
@@ -81,16 +83,19 @@ demoCircuit
 ```
 
 # Simulate the circuit
-We will use a reduced number of 
-models (using numModels) for demonstration. The simulations will return a 
-RacipeSE object. 
+We will use a reduced number of models (using numModels) for demonstration. 
+By default, deterministic simulations are run with convergence testing, so we
+alter the numConvergenceIter parameter to change how long a simulation lasts.
+The simulations will return a RacipeSE object. Convergence data is stored in 
+the metadata of the RacipseSE object
 
 
 ```{r}
 
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
                              plots = FALSE, integrateStepSize = 0.1, 
-                             simulationTime = 30)
+                             numConvergenceIter = 5)
+cd <- S4Vectors::metadata(rSet)$modelConvergence
 
 ```
 
@@ -119,7 +124,7 @@ data("demoCircuit")
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, 
                              numModels = 50, plots = FALSE, 
                              integrateStepSize = 0.1, 
-                             simulationTime = 30)
+                             numConvergenceIter = 5)
 kd <- sRACIPE::sracipeKnockDown(rSet, plotToFile = FALSE,
                                 reduceProduction=50)
 ```
@@ -134,6 +139,28 @@ or html file in the results  folder.
 ```
 
 
+# Limit Cycle Detection
+For deterministic simulations, one can have the simulation check for limit 
+cycles in the results, although the simulation won't do this by default. The
+demoCircuit we were previously using can't produce oscillations, so we will have
+to call another circuit, the repressilator, which is a loop of 3 genes 
+inhibiting each other. Limit cycle results are stored in the metadata of the 
+results, just like the convergence data. Note that with the small number of 
+models simulated and low number of iterations, this code might not find any 
+limit cycles in one try. Use a large number of models to guarantee limit cycle 
+detection.
+
+```{r eval=TRUE}
+data("repressilator")
+rSet <- sRACIPE::sracipeSimulate(circuit = repressilator, 
+                             numModels = 30, plots = FALSE, 
+                             integrateStepSize = 0.1, 
+                             numConvergenceIter = 5,
+                             limitcycles = TRUE)
+```
+
+
+
 #  Stochastic simulations 
 
 One can perform stochastic simulations similarly by specifying additional 
@@ -145,6 +172,8 @@ For annealing, use anneal=TRUE alongwith the above mentioned parameters.
 For simulations at one
 noise level only, use nNoise = 1 and set initialNoise parameter to the specific 
 noise. 
+Since convergence testing is not possible for stochastic simulations, they are 
+not run and we use the simulationTime parameter to modulate simulation length
 
 Now the returned object will contain additional elements in the 
 assays which correspond to the 

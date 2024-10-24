@@ -71,7 +71,9 @@ steps in the pipeline.
 ## Circuit
 `SummarizedExperiment` slot `rowData` is used to store the circuit topology. 
 It is a square matrix with dimension equal to the number of genes in the circuit. 
-The values of the matrix represent the type of interaction in the gene pair given by row and column. 1 represents activation, 2 inhibition and 0 for no interaction. The `sracipeCircuit` getter and 
+The values of the matrix represent the type of interaction in the gene pair given by row and column. 1 represents TF activation, 2 TF inhibition, 3 activation by degradation inhibition, 4 inhibition
+by degradation activation, 5 signaling activation, 6 signaling inihibition,
+and 0 for no interaction. The `sracipeCircuit` getter and 
 accessor should be used to access this information. The `annotation` getter and 
 setter set/get the name. Setting the circuit also adds `nInteractions` and 
 `annotation` to the RacipeSE object.
