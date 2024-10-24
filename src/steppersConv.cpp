@@ -25,7 +25,7 @@ void stepEMconv( std::vector <double> &exprxGene,
              const NumericVector &geneTypes,
              const long double &convergThresh,
              const int &numStepsConverge,
-             const int &numConvergenceTests,
+             const int &numConvergenceIter,
              std::unordered_map<int, std::vector<double>> &clamps,
              const int &modelNo){
 
@@ -41,7 +41,7 @@ void stepEMconv( std::vector <double> &exprxGene,
   
   //For each test, we run the simulation for numStepsConverge iterations
   //and check if the system has changed state in that time
-  for(int testIter=0; testIter<numConvergenceTests; testIter++){
+  for(int testIter=0; testIter<numConvergenceIter; testIter++){
 
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         prevExprxGene[geneCount1]=exprxGene[geneCount1];}
@@ -110,7 +110,7 @@ void stepEMconv( std::vector <double> &exprxGene,
       outGE<<std::setprecision(outputPrecision)
       <<exprxGene[geneCount1]<<"\t";
     }
-    outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
+    outConv<<isConverged<<"\t" << numConvergenceIter <<"\n";
   }
 
 
@@ -143,7 +143,7 @@ void stepRK4conv( std::vector <double> &exprxGene,
              const NumericVector &geneTypes,
              const long double &convergThresh,
              const int &numStepsConverge,
-             const int &numConvergenceTests,
+             const int &numConvergenceIter,
              std::unordered_map<int, std::vector<double>> &clamps,
              const int &modelNo){
 
@@ -167,7 +167,7 @@ bool isBlowup = false; //Checking for explosions due to stiffness
 
 //For each test, we run the simulation for numStepsConverge iterations
 //and check if the system has changed state in that time
-for(int testIter=0; testIter<numConvergenceTests; testIter++){
+for(int testIter=0; testIter<numConvergenceIter; testIter++){
 
   for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         prevExprxGene[geneCount1]=exprxGene[geneCount1];}
@@ -346,7 +346,7 @@ if(isConverged == false){
     outGE<<std::setprecision(outputPrecision)
     <<exprxGene[geneCount1]<<"\t";
   }
-  outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
+  outConv<<isConverged<<"\t" << numConvergenceIter <<"\n";
 }
 
 
@@ -373,7 +373,7 @@ void stepDPconv( std::vector <double> &exprxGene,
               const NumericVector &geneTypes,
               const long double &convergThresh,
               const int &numStepsConverge,
-              const int &numConvergenceTests,
+              const int &numConvergenceIter,
               const double &testTime,
               std::unordered_map<int, std::vector<double>> &clamps,
               const int &modelNo){
@@ -406,7 +406,7 @@ void stepDPconv( std::vector <double> &exprxGene,
 
   //For each test, we run the simulation for numStepsConverge iterations
   //and check if the system has changed state in that time
-  for(int testIter=0; testIter<numConvergenceTests; testIter++){
+  for(int testIter=0; testIter<numConvergenceIter; testIter++){
     for(int geneCount1=0;geneCount1<numberGene;geneCount1++){
         prevExprxGene[geneCount1]=exprxGene[geneCount1];}
       
@@ -748,6 +748,6 @@ void stepDPconv( std::vector <double> &exprxGene,
     outGE<<std::setprecision(outputPrecision)
     <<exprxGene[geneCount1]<<"\t";
   }
-  outConv<<isConverged<<"\t" << numConvergenceTests <<"\n";
+  outConv<<isConverged<<"\t" << numConvergenceIter <<"\n";
 }
 }

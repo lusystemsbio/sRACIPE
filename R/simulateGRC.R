@@ -54,7 +54,7 @@
 #' integration using "EM" and "RK4" steppers.
 #' @param simulationTime (optional) numeric. Default 50. Total simulation time.
 #' Only used for stochastic and time series simulations. For adjusting
-#' deterministic simulation run times, see numConvergenceTests.
+#' deterministic simulation run times, see numConvergenceIter.
 #' @param nIC (optional) integer. Default 1. Number of initial conditions to be
 #' simulated for each model.
 #' @param ... Other arguments
@@ -138,9 +138,9 @@
 #' for convergence to a steady state for deterministic simulations.
 #' @param numStepConverge (optional) integer Default \code{500}. The number of
 #' integration steps between convergence tests for deterministic simulations.
-#' @param numConvergenceTests (optional) integer. Default \code{25}. The total
-#' number of convergence tests run per model initial condition in deterministic
-#' simulations.
+#' @param numConvergenceIter (optional) integer. Default \code{25}. The total
+#' number of convergence test iterations to run per model
+#' initial condition in deterministic simulations.
 #' @param limitcycles (optional) logical. Default \code{FALSE}. Whether to check
 #' for limit cycles in deterministic simulations.
 #' @param LCSimTime (optional) numeric. Default \code{10}. The length of each
@@ -211,7 +211,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       genIC = TRUE, genParams = TRUE,
                       integrate = TRUE, rkTolerance = 0.01, timeSeries = FALSE,
                       signalRate = 10.0, uniqueDigits = 4, convergThresh = 1e-12,
-                      numStepsConverge = 500, numConvergenceTests = 25,
+                      numStepsConverge = 500, numConvergenceIter = 25,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
@@ -358,8 +358,8 @@ if(!missing(config)){
  if(!missing(numStepsConverge)){
    configuration$simParams["numStepsConverge"] <- numStepsConverge
  }
- if(!missing(numConvergenceTests)){
-   configuration$simParams["numConvergenceTests"] <- numConvergenceTests
+ if(!missing(numConvergenceIter)){
+   configuration$simParams["numConvergenceIter"] <- numConvergenceIter
  }
  if(!missing(uniqueDigits)){
    configuration$simParams["uniqueDigits"] <- uniqueDigits

@@ -278,7 +278,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double printInterval = simulationParameters[8];
   long double convergThresh = simulationParameters[9];
   int numStepsConverge = simulationParameters[10];
-  int numConvergenceTests = simulationParameters[11];
+  int numConvergenceIter = simulationParameters[11];
   // Rcout<<printInterval<<"\t"<<printStart<<"\n";
   size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
   double noiseScalingFactor = stochasticParameters[1];
@@ -625,7 +625,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, D, h, 
                     signalRate, geneTypes, convergThresh, 
-                    numStepsConverge, numConvergenceTests,
+                    numStepsConverge, numConvergenceIter,
                     clampMap, modelCount);
               break;
             case 41:
@@ -637,7 +637,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        sdFactor,
                        outputPrecision,
                        h, signalRate, geneTypes, convergThresh,
-                       numStepsConverge, numConvergenceTests,
+                       numStepsConverge, numConvergenceIter,
                        clampMap, modelCount);
               break;
 
@@ -651,7 +651,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       outputPrecision,h,
                       rkTolerance,
                       signalRate, geneTypes, convergThresh,
-                      numStepsConverge, numConvergenceTests,
+                      numStepsConverge, numConvergenceIter,
                       testTime, clampMap, modelCount);
               break;
 
