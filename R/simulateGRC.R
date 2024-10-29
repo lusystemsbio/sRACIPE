@@ -2,6 +2,8 @@
 #' @export
 #' @title Simulate a gene regulatory circuit
 #' @import SummarizedExperiment
+#' @import doRNG
+#' @import doFuture
 #' @importFrom utils read.table write.table data
 #' @importFrom S4Vectors metadata
 #' @description Simulate a gene regulatory circuit using its topology as the
@@ -181,6 +183,9 @@
 #' or equal to numModels. If the number of columns is one, the selected genes
 #' are clamped to those values for every model. Otherwise, the gene is clamped
 #' to the value of the corresponding row for a particular model.
+#'  @param nCores (optional) integer. Default \code{1}
+#' Number of cores to be used for computation. Utilizes \code{multisession} from
+#' \code{doFuture} pacakge. Will not work in Rstudio.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
@@ -217,6 +222,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       NumSampledPeriods = 3, AllowedPeriodError = 3,
                       SamePointProximity = 0.1, LCStepper = "RK4",
                       paramSignalVals = data.frame(), geneClamping = data.frame(),
+                      nCores = 1L,
                       ...){
  rSet <- RacipeSE()
  metadataTmp <- metadata(rSet)
@@ -262,6 +268,12 @@ if(!missing(config)){
    if(!(methods::is(knockOut, "list"))){
      knockOut <- list(knockOut)
    }
+ }
+
+ if(nCores<1) {
+   warning("Number of cores, nCores, is less than 1 or not an interger.
+          Using nCores=1")
+   nCores=1
  }
 
   if(!missing(anneal)){
@@ -613,6 +625,7 @@ if(missing(nNoise)){
   #gene clamping
   clampedGenes <- rep(0, nGenes)
   if(nrow(geneClamping)>0){
+    clamping <- TRUE
     clampedIdx <- match(colnames(geneClamping), geneNames)
     clampedGenes[clampedIdx] <- 1
     message(paste0("clamped genes: ",paste0(clampedGenes, collapse = ",")))
@@ -628,6 +641,7 @@ if(missing(nNoise)){
     }
   }else{
     configuration$clampVals <- as.matrix(c(-1))
+    clamping <- FALSE
   }
   configuration$clampedGenes <- clampedGenes
 
@@ -648,10 +662,102 @@ if(missing(nNoise)){
   annotationTmp <- outFileGE
   message("Running the simulations")
   # print(configuration$stochParams["nNoise"])
-  Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
-                                       outFileParams,outFileIC, outFileConverge,
-                                       metadataTmp$geneTypes, paramSignalValsTmp,
-                                       paramSignalTypes, stepperInt)
+
+  if(!configuration$options["integrate"] | (nCores==1) | timeSeries){
+    Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
+                                         outFileParams,outFileIC, outFileConverge,
+                                         metadataTmp$geneTypes, paramSignalValsTmp,
+                                         paramSignalTypes, stepperInt)
+
+  } else{
+      if(nCores>1 & !timeSeries){
+        configuration$options["integrate"] <- FALSE
+        Time_evolution_test<- simulateGRCCpp(geneInteraction, configuration,outFileGE,
+                                             outFileParams,outFileIC,outFileConverge,
+                                             metadataTmp$geneTypes, paramSignalValsTmp,
+                                             paramSignalTypes, stepperInt)
+        configuration$options["integrate"] <- TRUE
+        requireNamespace("doFuture")
+        registerDoFuture()
+        plan(multisession)
+
+        configList <- list()
+        parModel <- floor(configuration$simParams["numModels"]/nCores)
+        gEFileList <- character(length = nCores)
+        paramFileList <- character(length = nCores)
+        iCFileList <- character(length = nCores)
+        convFileList <- character(length = nCores)
+
+        parameters <- utils::read.table(outFileParams, header = FALSE)
+        ic <- utils::read.table(outFileIC, header = FALSE)
+
+        for(i in seq(1,nCores)){
+          parConfig <- configuration
+
+          gEFileList[i] <- tempfile(fileext = ".txt")
+          paramFileList[i] <- tempfile(fileext = ".txt")
+          iCFileList[i] <- tempfile(fileext = ".txt")
+          convFileList[i] <- tempfile(fileext = ".txt")
+          if(i==nCores){
+            parConfig$simParams["numModels"] <-
+              configuration$simParams["numModels"] - (nCores-1)*parModel
+            paramPar <- parameters[(((i-1)*parModel+1):(nrow(parameters))),]
+            icPar <- ic[(((i-1)*parModel+1):(nrow(parameters))),]
+
+            if(clamping){
+              parConfig$clampVals <- as.matrix(geneClamping[(((i-1)*parModel+1):(nrow(parameters))),])
+            }
+
+          } else {
+            parConfig$simParams["numModels"] <- parModel
+            paramPar <- parameters[(((i-1)*parModel+1):(i*parModel)),]
+            icPar <- ic[(((i-1)*parModel+1):(i*parModel)),]
+
+            if(clamping){
+              parConfig$clampVals <- as.matrix(geneClamping[(((i-1)*parModel+1):(i*parModel)),])
+            }
+
+          }
+
+          configList[[i]] <- parConfig
+
+          utils::write.table(paramPar, file = paramFileList[i],
+                             sep = "\t", quote = FALSE, row.names = FALSE,
+                             col.names = FALSE)
+          utils::write.table(icPar, file = iCFileList[i],
+                             sep = "\t", quote = FALSE, row.names = FALSE,
+                             col.names = FALSE)
+
+        }
+
+        x <- foreach(configurationTmp = configList,outFileGETmp = gEFileList,
+                     outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
+                     outFileConvergeTmp=convFileList,
+                     .export = c("geneInteraction","stepperInt", "metadataTmp",
+                                 "paramSignalValsTmp", "paramSignalTypes")) %dorng% {
+
+                       simulateGRCCpp(
+                         geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
+                         outFileICTmp, metadataTmp$geneTypes, paramSignalValsTmp,
+                         paramSignalTypes, stepperInt)
+
+
+                     }
+        geList <- list()
+        convList <- list()
+        for(i in seq(1,nCores)){
+
+          geList[[i]] <- utils::read.table(iCFileList[i],
+                                           header = FALSE)
+          convList[[i]] <- utils::read.table(convFileList[i],
+                                           header = FALSE)
+        }
+        geneExpression <- do.call(rbind, geList)
+        converge <- do.call(rbind, convList)
+
+      }
+    }
+
 
     if(configuration$options["integrate"]){
 
@@ -710,7 +816,9 @@ if(missing(nNoise)){
                          metadata = metadataTmp)
         return(rSet)
       }
-    geneExpression <- utils::read.table(outFileGE, header = FALSE)
+    if(!(nCores>1 & !timeSeries)){
+      geneExpression <- utils::read.table(outFileGE, header = FALSE)
+    }
     if(!all(!(is.na(geneExpression)))){ #Checking if any models had problematic results
       cat("\n")
       message("NaN in expression data. Likely due to stiff equations. Try
@@ -791,17 +899,23 @@ if(missing(nNoise)){
 
     paramName <- sracipeGenParamNames(rSet)
     # paramFile <- paste0("tmp/",outFile,"_parameters.txt")
-    parameters <- utils::read.table(outFileParams, header = FALSE)
+    if(!(nCores>1 & !timeSeries)){
+      parameters <- utils::read.table(outFileParams, header = FALSE)
+    }
     colnames(parameters) <- paramName
 
     # icFile <- paste0("tmp/",outFile,"_IC.txt")
-    ic <- utils::read.table(outFileIC, header = FALSE)
+    if(!(nCores>1 & !timeSeries)){
+      ic <- utils::read.table(outFileIC, header = FALSE)
+    }
     colnames(ic) <- geneNames
     metadataTmp$normalized <- FALSE
 
 
     if(convergTesting) {
-      converge<- utils::read.table(outFileConverge, header = FALSE)
+      if(!(nCores>1)){
+        converge<- utils::read.table(outFileConverge, header = FALSE)
+      }
       colnames(converge)<-c("Model Convergence", "Tests Done")
 
       if(nIC > 1){#Counts unique states per model
@@ -829,6 +943,13 @@ if(missing(nNoise)){
       if(limitcycles){ #Running limit cycle algorithm
         cat("\n")
         message("Checking for limit cycles")
+        if(nCores>1){
+          #Making sure outFileGE file has valid expressions
+          utils::write.table(geneExpression, file = outFileGE,
+                             sep = "\t", quote = FALSE, row.names = FALSE,
+                             col.names = FALSE)
+        }
+
         LCStepperInt <- 1L
         if(configuration$LCStepper == "RK4"){ LCStepperInt <- 4L}
         LC_Test <- limitcyclesGRC(geneInteraction, outFileLC, outFileLCIC, configuration, converge[,1],
