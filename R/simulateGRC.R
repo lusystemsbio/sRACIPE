@@ -729,12 +729,13 @@ if(missing(nNoise)){
                              col.names = FALSE)
 
         }
-        print("here1")
+
         x <- foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
-                     .export = c("geneInteraction","stepperInt", "metadataTmp",
-                                 "paramSignalValsTmp", "paramSignalTypes")) %dorng% {
+                     .export = c("geneInteraction","metadataTmp",
+                                 "paramSignalValsTmp", "paramSignalTypes",
+                                 "stepperInt")) %dorng% {
 
                        simulateGRCCpp(
                          geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
@@ -743,7 +744,6 @@ if(missing(nNoise)){
 
 
                                  }
-        print("here2")
         geList <- list()
         convList <- list()
         for(i in seq(1,nCores)){
