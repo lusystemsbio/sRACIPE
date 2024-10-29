@@ -729,7 +729,7 @@ if(missing(nNoise)){
                              col.names = FALSE)
 
         }
-
+        print("here1")
         x <- foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
@@ -742,7 +742,8 @@ if(missing(nNoise)){
                          paramSignalTypes, stepperInt)
 
 
-                     }
+                                 }
+        print("here2")
         geList <- list()
         convList <- list()
         for(i in seq(1,nCores)){
