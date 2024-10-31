@@ -45,7 +45,7 @@ sracipeSimulate(
   uniqueDigits = 4,
   convergThresh = 1e-12,
   numStepsConverge = 500,
-  numConvergenceTests = 25,
+  numConvergenceIter = 25,
   limitcycles = FALSE,
   LCSimTime = 10,
   LCSimStepSize = 0.01,
@@ -58,6 +58,7 @@ sracipeSimulate(
   LCStepper = "RK4",
   paramSignalVals = data.frame(),
   geneClamping = data.frame(),
+  nCores = 1L,
   ...
 )
 }
@@ -127,7 +128,7 @@ integration using "EM" and "RK4" steppers.}
 
 \item{simulationTime}{(optional) numeric. Default 50. Total simulation time.
 Only used for stochastic and time series simulations. For adjusting
-deterministic simulation run times, see numConvergenceTests.}
+deterministic simulation run times, see numConvergenceIter.}
 
 \item{nIC}{(optional) integer. Default 1. Number of initial conditions to be
 simulated for each model.}
@@ -229,15 +230,15 @@ unique expressions}
 \item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
 for convergence to a steady state for deterministic simulations.}
 
-\item{numConvergenceTests}{(optional) integer. Default \code{25}. The total
-number of convergence tests run per model initial condition in deterministic
-simulations.}
+\item{numConvergenceIter}{(optional) integer. Default \code{25}. The total
+number of convergence test iterations to run per model
+initial condition in deterministic simulations.}
 
 \item{limitcycles}{(optional) logical. Default \code{FALSE}. Whether to check
 for limit cycles in deterministic simulations.}
 
-\item{LCSimTime}{(optional) numeric. Default \code{10}. The runtime for the
-secondary limit cycle simulation.}
+\item{LCSimTime}{(optional) numeric. Default \code{10}. The length of each
+iteration for the secondary limit cycle simulation}
 
 \item{LCSimStepSize}{(optional) numeric. Default \code{0.01}. The integration
 step size for the secondary limit cycle simulation.}
@@ -245,17 +246,31 @@ step size for the secondary limit cycle simulation.}
 \item{maxLCs}{(optional) integer. Default \code{10}. The maximum allowable
 number of limit cycles that can be detected for each model.}
 
-\item{LCIter}{(optional) integer. Default \code{20}.}
+\item{LCIter}{(optional) integer. Default \code{20}. The number of iterations
+to run in the secondary limit cycle simulation}
 
-\item{MaxPeriods}{(optional) integer. Default \code{100}.}
+\item{MaxPeriods}{(optional) integer. Default \code{100}. The number of periods
+to count in the distance function constructed by the limit cycle detection
+algorithm}
 
-\item{NumSampledPeriods}{(optional) integer. Default \code{3}.}
+\item{NumSampledPeriods}{(optional) integer. Default \code{3}. The number of
+times the limit cycle detection algorithm tries to calculate the period of the
+simulated trajectory using the local minima in a constructed distance function.}
 
-\item{AllowedPeriodError}{(optional) integer. Default \code{3}.}
+\item{AllowedPeriodError}{(optional) integer. Default \code{3}. The allowed
+difference in the sampled periods for a trajectory from the limit cycle
+detection algorithm. Decrease this value to make for more stringent limit
+cycle detection}
 
-\item{SamePointProximity}{(optional) numeric. Default \code{0.1}.}
+\item{SamePointProximity}{(optional) numeric. Default \code{0.1}. The max
+allowed square euclidean difference between two minima of the distance function
+constructed by the limit cycle detection algorithm before they are considered
+different points in phase space.}
 
-\item{LCStepper}{(optional) Character.}
+\item{LCStepper}{(optional) Character. Default \code{"RK4"} The integration
+method used for the limit cycle simulation. The options include \code{"E"}
+for first order Euler and \code{"RK4"} for fourth order Runge Kutta. Any other
+input will cause the simulation to use the Euler method}
 
 \item{paramSignalVals}{(optional) Data Frame. Default data.frame(). The
 first column must be a vector of time values with the first element as 0 and
@@ -269,7 +284,10 @@ the last element as simulationTime.}
 names must be genes in the circuit. The number of columns must either be one
 or equal to numModels. If the number of columns is one, the selected genes
 are clamped to those values for every model. Otherwise, the gene is clamped
-to the value of the corresponding row for a particular model.}
+to the value of the corresponding row for a particular model.
+ @param nCores (optional) integer. Default \code{1}
+Number of cores to be used for computation. Utilizes \code{multisession} from
+\code{doFuture} pacakge. Will not work in Rstudio.}
 
 \item{...}{Other arguments}
 

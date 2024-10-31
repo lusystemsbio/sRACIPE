@@ -981,7 +981,6 @@ if(missing(nNoise)){
           message("No limit cycles detected")
         }
       }
-      metadataTmp$modelConvergence <- converge
     }
 
     ## Knockouts
@@ -1048,6 +1047,9 @@ if(missing(nNoise)){
       return(rSet)
   }
     colData <- (cbind(parameters,ic))
+    if(convergTesting){
+      colData <- (cbind(colData, converge))
+    }
     metadataTmp$config <- configuration
  # return(list(rowData = geneInteraction, colData = colData,
    #         assays =  assayDataTmp,

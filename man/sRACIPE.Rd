@@ -46,18 +46,19 @@ knockout simulations.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/vivekkohar/sRACIPE}
+  \item \url{https://github.com/lusystemsbio/sRACIPE}
   \item \url{https://geneex.jax.org/}
   \item \url{https://vivekkohar.github.io/sRACIPE/}
 }
 
 }
 \author{
-\strong{Maintainer}: Vivek Kohar \email{vivek.kohar@gmail.com} (\href{https://orcid.org/0000-0003-1813-1597}{ORCID})
+\strong{Maintainer}: Mingyang Lu \email{m.lu@northeastern.edu} (\href{https://orcid.org/0000-0001-8158-0593}{ORCID})
 
 Authors:
 \itemize{
-  \item Mingyang Lu
+  \item Aidan Tillman
+  \item Daniel Ramirez
 }
 
 }

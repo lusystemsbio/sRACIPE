@@ -159,7 +159,7 @@ setMethod(f="sracipeIC",
           definition=function(.object)
           {
             return(t(as.data.frame(colData(.object)[,(2*length(names(.object)) +
-              3*metadata(.object)$nInteractions+1):(dim(colData(.object))[2])])))
+              3*metadata(.object)$nInteractions+1):(dim(colData(.object))[2]-2)])))
           }
 )
 #' @rdname sracipeIC-set
@@ -171,8 +171,22 @@ setMethod(f="sracipeIC<-",
             value <- t(value)
             colData(.object)[,(2*length(names(.object)) +
         3*metadata(.object)$nInteractions +1):
-            (dim(colData(.object))[2])] <- S4Vectors::DataFrame(value)
+            (dim(colData(.object))[2]-2)] <- S4Vectors::DataFrame(value)
             return(.object)
+          }
+)
+#' @rdname sracipeConverge
+#' @aliases sracipeConverge
+setMethod(f="sracipeConverge",
+          signature="RacipeSE",
+          definition=function(.object)
+          {
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
+              message("Convergence Testing not done for this object")
+              return()
+            }
+            return(as.data.frame(colData(.object)[,(dim(colData(.object))[2]-1):(dim(colData(.object))[2])]))
           }
 )
 #' @export
@@ -997,14 +1011,12 @@ setMethod(f="sracipeConvergeDist",
           definition=function(.object, plotToFile = FALSE)
           {
             metadataTmp <- metadata(.object)
-            #Checks if modelConvergence data exists in the object metadata
-            dataExists <- "modelConvergence" %in% names(metadataTmp)
-            if(!dataExists){
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
               message("Cannot plot without convergence data")
               return(.object)
             }
-            convergenceData <- metadataTmp$modelConvergence
-            configuration <- metadataTmp$config
+            converging <- sracipeConverge(.object)
             numModels <- configuration$simParams["numModels"]
             nIC <- configuration$simParams["nIC"]
             numConvergenceTests <- configuration$simParams["numConvergenceTests"]
@@ -1113,7 +1125,7 @@ setMethod(f="sracipeCombineRacipeSE",
               icList <- c(icList, list(sracipeIC(racipeObj)))
               if(validOptions["convergTesting"]){
                 objMetadata <- metadata(racipeObj)
-                convergList <- c(convergList, list(objMetadata$modelConvergence))
+                convergList <- c(convergList, list(sracipeConverge(racipeObj)))
                 if(nIC > 1){
                   uniqueCountList <- c(uniqueCountList, list(objMetadata$uniqueStateCounts))
                 }
@@ -1145,7 +1157,8 @@ setMethod(f="sracipeCombineRacipeSE",
 
             metadataTmp <- metadata(.object[[1]])
             if(validOptions["convergTesting"]){
-              metadataTmp$modelConvergence <- do.call(rbind, convergList)
+              combinedConverge <- do.call(rbind, convergList)
+              col <- cbind(col, combinedConverge)
               if(nIC > 1){
                 combinedUniqueCounts <- do.call(rbind, uniqueCountList)
                 combinedUniqueCounts[,1] <- seq_len(numModels*(length(.object)))
@@ -1173,8 +1186,13 @@ setMethod(f="sracipeUniqueStates",
           definition = function(.object){
             geneExpression <- assay(.object)
             objMetadata <- metadata(.object)
-            converge <- objMetadata$modelConvergence
-            configuration <- objMetadata$config
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
+              message("This method is only valid for simulations with convergence
+                      testing")
+              return()
+            }
+            converge <- sracipeConverge(.object)
             nIC <- configuration$simParams["nIC"]
             uniqueDigits <- configuration$simParams["uniqueDigits"]
             numModels <- configuration$simParams["numModels"]/nIC #See RacipeSE constructor for explanation

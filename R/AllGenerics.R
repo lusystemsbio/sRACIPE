@@ -221,7 +221,25 @@ setGeneric("sracipeIC<-",
            }
 )
 
+#' @export
+#' @import SummarizedExperiment
+#' @title  A method to get the convergence results for deterministic simulations
+#' @description Gathers the convergence and speed of convergence for each model
+#' and condition for deterministic simulations
+#' @param .object RacipeSE object
+#' @examples
+#' data("demoCircuit")
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20)
+#' cd <- sracipeIC(rSet)
+#' rm(rSet, cd)
+#' @return DataFrame
 
+setGeneric("sracipeConverge",
+           def = function(.object)
+           {
+             standardGeneric("sracipeConverge")
+           }
+)
 
 #' @export
 #' @import SummarizedExperiment
