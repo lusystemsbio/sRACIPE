@@ -185,7 +185,7 @@
 #' to the value of the corresponding row for a particular model.
 #'  @param nCores (optional) integer. Default \code{1}
 #' Number of cores to be used for computation. Utilizes \code{multisession} from
-#' \code{doFuture} pacakge. Will not work in Rstudio.
+#' \code{doFuture} pacakge, as well and \code{doRNG} package.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
 #' \code{SummarizedExperiment} and contains the circuit, parameters,
 #' initial conditions,
