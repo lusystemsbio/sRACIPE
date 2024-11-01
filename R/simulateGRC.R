@@ -737,11 +737,6 @@ if(missing(nNoise)){
                                  "paramSignalValsTmp", "paramSignalTypes",
                                  "stepperInt")) %dorng% {
 
-                      print(is.matrix(geneInteraction))      # Should return TRUE
-                      print(is.matrix(paramSignalTypes))     # Should return TRUE
-                      print(is.matrix(paramSignalValsTmp))   # Should return TRUE
-                      print(is.vector(metadataTmp$geneTypes)) # Should return TRUE
-
                        simulateGRCCpp(
                          geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
                          outFileICTmp, metadataTmp$geneTypes, paramSignalValsTmp,
