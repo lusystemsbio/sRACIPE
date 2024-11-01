@@ -739,8 +739,8 @@ if(missing(nNoise)){
 
                        simulateGRCCpp(
                          geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
-                         outFileICTmp, metadataTmp$geneTypes, paramSignalValsTmp,
-                         paramSignalTypes, stepperInt)
+                         outFileICTmp, outFileConvergeTmp, metadataTmp$geneTypes,
+                         paramSignalValsTmp, paramSignalTypes, stepperInt)
 
 
                                  }
