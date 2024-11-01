@@ -748,7 +748,7 @@ if(missing(nNoise)){
         convList <- list()
         for(i in seq(1,nCores)){
 
-          geList[[i]] <- utils::read.table(iCFileList[i],
+          geList[[i]] <- utils::read.table(gEFileList[i],
                                            header = FALSE)
           convList[[i]] <- utils::read.table(convFileList[i],
                                            header = FALSE)
