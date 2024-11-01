@@ -1012,7 +1012,9 @@ if(missing(nNoise)){
                       col.names = FALSE)
 
           Time_evolution_test<- simulateGRCCpp(geneInteraction, configTmp,
-            outFileGE,outFileParams,outFileIC, stepperInt)
+            outFileGE,outFileParams,outFileIC, outFileConverge,
+            metadataTmp$geneTypes, paramSignalValsTmp,
+            paramSignalTypes, stepperInt)
 
 
           # geFile <- paste0("tmp/",outFileKO,"_geneExpression.txt")
