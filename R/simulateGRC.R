@@ -820,10 +820,16 @@ if(missing(nNoise)){
     if(!(nCores>1 & !timeSeries)){
       geneExpression <- utils::read.table(outFileGE, header = FALSE)
     }
-    if(!all(!(is.na(geneExpression)))){ #Checking if any models had problematic results
-      cat("\n")
+    #Checking if any models had problematic results
+    if(!all(!(is.na(geneExpression)))){
+      message("\n")
       message("NaN in expression data. Likely due to stiff equations. Try
                lowering step size to fix it.")
+    }
+    if(!all(geneExpression >= 0){
+      message("\n")
+      message("Negative vals in expression data. Likely due to stiff equations.
+        Try lowering step size to fix it.")
     }
 
     if(

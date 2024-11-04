@@ -16,10 +16,7 @@ void stepEMconv( std::vector <double> &exprxGene,
              const std::vector<std::vector<double> > &threshold_gene_log,
              const int &possible_interactions,
              const double &standard_deviation_factor,
-             const double &D_shot_scaling,
-             const std::vector<double> &Darray,
              const int &outputPrecision,
-             const double &D,
              const double &h,
              const double &signalRate,
              const NumericVector &geneTypes,
@@ -38,6 +35,7 @@ void stepEMconv( std::vector <double> &exprxGene,
 
   double i=0.0;
   bool isConverged = false;
+  bool isNegative = false; //Checking for negative values due to stiffness
   
   //For each test, we run the simulation for numStepsConverge iterations
   //and check if the system has changed state in that time
@@ -75,10 +73,7 @@ void stepEMconv( std::vector <double> &exprxGene,
             }
             exprxGeneH[geneCount1] = exprxGene[geneCount1] +
               h*(gGene[geneCount1]*growthMultiplier-kGene[geneCount1]*
-              exprxGene[geneCount1]*degMultiplier) +
-              D*sqrt(h)*g_distribution(g_generator)*Darray[geneCount1]+
-              D_shot_scaling*D*sqrt(h)*g_distribution(g_generator)*
-              Darray[geneCount1]*exprxGene[geneCount1];
+              exprxGene[geneCount1]*degMultiplier);
             if(exprxGeneH[geneCount1]<0) exprxGeneH[geneCount1]=0;
           }
       }
@@ -86,7 +81,6 @@ void stepEMconv( std::vector <double> &exprxGene,
         exprxGene[geneCount1]=exprxGeneH[geneCount1];}
     }
 
-    if(abs(D) < 1e-5){
       double test_delta;
       test_delta = sum_delta(prevExprxGene, exprxGene, numberGene);
       if (test_delta < convergThresh){
@@ -99,8 +93,16 @@ void stepEMconv( std::vector <double> &exprxGene,
         outConv<<isConverged<<"\t" << testIter <<"\n";
         break;
       }
-    }
-
+      else if(isNegative){
+        for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+          {
+          outGE<<std::setprecision(outputPrecision)
+          <<exprxGene[geneCount1]<<"\t";
+          }
+        isConverged = true;  //Necessary to stop double reporting
+        outConv<<3<<"\t" << testIter <<"\n";
+        break;
+      }
 
   };
 
@@ -164,6 +166,7 @@ for(int geneCountTmp=0;geneCountTmp<numberGene;geneCountTmp++)
 double i=0.0;
 bool isConverged = false;
 bool isBlowup = false; //Checking for explosions due to stiffness
+bool isNegative = false; //Checking for negative values due to stiffness
 
 //For each test, we run the simulation for numStepsConverge iterations
 //and check if the system has changed state in that time
@@ -310,7 +313,7 @@ for(int testIter=0; testIter<numConvergenceIter; testIter++){
       exprxGene[geneCount1] = exprxGene[geneCount1]+
         (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
         2*exprxGeneH3[geneCount1]+exprxGeneH4[geneCount1])/6;
-      if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
+      if(exprxGene[geneCount1]<0) isNegative = true;
       if(std::isinf(exprxGene[geneCount1])) isBlowup = true;
     }
   }
@@ -328,7 +331,7 @@ for(int testIter=0; testIter<numConvergenceIter; testIter++){
       outConv<<isConverged<<"\t" << testIter <<"\n";
       break;
       }
-    else if(isBlowup){
+    else if(isBlowup || isNegative){
       for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
         {
         outGE<<std::setprecision(outputPrecision)
@@ -387,6 +390,7 @@ void stepDPconv( std::vector <double> &exprxGene,
   double exprxGeneH7[numberGene]; //array for temp gene expression values
 
   bool isConverged = false;
+  bool isNegative = false;
 
   std::vector<double> prevExprxGene(numberGene); //Array for convergence testing
 
@@ -692,7 +696,7 @@ void stepDPconv( std::vector <double> &exprxGene,
           (-2187./6784.)*exprxGeneH5[geneCount1]+
           (11./84.)*exprxGeneH6[geneCount1];
 
-        if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
+        if(exprxGene[geneCount1]<0) isNegative = true;
 
         double diff_o4_o5=exprxGene[geneCount1] -
           exprxGeneH[geneCount1];
@@ -739,6 +743,16 @@ void stepDPconv( std::vector <double> &exprxGene,
         isConverged = true;  
         outConv<<isConverged<<"\t" << testIter <<"\n";
           break;
+      }
+      else if(isNegative){
+        for(int geneCount1=0;geneCount1<numberGene;geneCount1++)
+          {
+          outGE<<std::setprecision(outputPrecision)
+          <<exprxGene[geneCount1]<<"\t";
+          }
+        isConverged = true;  //Necessary to stop double reporting
+        outConv<<3<<"\t" << testIter <<"\n";
+        break;
       }
 
   };

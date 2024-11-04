@@ -610,7 +610,6 @@ do
     exprxGene[geneCount1] = exprxGene[geneCount1]+
       (exprxGeneH1[geneCount1]+2*exprxGeneH2[geneCount1]+
       2*exprxGeneH3[geneCount1]+exprxGeneH4[geneCount1])/6;
-    if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
     }
 
   i+=h;
@@ -995,8 +994,6 @@ void stepDP( std::vector <double> &exprxGene,
         (125./192.)*exprxGeneH4[geneCount1]+
         (-2187./6784.)*exprxGeneH5[geneCount1]+
         (11./84.)*exprxGeneH6[geneCount1];
-
-      if(exprxGene[geneCount1]<0) exprxGene[geneCount1]=0;
 
       double diff_o4_o5=exprxGene[geneCount1] -
         exprxGeneH[geneCount1];
