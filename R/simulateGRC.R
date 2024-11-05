@@ -826,7 +826,7 @@ if(missing(nNoise)){
       message("NaN in expression data. Likely due to stiff equations. Try
                lowering step size to fix it.")
     }
-    if(!all(geneExpression >= 0){
+    if(!all(geneExpression >= 0)){
       message("\n")
       message("Negative vals in expression data. Likely due to stiff equations.
         Try lowering step size to fix it.")
