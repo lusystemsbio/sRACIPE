@@ -360,14 +360,25 @@ setMethod(f="sracipePlotCircuit",
   #visLayout(randomSeed = 123) %>%
   #visPhysics(solver = "forceAtlas2Based")
 
-  network <-
-    visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
-    visEdges(arrows = "to") %>%
-    visOptions(manipulation = FALSE) %>%
-    visLayout(randomSeed = 123) %>%
-    #visNodes(scaling = list(label = list(enabled = T))) %>%
-    visPhysics(solver = "forceAtlas2Based", stabilization = FALSE,
-               enabled = physics)
+  if(physics){
+    network <-
+      visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
+      visEdges(arrows = "to") %>%
+      visOptions(manipulation = FALSE) %>%
+      visLayout(randomSeed = 123) %>%
+      #visNodes(scaling = list(label = list(enabled = T))) %>%
+      visPhysics(solver = "forceAtlas2Based", stabilization = FALSE)
+  }else{
+    network <-
+      visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
+      visEdges(arrows = "to") %>%
+      visOptions(manipulation = FALSE) %>%
+      visLayout(randomSeed = 123) %>%
+      #visNodes(scaling = list(label = list(enabled = T))) %>%
+      visPhysics(solver = "forceAtlas2Based", stabilization = TRUE) %>%
+      visEvents(stabilized = "function() {this.setOptions({physics: false});}")
+  }
+
   if(plotToFile){
     visNetwork::visSave(network, file = net_file, selfcontained = FALSE)
   } else {network}
