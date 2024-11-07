@@ -313,7 +313,7 @@ setMethod(f="sracipeNormalize",
 #' @aliases sracipePlotCircuit
 setMethod(f="sracipePlotCircuit",
           signature="RacipeSE",
-          definition=function(.object, plotToFile = TRUE)
+          definition=function(.object, plotToFile = TRUE, physics = TRUE)
           {
   topology <- sracipeCircuit(.object)
 
@@ -337,8 +337,12 @@ setMethod(f="sracipePlotCircuit",
       font.size = 50,
       value = c(rep(1, length(node_list)))
     )
-  edge_col <- data.frame(c(1, 2, 3, 4, 5, 6), c("blue", "darkred", "cyan", "deeppink", "blueviolet", "darkorange"))
-  arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6), c("arrow", "circle", "arrow", "circle", "arrow", "circle"))
+  edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
+                         c("blue", "darkred", "cyan", "deeppink",
+                           "blueviolet", "darkorange"))
+  arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6),
+                           c("arrow", "circle", "arrow",
+                             "circle", "arrow", "circle"))
   colnames(arrow_type) <- c("type", "color")
   colnames(edge_col) <- c("type", "color")
   edges <-
@@ -362,7 +366,8 @@ setMethod(f="sracipePlotCircuit",
     visOptions(manipulation = FALSE) %>%
     visLayout(randomSeed = 123) %>%
     #visNodes(scaling = list(label = list(enabled = T))) %>%
-    visPhysics(solver = "forceAtlas2Based", stabilization = FALSE)
+    visPhysics(solver = "forceAtlas2Based", stabilization = FALSE,
+               enabled = physics)
   if(plotToFile){
     visNetwork::visSave(network, file = net_file, selfcontained = FALSE)
   } else {network}

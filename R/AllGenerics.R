@@ -270,17 +270,20 @@ setGeneric("sracipeNormalize",
 #' @export
 #' @import grDevices
 #' @title Plot Gene Regulatory Circuit
-#' @description  Plot Gene Regulatory Circuit to a file or output device.
+#' @description  Plot Gene Regulatory Circuit to a file or output device using
+#' visNetwork.
 #' @param .object RacipeSE object
 #' A list returned by \code{\link{sracipeSimulate}} function
 #' @param plotToFile (optional) logical. Default \code{FALSE}. Whether to save
 #' plots to a file.
+#' @param physics (optional) logical. Default \code{TRUE}. Whether or not to
+#' enable physics in the nodes of the visNetwork graph.
 #' @examples
 #' data("demoCircuit")
 #' \dontrun{
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrateStepSize = 0.1, simulationTime = 30)
-#' sracipePlotCircuit(rSet, plotToFile = FALSE)
+#' sracipePlotCircuit(rSet, plotToFile = FALSE, physics = TRUE)
 #' rm(rSet)
 #' }
 #' @return circuit plot
@@ -289,7 +292,7 @@ setGeneric("sracipeNormalize",
 #' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
 #' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
 setGeneric("sracipePlotCircuit",
-           def = function(.object, plotToFile = FALSE)
+           def = function(.object, plotToFile = FALSE, physics = TRUE)
            {
              standardGeneric("sracipePlotCircuit")
            }
