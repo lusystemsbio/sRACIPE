@@ -62,6 +62,7 @@ void stepEM( std::vector <double> &expression_gene,
              const std::vector<double> &timePoints,
              const Rcpp::NumericMatrix &signalVals,
              const Rcpp::NumericVector &signalingTypes,
+             const bool &noClamps,
              std::unordered_map<int, std::vector<double>> &clamps,
              const int &modelNo);
 void stepEM_OU( std::vector <double> &expression_gene,
@@ -90,6 +91,7 @@ void stepEM_OU( std::vector <double> &expression_gene,
             const std::vector<double> &timePoints,
             const Rcpp::NumericMatrix &signalVals,
             const Rcpp::NumericVector &signalingTypes,
+            const bool &noClamps,
             std::unordered_map<int, std::vector<double>> &clamps,
             const int &modelNo);
 void stepRK4( std::vector <double> &expression_gene,
@@ -113,6 +115,7 @@ void stepRK4( std::vector <double> &expression_gene,
         const std::vector<double> &timePoints,
         const Rcpp::NumericMatrix &signalVals,
         const Rcpp::NumericVector &signalingTypes,
+        const bool &noClamps,
         std::unordered_map<int, std::vector<double>> &clamps,
         const int &modelNo);
 
@@ -137,6 +140,7 @@ void stepRK4( std::vector <double> &expression_gene,
           const std::vector<double> &timePoints,
           const Rcpp::NumericMatrix &signalVals,
           const Rcpp::NumericVector &signalingTypes,
+          const bool &noClamps,
           std::unordered_map<int, std::vector<double>> &clamps,
           const int &modelNo);
 
@@ -159,6 +163,7 @@ void stepEMconv( std::vector <double> &expression_gene,
              const long double &convergThresh,
              const int &numStepsConverge,
              const int &numConvergenceIter,
+             const bool &noClamps,
              std::unordered_map<int, std::vector<double>> &clamps,
              const int &modelNo);
 void stepRK4conv( std::vector <double> &expression_gene,
@@ -180,6 +185,7 @@ void stepRK4conv( std::vector <double> &expression_gene,
         const long double &convergThresh,
         const int &numStepsConverge,
         const int &numConvergenceIter,
+        const bool &noClamps,
         std::unordered_map<int, std::vector<double>> &clamps,
         const int &modelNo);
 
@@ -203,6 +209,7 @@ void stepRK4conv( std::vector <double> &expression_gene,
           const int &numStepsConverge,
           const int &numConvergenceIter,
           const double &testTime,
+          const bool &noClamps,
           std::unordered_map<int, std::vector<double>> &clamps,
           const int &modelNo);
 

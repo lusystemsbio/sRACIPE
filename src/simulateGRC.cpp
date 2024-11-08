@@ -574,7 +574,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, shotNoise, Darray,
                     outputPrecision, printStart, printInterval, D, h, 
                     signalRate, geneTypes, isTimeVarying, timePoints,
-                    signalVals, signalingTypes, clampMap, modelCount);
+                    signalVals, signalingTypes, noClamps, clampMap, modelCount);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -587,7 +587,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        printStart,  printInterval, h,
                        signalRate, geneTypes, isTimeVarying,
                        timePoints, signalVals, signalingTypes,
-                       clampMap, modelCount);
+                       noClamps, clampMap, modelCount);
               break;
 
             case 5:
@@ -601,7 +601,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       rkTolerance,
                       signalRate, geneTypes, isTimeVarying,
                       timePoints, signalVals, signalingTypes,
-                      clampMap, modelCount);
+                      noClamps, clampMap, modelCount);
               break;
 
             case 6:
@@ -614,7 +614,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     outputPrecision, printStart, printInterval, D, h,
                     ou_tcorr, signalRate, geneTypes, isTimeVarying,
                     timePoints, signalVals, signalingTypes,
-                    clampMap, modelCount);
+                    noClamps, clampMap, modelCount);
               break;
 
             case 11:
@@ -625,7 +625,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     sdFactor, outputPrecision, h, 
                     signalRate, geneTypes, convergThresh, 
                     numStepsConverge, numConvergenceIter,
-                    clampMap, modelCount);
+                    noClamps, clampMap, modelCount);
               break;
             case 41:
               //fourth order Runge-Kutta with convergence testing
@@ -637,7 +637,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        outputPrecision,
                        h, signalRate, geneTypes, convergThresh,
                        numStepsConverge, numConvergenceIter,
-                       clampMap, modelCount);
+                       noClamps, clampMap, modelCount);
               break;
 
             case 51:
@@ -651,7 +651,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       rkTolerance,
                       signalRate, geneTypes, convergThresh,
                       numStepsConverge, numConvergenceIter,
-                      testTime, clampMap, modelCount);
+                      testTime, noClamps, clampMap, modelCount);
               break;
 
             default:
