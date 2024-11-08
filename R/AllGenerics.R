@@ -271,7 +271,8 @@ setGeneric("sracipeNormalize",
 #' @import grDevices
 #' @title Plot Gene Regulatory Circuit
 #' @description  Plot Gene Regulatory Circuit to a file or output device using
-#' visNetwork.
+#' visNetwork. Edge color coding: 1-"blue", 2-"darkred", 3-"cyan", 4-"deeppink",
+#' 5-"blueviolet", 6-"darkorange"
 #' @param .object RacipeSE object
 #' A list returned by \code{\link{sracipeSimulate}} function
 #' @param plotToFile (optional) logical. Default \code{FALSE}. Whether to save
