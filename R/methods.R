@@ -1048,18 +1048,18 @@ setMethod(f="sracipeConvergeDist",
             }
 
             #Getting rid of non-converged models
-            convergedICs <- convergenceData[convergenceData[, 1] == 1, ]
+            convergedICs <- converging[converging[, 1] == 1, ]
             testScores <- convergedICs[,2]
 
             #Removing limit cycles from consideration
             if(lc){
-              numLCICs <- length(which(convergenceData[,1] == 2))
+              numLCICs <- length(which(converging[,1] == 2))
               numExprx <- numExprx - numLCICs
             }
 
             #Removing models with NaN values
-            if(!all(convergenceData[, 1] != 3)){
-              numNaN <- sum(convergenceData[, 1] == 3)
+            if(!all(converging[, 1] != 3)){
+              numNaN <- sum(converging[, 1] == 3)
               numExprx <- numExprx - numNaN
             }
 
