@@ -1035,12 +1035,12 @@ setMethod(f="sracipeConvergeDist",
             converging <- sracipeConverge(.object)
             numModels <- configuration$simParams["numModels"]
             nIC <- configuration$simParams["nIC"]
-            numConvergenceTests <- configuration$simParams["numConvergenceTests"]
+            numConvergenceIter <- configuration$simParams["numConvergenceIter"]
             numExprx <- numModels #Check RacipeSE() constructor for why this is true
             lc <- configuration$options["limitcycles"]
 
             #Initialize proportions
-            convergedProportions <- numeric(numConvergenceTests)
+            convergedProportions <- numeric(numConvergenceIter)
 
             if(plotToFile){
               fileName <- paste0(annotation(.object),"_ConvergDist.pdf")
@@ -1063,12 +1063,12 @@ setMethod(f="sracipeConvergeDist",
               numExprx <- numExprx - numNaN
             }
 
-            for (i in 1:numConvergenceTests){
+            for (i in 1:numConvergenceIter){
               convergedProportions[i] <- sum(testScores <= i) / numExprx
             }
 
-            title = paste0("Ratio of Stable ", annotation(.object), " Models over number of convergence tests")
-            plot(seq(1,numConvergenceTests), convergedProportions, type="l", col="blue",
+            title = paste0("Ratio of Stable ", annotation(.object), " Models over number of Simulation Iterations")
+            plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
                  xlab="# Convergence Tests", ylab = "% Converged Models",
                  main = title)
 
@@ -1077,8 +1077,8 @@ setMethod(f="sracipeConvergeDist",
               dev.off() #closes graphics object and send it to working directory
             }
 
-            metadataTmp$stableProportion <- convergedProportions[numConvergenceTests]
-            if(convergedProportions[numConvergenceTests] > 0.99){
+            metadataTmp$stableProportion <- convergedProportions[numConvergenceIter]
+            if(convergedProportions[numConvergenceIter] > 0.99){
               ninetyNineIndex <- which(convergedProportions > 0.99)[1]
               metadataTmp$ninetyNineConvergedNum <- ninetyNineIndex
             }
