@@ -1067,7 +1067,7 @@ setMethod(f="sracipeConvergeDist",
               convergedProportions[i] <- sum(testScores <= i) / numExprx
             }
 
-            title = paste0("Ratio of stable ", annotation(.object), " models over number of simulation iterations")
+            title = paste0("Ratio of stable ", annotation(.object), " expressions over number of simulation iterations")
             plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
                  xlab="# Convergence Tests", ylab = "Fraction Converged Expressions",
                  main = title)
