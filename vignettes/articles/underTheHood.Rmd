@@ -40,11 +40,12 @@ sracipeConfig(racipe) # access the config
 ```
 
 The config list includes other lists or vectors like `simParams`, `stochParams`, 
-`hyperParams`, `options`, `thresholds` etc. The list `simParams` contains values
-for parameters like the number of models (`numModels`), simulation time
-(`simulationTime`), step size for simulations (`integrateStepSize`), 
-when to start recording the gene expressions (`printStart`), 
-time interval between recordings (`printInterval`), 
+`hyperParams`, `options`, `thresholds`, `LCParams` etc. The list `simParams` 
+contains values for parameters like the number of models (`numModels`), 
+simulation time(`simulationTime`), number of convergence iterations 
+(`numConvergenceIter`), step size for simulations 
+(`integrateStepSize`),  when to start recording the gene expressions 
+(`printStart`), time interval between recordings (`printInterval`), 
 number of initial conditions (`nIC`), output precision (`outputPrecision`), 
 tolerance for adaptive runge kutta method (`rkTolerance`), 
 parametric variation (`paramRange`). The list `stochParams` contains the 
@@ -58,7 +59,9 @@ production and degration of the genes, fold change, hill coefficient etc.
 The list `options` includes logical values like annealing (`anneal`), 
 scaling of noise (`scaledNoise`), generation of new initial conditions 
 (`genIC`), parameters (`genParams`) and whether to integrate or not 
-(`integrate`). 
+(`integrate`). The list 'LCParams' contains all the parameters used by the limit
+cycle detection algorithm, such as the number of sampled periods 
+(`NumSampledPeriods`) or the number of iterations to simulate (`LCIter`).
 
 
 Metadata information also includes `annotation`, `nInteraction`
@@ -71,7 +74,9 @@ steps in the pipeline.
 ## Circuit
 `SummarizedExperiment` slot `rowData` is used to store the circuit topology. 
 It is a square matrix with dimension equal to the number of genes in the circuit. 
-The values of the matrix represent the type of interaction in the gene pair given by row and column. 1 represents TF activation, 2 TF inhibition, 3 activation by degradation inhibition, 4 inhibition
+The values of the matrix represent the type of interaction in the gene pair given 
+by row and column. 1 represents TF activation, 2 TF inhibition, 3 activation by 
+degradation inhibition, 4 inhibition
 by degradation activation, 5 signaling activation, 6 signaling inihibition,
 and 0 for no interaction. The `sracipeCircuit` getter and 
 accessor should be used to access this information. The `annotation` getter and 
@@ -86,14 +91,19 @@ annotation(racipe)
 ```
 
 
-## Parameters and initial conditions
+## Parameters, initial conditions, and convergence data
 `SummarizedExperiment` slot `colData` contains the parameters and initial 
 conditions for each model. Each gene in the circuit has two parameters, 
 namely, its production rate and its degradation rate. Each interaction 
 has three parameters, namely, threshold of activation, the hill coefficient, 
 and the fold change. Each gene has one or more initial gene expression values 
 as specified by nIC. The corresponding getter and setter are `sracipeParams`
-and `sracipeIC`.
+and `sracipeIC`. When convergence testing is done, the convergence status of an
+expression is recorded, as well as the number of iterations it took to converge,
+if it did. A convergence value of 0 means no convergence, 1 convergence, 2 it 
+converges to a limit cycle, and 3 means the expression is invalid due to being
+either NaN or negative. The convergence data for each expression is also stored
+in the `colData` slot, and the getter for it is `sracipeConverge`.
 
 
 ## Simulated gene expression
@@ -134,7 +144,18 @@ solutions and the other slots will contain the values at the intermediate time
 points. For more details on temporal simulations of large number of models, 
 please refer to the corresponding article.
 
-
+## Limit Cycle Data
+Limit cycle data is stored in the metadata of the resulting `RacipeSE` object
+from `sracipeSimulate`, primarily in the `LCData` element. The `LCData` takes is
+a data frame which records a complete oscillation in expression for each
+limit cycle found. The data frame collects the expression of each gene along the
+oscillation, which model the limit cycle comes from, which limit cycle within
+that model is being referred to, as well as the period of the limit cycle. 
+sRACIPE defines the period of a limit cycle as the number of integration steps
+needed to complete the period. Note that this means the period recorded is 
+dependent on both the step size and integration method used for the limit cycle
+detection simulation. The metadata also holds the total number of limit cycles
+detected in the simulation as an integer in the `totalNumofLCs` element.
 
 
 
