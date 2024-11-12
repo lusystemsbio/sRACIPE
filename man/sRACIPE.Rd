@@ -57,6 +57,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Vivek Kohar
   \item Aidan Tillman
   \item Daniel Ramirez
 }
