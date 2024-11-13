@@ -156,7 +156,7 @@
 #' @param MaxPeriods (optional) integer. Default \code{100}. The number of periods
 #' to count in the distance function constructed by the limit cycle detection
 #' algorithm
-#' @param NumSampledPeriods (optional) integer. Default \code{3}. The number of
+#' @param numSampledPeriods (optional) integer. Default \code{3}. The number of
 #' times the limit cycle detection algorithm tries to calculate the period of the
 #' simulated trajectory using the local minima in a constructed distance function.
 #' @param AllowedPeriodError (optional) integer. Default \code{3}. The allowed
@@ -219,7 +219,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       numStepsConverge = 500, numConvergenceIter = 25,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
                       maxLCs = 10, LCIter = 20, MaxPeriods = 100,
-                      NumSampledPeriods = 3, AllowedPeriodError = 3,
+                      numSampledPeriods = 3, AllowedPeriodError = 3,
                       SamePointProximity = 0.1, LCStepper = "RK4",
                       paramSignalVals = data.frame(), geneClamping = data.frame(),
                       nCores = 1L,
@@ -416,8 +416,8 @@ if(!missing(config)){
  if(!missing(MaxPeriods)){
    configuration$LCParams["MaxPeriods"] <- MaxPeriods
  }
- if(!missing(NumSampledPeriods)){
-   configuration$LCParams["NumSampledPeriods"] <- NumSampledPeriods
+ if(!missing(numSampledPeriods)){
+   configuration$LCParams["numSampledPeriods"] <- numSampledPeriods
  }
  if(!missing(AllowedPeriodError)){
    configuration$LCParams["AllowedPeriodError"] <- AllowedPeriodError
@@ -948,7 +948,7 @@ if(missing(nNoise)){
       }
 
       if(limitcycles){ #Running limit cycle algorithm
-        cat("\n")
+        message("\n")
         message("Checking for limit cycles")
         if(nCores>1){
           #Making sure outFileGE file has valid expressions
@@ -993,6 +993,11 @@ if(missing(nNoise)){
         knockOutData <- knockOut
         names(knockOutData) <- knockOut
 
+        if(convergTesting){
+          knockOutDataConv <- knockOut
+          names(knockOutDataConv) <- knockOut
+        }
+
         for(ko in seq_along(knockOut)){
           koGene <- knockOut[[ko]]
           knockOut_number <- which(koGene==geneNames)
@@ -1000,6 +1005,8 @@ if(missing(nNoise)){
             message("knockOut gene not found in the circuit")
             return(rSet)
           }
+          message("\n")
+
           params <- parameters
           params[,knockOut_number] <- 0.0
 
@@ -1028,6 +1035,17 @@ if(missing(nNoise)){
           colnames(geneExpression) <- geneNames
           knockOutData[[ko]] <- geneExpression
 
+          if(convergTesting){
+            convTmp <- utils::read.table(outFileConverge, header = FALSE)
+            knockOutDataConv[[ko]] <- convTmp
+          }
+
+        }
+        #Collects convergence data for every knockout simulation
+        if(convergTesting){
+          converge <- rbind(converge, do.call(rbind, knockOutDataConv))
+          parameters <- do.call(rbind, replicate(length(knockOut), parameters, simplify = FALSE))
+          ic <- do.call(rbind, replicate(length(knockOut), ic, simplify = FALSE))
         }
         knockOutData <- lapply(knockOutData, t)
         assayDataTmp <- c(assayDataTmp,knockOutData)
