@@ -153,17 +153,17 @@
 #' number of limit cycles that can be detected for each model.
 #' @param LCIter (optional) integer. Default \code{20}. The number of iterations
 #' to run in the secondary limit cycle simulation
-#' @param MaxPeriods (optional) integer. Default \code{100}. The number of periods
+#' @param maxPeriods (optional) integer. Default \code{100}. The number of periods
 #' to count in the distance function constructed by the limit cycle detection
 #' algorithm
 #' @param numSampledPeriods (optional) integer. Default \code{3}. The number of
 #' times the limit cycle detection algorithm tries to calculate the period of the
 #' simulated trajectory using the local minima in a constructed distance function.
-#' @param AllowedPeriodError (optional) integer. Default \code{3}. The allowed
+#' @param allowedPeriodError (optional) integer. Default \code{3}. The allowed
 #' difference in the sampled periods for a trajectory from the limit cycle
 #' detection algorithm. Decrease this value to make for more stringent limit
 #' cycle detection
-#' @param SamePointProximity (optional) numeric. Default \code{0.1}. The max
+#' @param samePointProximity (optional) numeric. Default \code{0.1}. The max
 #' allowed square euclidean difference between two minima of the distance function
 #' constructed by the limit cycle detection algorithm before they are considered
 #' different points in phase space.
@@ -218,9 +218,9 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       signalRate = 10.0, uniqueDigits = 4, convergThresh = 1e-12,
                       numStepsConverge = 500, numConvergenceIter = 25,
                       limitcycles = FALSE, LCSimTime = 10, LCSimStepSize = 0.01,
-                      maxLCs = 10, LCIter = 20, MaxPeriods = 100,
-                      numSampledPeriods = 3, AllowedPeriodError = 3,
-                      SamePointProximity = 0.1, LCStepper = "RK4",
+                      maxLCs = 10, LCIter = 20, maxPeriods = 100,
+                      numSampledPeriods = 3, allowedPeriodError = 3,
+                      samePointProximity = 0.1, LCStepper = "RK4",
                       paramSignalVals = data.frame(), geneClamping = data.frame(),
                       nCores = 1L,
                       ...){
@@ -413,17 +413,17 @@ if(!missing(config)){
  if(!missing(LCIter)){
    configuration$LCParams["LCIter"] <- LCIter
  }
- if(!missing(MaxPeriods)){
-   configuration$LCParams["MaxPeriods"] <- MaxPeriods
+ if(!missing(maxPeriods)){
+   configuration$LCParams["maxPeriods"] <- maxPeriods
  }
  if(!missing(numSampledPeriods)){
    configuration$LCParams["numSampledPeriods"] <- numSampledPeriods
  }
- if(!missing(AllowedPeriodError)){
-   configuration$LCParams["AllowedPeriodError"] <- AllowedPeriodError
+ if(!missing(allowedPeriodError)){
+   configuration$LCParams["allowedPeriodError"] <- allowedPeriodError
  }
- if(!missing(SamePointProximity)){
-   configuration$LCParams["SamePointProximity"] <- SamePointProximity
+ if(!missing(samePointProximity)){
+   configuration$LCParams["samePointProximity"] <- samePointProximity
  }
 
  # Storing stepper for limit cycle calculations
