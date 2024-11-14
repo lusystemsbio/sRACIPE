@@ -1037,6 +1037,7 @@ if(missing(nNoise)){
 
           if(convergTesting){
             convTmp <- utils::read.table(outFileConverge, header = FALSE)
+            colnames(convTmp)<-c("Model Convergence", "Tests Done")
             knockOutDataConv[[ko]] <- convTmp
           }
 
