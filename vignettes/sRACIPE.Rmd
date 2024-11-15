@@ -3,6 +3,8 @@ title: "A systems biology tool for gene regulatory circuit simulation"
 author:
 - name: Vivek Kohar
   affiliation: The Jackson Laboratory, Bar Harbor, Maine, USA
+- name: Aidan Tillman
+  affiliation: Department of Bioengineering, Northeastern University, Boston, Massachusetts, USA
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -10,8 +12,8 @@ output:
 package: sRACIPE
 vignette: |
   %\VignetteIndexEntry{A systems biology tool for gene regulatory circuit simulation}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r setup, include=FALSE}
@@ -45,13 +47,13 @@ BiocManager::install("sRACIPE")
 
 Or install the development version of the package.
 ```{r, eval = FALSE}
-BiocManager::install(“vivekkohar/sRACIPE”)
+BiocManager::install(“lusystemsbio/sRACIPE”)
 ```
 
 2. Load the package into R session.
 
 ```{r Load, message=FALSE}
-library(sRACIPE)
+suppressWarnings(suppressPackageStartupMessages(library(sRACIPE)))
 ```
 
 For simplicity, we will start with the toggle switch 
@@ -67,12 +69,14 @@ One can use the topology stored in a text file or loaded
 as a dataframe. The typical format of the topology 
 file is a 3 column file where the first column is name of the source gene, 
 second column is name of the target gene and last column is 
-the interaction type (1 - activation, 2-inhibition). 
+the interaction type (1 - TF activation, 2- TF inhibition, 3- activation by 
+inhibiting degradation, 4- inhibition by activating degradation, 5- signalling
+activation, 6- signaling inhibition). 
 The first line should contain the header (Source Target Interaction). 
 We will work with a demo circuit from the package.
 
 ```{r eval=TRUE}
-library(sRACIPE)
+suppressWarnings(suppressPackageStartupMessages(library(sRACIPE)))
 
 # Load a demo circuit
 data("demoCircuit")
@@ -81,16 +85,20 @@ demoCircuit
 ```
 
 # Simulate the circuit
-We will use a reduced number of 
-models (using numModels) for demonstration. The simulations will return a 
-RacipeSE object. 
+We will use a reduced number of models (using numModels) for demonstration. 
+By default, deterministic simulations are run with convergence testing, so we
+alter the numConvergenceIter parameter to change how long a simulation lasts.
+The simulations will return a RacipeSE object. Convergence data is stored in 
+the colData of the RacipseSE object and can be retrieved using the 
+sracipeConverge method.
 
 
 ```{r}
 
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
                              plots = FALSE, integrateStepSize = 0.1, 
-                             simulationTime = 30)
+                             numConvergenceIter = 5)
+cd <- sracipeConverge(rSet)
 
 ```
 
@@ -108,6 +116,27 @@ rSet <- sRACIPE::sracipePlotData(rSet, plotToFile = FALSE)
 
 ```
 
+# Multistability analysis
+
+One workflow in deterministic analysis is to simulate multiple initial 
+conditions for each model and collect the unique steady states of each model
+for multistability analysis. This is done in sRACIPE by the sracipeUniqueStates
+method, which takes in a RacipeSE object and returns a list of the steady states
+for each model. Since the method only considers converged expressions, the 
+following code may not produce anything, so consider trying it with larger 
+simulations
+
+```{r eval=FALSE}
+data("demoCircuit")
+
+rSet <- SRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10,
+                             plots = FALSE, integrateStepSize = 0.1, 
+                             numConvergenceIter = 5, nIC = 2)
+stateLst <- sracipeUniqueStates(rSet)
+
+```
+
+
 # Knockdown Analysis
 The simulations can be used to perform in-silico perturbation analysis. 
 For example, here we will limit a gene's production rate to mimic its knockdown
@@ -119,7 +148,7 @@ data("demoCircuit")
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, 
                              numModels = 50, plots = FALSE, 
                              integrateStepSize = 0.1, 
-                             simulationTime = 30)
+                             numConvergenceIter = 5)
 kd <- sRACIPE::sracipeKnockDown(rSet, plotToFile = FALSE,
                                 reduceProduction=50)
 ```
@@ -130,9 +159,45 @@ The network can be plotted in an interactive viewer
 or html file in the results  folder.
 
 ```{r eval=FALSE}
- sRACIPE::sracipePlotCircuit(rSet, plotToFile = FALSE)
+ sRACIPE::sracipePlotCircuit(rSet, plotToFile = FALSE, physics = TRUE)
 ```
 
+
+# Limit Cycle Detection
+For deterministic simulations, one can have the simulation check for limit 
+cycles in the results, although the simulation won't do this by default. The
+demoCircuit we were previously using can't produce oscillations, so we will have
+to call another circuit, the repressilator, which is a loop of 3 genes 
+inhibiting each other. Limit cycle results are stored in the metadata of the 
+results, just like the convergence data. Note that with the small number of 
+models simulated and low number of iterations, this code might not find any 
+limit cycles in one try. Use a large number of models to guarantee limit cycle 
+detection.
+
+```{r eval=TRUE}
+data("repressilator")
+rSet <- sRACIPE::sracipeSimulate(circuit = repressilator, 
+                             numModels = 30, plots = FALSE, 
+                             integrateStepSize = 0.1, 
+                             numConvergenceIter = 5,
+                             limitcycles = TRUE)
+```
+
+# Gene Clamping Simulations
+
+Clamping a gene is to keep it at a constant value for the entire simulation, 
+regardless of interactions. This is done by supplying a data.frame to the 
+geneClamping parameter in sracipeSimulate(), where the columns are genes and
+the rows are models. If the user supplies only one value for each clamped gene,
+then the gene is clamped to that value for all models.
+```{r eval=TRUE}
+rSet <- sracipeSimulate(circuit = demoCircuit,
+                        numConvergenceIter = 5,
+                        numModels = 10,
+                        integrateStepSize = 0.1, 
+                        geneClamping = data.frame(A = c(1))
+                        )
+```
 
 #  Stochastic simulations 
 
@@ -145,6 +210,8 @@ For annealing, use anneal=TRUE alongwith the above mentioned parameters.
 For simulations at one
 noise level only, use nNoise = 1 and set initialNoise parameter to the specific 
 noise. 
+Since convergence testing is not possible for stochastic simulations, they are 
+not run and we use the simulationTime parameter to modulate simulation length
 
 Now the returned object will contain additional elements in the 
 assays which correspond to the 

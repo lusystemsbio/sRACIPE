@@ -4,7 +4,9 @@
 \name{configData}
 \alias{configData}
 \title{Configuration Data}
-\format{list}
+\format{
+list
+}
 \usage{
 configData
 }

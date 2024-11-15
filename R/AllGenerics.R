@@ -134,11 +134,11 @@ setGeneric("sracipeParams",
 #' @description If timeSeries option is used in sracipeSimulate function, this
 #' method will return the simulated time series.
 #' @param .object RacipeSE object
-#' @examples 
+#' @examples
 #' data("demoCircuit")
 #' RacipeSet <- RacipeSE()
 #' sracipeCircuit(RacipeSet) <- demoCircuit
-#' RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE, 
+#' RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE,
 #' simulationTime = 2)
 #' trajectories <- sracipeGetTS(RacipeSet)
 #' rm(RacipeSet)
@@ -156,16 +156,17 @@ setGeneric(name="sracipeGetTS",
 #' @title  A method to set the simulation parameters
 #' @description Set the parameters
 #' @param .object RacipeSE object
-#' @param value DataFrame containing the parameteres
+#' @param value DataFrame containing the parameters. Dimensions should be
+#' (numModels) rows by (# of parameters) columns.
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrate = FALSE)
 #' parameters <- sracipeParams(rSet)
 #' sracipeParams(rSet) <- parameters
 #' rm(parameters, rSet)
 #' @return A RacipeSE object
-#' 
+#'
 
 setGeneric("sracipeParams<-",
            def = function(.object, value)
@@ -183,7 +184,7 @@ setGeneric("sracipeParams<-",
 #' @param .object RacipeSE object
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrate=FALSE)
 #' ics <- sracipeIC(rSet)
 #' rm(rSet,ics)
@@ -202,10 +203,11 @@ setGeneric("sracipeIC",
 #' @title  A method to set the initial conditions
 #' @description Set the initial conditions
 #' @param .object RacipeSE object
-#' @param value DataFrame containing the initial conditions
+#' @param value DataFrame containing the initial conditions, dimensions should
+#' be (# genes) rows by (numModels*nIC) columns
 #' @examples
 #' data("demoCircuit")
-#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10, 
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 10,
 #' integrate=FALSE)
 #' ics <- sracipeIC(rSet)
 #' sracipeIC(rSet) <- ics
@@ -219,7 +221,25 @@ setGeneric("sracipeIC<-",
            }
 )
 
+#' @export
+#' @import SummarizedExperiment
+#' @title  A method to get the convergence results for deterministic simulations
+#' @description Gathers the convergence and speed of convergence for each model
+#' and condition for deterministic simulations
+#' @param .object RacipeSE object
+#' @examples
+#' data("demoCircuit")
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20)
+#' cd <- sracipeIC(rSet)
+#' rm(rSet, cd)
+#' @return DataFrame
 
+setGeneric("sracipeConverge",
+           def = function(.object)
+           {
+             standardGeneric("sracipeConverge")
+           }
+)
 
 #' @export
 #' @import SummarizedExperiment
@@ -248,19 +268,23 @@ setGeneric("sracipeNormalize",
 
 
 #' @export
-#' @import grDevices 
+#' @import grDevices
 #' @title Plot Gene Regulatory Circuit
-#' @description  Plot Gene Regulatory Circuit to a file or output device.
+#' @description  Plot Gene Regulatory Circuit to a file or output device using
+#' visNetwork. Edge color coding: 1-"blue", 2-"darkred", 3-"cyan", 4-"deeppink",
+#' 5-"blueviolet", 6-"darkorange"
 #' @param .object RacipeSE object
 #' A list returned by \code{\link{sracipeSimulate}} function
 #' @param plotToFile (optional) logical. Default \code{FALSE}. Whether to save
 #' plots to a file.
+#' @param physics (optional) logical. Default \code{TRUE}. Whether or not to
+#' enable physics in the nodes of the visNetwork graph.
 #' @examples
 #' data("demoCircuit")
 #' \dontrun{
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 #' integrateStepSize = 0.1, simulationTime = 30)
-#' sracipePlotCircuit(rSet, plotToFile = FALSE)
+#' sracipePlotCircuit(rSet, plotToFile = FALSE, physics = TRUE)
 #' rm(rSet)
 #' }
 #' @return circuit plot
@@ -269,7 +293,7 @@ setGeneric("sracipeNormalize",
 #' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
 #' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
 setGeneric("sracipePlotCircuit",
-           def = function(.object, plotToFile = FALSE)
+           def = function(.object, plotToFile = FALSE, physics = TRUE)
            {
              standardGeneric("sracipePlotCircuit")
            }
@@ -294,8 +318,8 @@ setGeneric("sracipePlotCircuit",
 #' data and the the models will be colored in UMAP and PCA plots according to
 #' these clustering results. The clusters can be also supplied using
 #' \code{assignedClusters}.
-#' @param heatmapPlot (optional) logical. Default \code{TRUE}. Whether to plot 
-#' hierarchichal clustering. 
+#' @param heatmapPlot (optional) logical. Default \code{TRUE}. Whether to plot
+#' hierarchichal clustering.
 #' @param pcaPlot (optional) logical. Default \code{TRUE}. Whether to plot PCA
 #' embedding.
 #' @param umapPlot (optional) logical. Default \code{TRUE}. Whether to plot
@@ -490,3 +514,113 @@ setGeneric("sracipeKnockDown",
            }
 )
 
+
+#' @export
+#' @import SummarizedExperiment
+#' @importFrom graphics barplot hist image layout par
+#' @import ggplot2
+#' @title  A method to visualize convergence distributions
+#' @description When convergence tests are done (deterministic systems with time
+#' series off), this method creates a plot of the proportion of converged initial
+#' conditions as the number of convergence tests increases, up to the total number
+#' done by the simulation. Note that when limit cycles are detected, they are
+#' automatically removed from consideration. This method also adds some statistics to the
+#' metadata of the input. Models with NaN values are also removed.
+#' Specifically, the final proportion of converged states
+#' is reported, and if it exists, the smallest number of convergence tests where
+#' at least 99 percent of models converged is also reported.
+#' @param .object RacipeSE object generated by \code{\link{sracipeSimulate}}
+#'  function.
+#' @param plotToFile (optional) logical. Default \code{FALSE}. Whether to save
+#'  plots to a file.
+#' @examples
+#' data("demoCircuit")
+#' \dontrun{
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
+#' integrateStepSize = 0.1, numConvergenceTests = 30)
+#' rSet <- sracipeConvergeDist(rSet)
+#' }
+#' @return \code{RacipeSE} object
+#'@section Related Functions:
+#'
+#' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
+#' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
+#'
+setGeneric("sracipeConvergeDist",
+           def = function(.object, plotToFile = FALSE)
+           {
+             standardGeneric("sracipeConvergeDist")
+           }
+)
+
+#' @export
+#' @import SummarizedExperiment
+#' @importFrom graphics barplot hist image layout par
+#' @import ggplot2
+#' @title  A method to combine RacipeSE objects with the same config
+#' @description It is often the case that to save time, multiple simulations
+#' of the same topology with the same config file are run in parallel. However,
+#' one still wants to condense the results of the different simulations into one
+#' object. This method does that, combining the params, ics, and expressions
+#' of a list of objects into one. If convergence testing is done, convergence
+#' data and unique state counts are combined as well. Limit cycle data is combined
+#' too. The method validates the RacipeSE objects as having essentially identical
+#' configurations compared to the first object provided
+#' @param .object RacipeSE object generated by \code{\link{sracipeSimulate}}
+#'  function.
+#' @examples
+#' data("demoCircuit")
+#' \dontrun{
+#'   data(democircuit)
+#'   for(i in 1:5){
+#'     rSet <- sracipeSimulate(demoCircuit, numModels = 100,
+#'                                numConvergenceTests = 20, nIC = 2)
+#'     racipeList <- c(racipeList, results)
+#'   }
+#'
+#'   combinedObject <- sracipeCombineRacipeSE(racipeList)
+#' }
+#' @return \code{RacipeSE} object
+#'@section Related Functions:
+#'
+#' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
+#' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
+#'
+setGeneric("sracipeCombineRacipeSE",
+           def = function(.object)
+           {
+             standardGeneric("sracipeCombineRacipeSE")
+           }
+)
+
+#' @export
+#' @import SummarizedExperiment
+#' @title  A method for grabbing unique states
+#' @description This method selects the unique expression states for every model
+#' in an sRACIPE object. The method of evaluating uniqueness is the same as in
+#' the main \code{\link{sracipeSimulate}} function.Non-converged expressions are
+#' filtered out using the simulation convergence data. This method should only be
+#' used for deterministic simulations with nIC > 1.
+#' @param .object RacipeSE object generated by \code{\link{sracipeSimulate}}
+#'  function.
+#' @examples
+#' data("demoCircuit")
+#' \dontrun{
+#' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
+#' integrateStepSize = 0.1, numConvergenceTests = 30)
+#' stateList <- sracipeUniqueStates(rSet)
+#' comginedStates <- do.call(cbind, stateList)
+#' }
+#' @return \code{list} object. Element i of the list is a data frame containing
+#' the unique expressions of model i in the input RacipeSE object
+#'@section Related Functions:
+#'
+#' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
+#' \code{\link{sracipeConvergeDist}},  \code{\link{sracipePlotData}}
+#'
+setGeneric("sracipeUniqueStates",
+           def = function(.object)
+           {
+             standardGeneric("sracipeUniqueStates")
+           }
+)

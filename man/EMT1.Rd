@@ -4,7 +4,9 @@
 \name{EMT1}
 \alias{EMT1}
 \title{A circuit for epithelial to mesenchymal transition}
-\format{A data frame with 59 rows and 3 variables}
+\format{
+A data frame with 59 rows and 3 variables
+}
 \usage{
 EMT1
 }

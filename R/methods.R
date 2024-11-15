@@ -33,16 +33,16 @@ setMethod("sracipeCircuit<-", "RacipeSE",
             }
             if(is(value, "data.frame")){
               filename <- deparse(substitute(value))
-              if(dim(value)[2]!=3) 
+              if(dim(value)[2]!=3)
               {
                 message("Incorrect number of columns in circuit")
                 return()
                 }
               storage.mode(value[,3]) <- "integer"
-              if(sum(!(value[,3] %in% c(1,2)))>0){
-                message("Incorrect interactions (only 1,2 allowed)")
+              if(sum(!(value[,3] %in% c(1,2,3,4,5,6)))>0){
+                message("Incorrect interactions (only 1,2,3,4,5,6 allowed)")
                 return()
-              } 
+              }
               circuitTable <- value
               colnames(circuitTable) <- c("Source","Target","Type")
               }
@@ -62,6 +62,7 @@ setMethod("sracipeCircuit<-", "RacipeSE",
 
             nGenes <- length(circuitGenes)
             nInteraction <- length(circuitTable$Source)
+            geneTypes = rep(1, nGenes)
             circuitAdjMat <- matrix(data = 0,nrow = nGenes,
                                                ncol = nGenes)
             storage.mode(circuitAdjMat) <- "integer"
@@ -72,10 +73,19 @@ setMethod("sracipeCircuit<-", "RacipeSE",
               circuitAdjMat[circuitTable[i,2], circuitTable[i,1]] <-
                 circuitTable[i,3]
             }
+
+            for(i in seq_len(nGenes)){
+              if (all(circuitAdjMat[i,] %in% c(0,5,6))){
+                if (sum(circuitAdjMat[i,]) > 0){
+                  geneTypes[i] <- 2
+                }
+              }
+            }
+
             configData <- NULL
             data("configData",envir = environment(), package = "sRACIPE")
-            
-            
+
+
             .object <- RacipeSE(
               assays = SimpleList(matrix(NA, nrow = nGenes,ncol = configData$simParams["numModels"])),
               rowData = DataFrame(circuitAdjMat),
@@ -83,7 +93,8 @@ setMethod("sracipeCircuit<-", "RacipeSE",
                                  metadata = list(
                                    annotation = filename,
                                    nInteractions = nInteraction,
-                                   config = configData)
+                                   config = configData,
+                                   geneTypes = geneTypes)
                                  )
             message("circuit file successfully loaded")
             return(.object)
@@ -147,8 +158,10 @@ setMethod(f="sracipeIC",
           signature="RacipeSE",
           definition=function(.object)
           {
-            return(t(as.data.frame(colData(.object)[,(2*length(names(.object)) +
-              3*metadata(.object)$nInteractions+1):(dim(colData(.object))[2])])))
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
+            return(t(as.data.frame(colData(.object)[,(numParams+1):
+                                                      (numParams + length(names(.object)))])))
           }
 )
 #' @rdname sracipeIC-set
@@ -157,11 +170,30 @@ setMethod(f="sracipeIC<-",
           signature="RacipeSE",
           definition=function(.object, value)
           {
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
             value <- t(value)
-            colData(.object)[,(2*length(names(.object)) +
-        3*metadata(.object)$nInteractions +1):
-            (dim(colData(.object))[2])] <- S4Vectors::DataFrame(value)
+            colData(.object)[,(numParams + 1):
+            (numParams + length(names(.object)))] <- S4Vectors::DataFrame(value)
             return(.object)
+          }
+)
+#' @rdname sracipeConverge
+#' @aliases sracipeConverge
+setMethod(f="sracipeConverge",
+          signature="RacipeSE",
+          definition=function(.object)
+          {
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
+              message("Convergence Testing not done for this object")
+              return()
+            }
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
+            return(as.data.frame(colData(.object)[,(numParams +
+                                                      length(names(.object)) + 1)
+                                                  :(dim(colData(.object))[2])]))
           }
 )
 #' @export
@@ -229,14 +261,14 @@ setMethod(f="sracipeNormalize",
     tsSimulations <- lapply(tsSimulations,log2)
     #   stochasticSimulations <-
     #      lapply(stochasticSimulations, function(x) x[,is.finite(colMeans(x))])
-    
+
     tsSimulations <- lapply(tsSimulations,
                             function(x) sweep(x, 1, means, FUN = "-"))
     tsSimulations <- lapply(tsSimulations,
                             function(x) sweep(x, 1, sds, FUN = "/"))
     assayDataTmp2 <- c(assayDataTmp2, tsSimulations)
   }
-  
+
   stochSims <- 0
   if(!is.null(metadata(.object)$stochasticSimulations)){
     stochSims <- length(metadata(.object)$stochasticSimulations)
@@ -254,7 +286,7 @@ setMethod(f="sracipeNormalize",
   }
 
 
-  
+
   if(!is.null(metadata(.object)$knockOutSimulations)){
     knockOutSimulations <- .object$knockOutSimulations
     koSims <- length(metadata(.object)$knockOutSimulations)
@@ -288,7 +320,7 @@ setMethod(f="sracipeNormalize",
 #' @aliases sracipePlotCircuit
 setMethod(f="sracipePlotCircuit",
           signature="RacipeSE",
-          definition=function(.object, plotToFile = TRUE)
+          definition=function(.object, plotToFile = TRUE, physics = TRUE)
           {
   topology <- sracipeCircuit(.object)
 
@@ -312,8 +344,12 @@ setMethod(f="sracipePlotCircuit",
       font.size = 50,
       value = c(rep(1, length(node_list)))
     )
-  edge_col <- data.frame(c(1, 2), c("blue", "darkred"))
-  arrow_type <- data.frame(c(1, 2), c("arrow", "circle"))
+  edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
+                         c("blue", "darkred", "cyan", "deeppink",
+                           "blueviolet", "darkorange"))
+  arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6),
+                           c("arrow", "circle", "arrow",
+                             "circle", "arrow", "circle"))
   colnames(arrow_type) <- c("type", "color")
   colnames(edge_col) <- c("type", "color")
   edges <-
@@ -331,13 +367,25 @@ setMethod(f="sracipePlotCircuit",
   #visLayout(randomSeed = 123) %>%
   #visPhysics(solver = "forceAtlas2Based")
 
-  network <-
-    visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
-    #visEdges(arrows = "to") %>%
-    visOptions(manipulation = FALSE) %>%
-    visLayout(randomSeed = 123) %>%
-    #visNodes(scaling = list(label = list(enabled = T))) %>%
-    visPhysics(solver = "forceAtlas2Based", stabilization = FALSE)
+  if(physics){
+    network <-
+      visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
+      visEdges(arrows = "to") %>%
+      visOptions(manipulation = FALSE) %>%
+      visLayout(randomSeed = 123) %>%
+      #visNodes(scaling = list(label = list(enabled = T))) %>%
+      visPhysics(solver = "forceAtlas2Based", stabilization = FALSE)
+  }else{
+    network <-
+      visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
+      visEdges(arrows = "to") %>%
+      visOptions(manipulation = FALSE) %>%
+      visLayout(randomSeed = 123) %>%
+      #visNodes(scaling = list(label = list(enabled = T))) %>%
+      visPhysics(solver = "forceAtlas2Based", stabilization = TRUE) %>%
+      visEvents(stabilized = "function() {this.setOptions({physics: false});}")
+  }
+
   if(plotToFile){
     visNetwork::visSave(network, file = net_file, selfcontained = FALSE)
   } else {network}
@@ -371,7 +419,7 @@ setMethod(f="sracipePlotData",
   p <- list()
   ts <- list()
   tsCounter <- 1
-  
+
   stoch <- list()
 
   i=1;
@@ -434,7 +482,7 @@ setMethod(f="sracipePlotData",
 
 
     if(plotToFile){
-    
+
     dev.off()
   }
   V1 <- NULL
@@ -453,7 +501,7 @@ setMethod(f="sracipePlotData",
     #  panel.border = element_rect(color = "black"))
     i <- i+1
   }
- 
+
   if(pcaPlot){
 
     pca1 = summary(prcomp(t(assayDataTmp[[1]]), scale. = FALSE))
@@ -465,7 +513,7 @@ setMethod(f="sracipePlotData",
       theme(text = element_text(size=30),
             panel.background = element_rect(fill = "white", color = "black"),
             panel.grid.major = element_line(color="gray", size=0.25))
-    
+
     if(!is.null(metadataTmp$tsSimulations)){
       tsPca <- assayDataTmp[
         2:(1+length(metadataTmp$tsSimulations))]
@@ -473,7 +521,7 @@ setMethod(f="sracipePlotData",
         tsPca[[j]] <-
           t(scale(t(tsPca[[j]]), pca1$center, pca1$scale) %*%
               pca1$rotation)
-        
+
         ts[[j]] <-
           ggplot2::ggplot(data = as.data.frame(t(tsPca[[j]]))) +
           geom_point(aes(x = PC1, y=PC2), shape = 1) +
@@ -485,9 +533,9 @@ setMethod(f="sracipePlotData",
                                                 color = "black"),
                 panel.grid.major = element_line(color="gray", size=0.25))
       }
-      
+
     }
-  
+
     if(!is.null(metadataTmp$stochasticSimulations)){
       stochasticPca <- assayDataTmp[
         2:(1+length(metadataTmp$stochasticSimulations))]
@@ -555,14 +603,14 @@ setMethod(f="sracipePlotData",
         koPlotCounter <- koPlotCounter + 1
         }
         if(heatmapPlot){
- 
+
           gplots::heatmap.2(
             geneExpression, trace = "none", col = col, main = "WT",
             hclustfun = function(x) hclust(x, method = 'ward.D2'),
             distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2)
           )
           gplots::heatmap.2(
-            simData, trace = "none", col = col, 
+            simData, trace = "none", col = col,
             main = names(knockOutSimulations[ko]),
             hclustfun = function(x) hclust(x, method = 'ward.D2'),
             distfun=function(x) as.dist((1-cor(t(x), method = "spear"))/2)
@@ -576,7 +624,7 @@ setMethod(f="sracipePlotData",
     fileName <- paste0(annotation(.object),"_plots.pdf")
     pdf(fileName, onefile = TRUE)
   }
-    
+
   for (i in seq(length(p))) {
      gridExtra::grid.arrange(p[[i]])
     # do.call("grid.arrange", p[[i]])
@@ -599,7 +647,7 @@ setMethod(f="sracipePlotData",
         dev.off()
       }
     }
-    
+
   if(!is.null(metadataTmp$stochasticSimulations)){
     if(plotToFile){
       fileName <- paste0(annotation(.object),"_stochasticPlots.pdf")
@@ -853,7 +901,7 @@ setMethod(f="sracipeKnockDown",
 
             if (missing(plotFilename))
               plotFilename <- annotation(.object)
-            
+
             filename <-
               (paste(plotFilename, "_knockdown.pdf", sep = ""))
 
@@ -976,4 +1024,224 @@ setMethod(f="sracipeKnockDown",
           }
 
 
+)
+
+#' @export
+#' @rdname sracipeConvergeDist
+#' @aliases sracipeConvergeDist
+setMethod(f="sracipeConvergeDist",
+          signature="RacipeSE",
+          definition=function(.object, plotToFile = FALSE)
+          {
+            metadataTmp <- metadata(.object)
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
+              message("Cannot plot without convergence data")
+              return(.object)
+            }
+            converging <- sracipeConverge(.object)
+            numModels <- configuration$simParams["numModels"]
+            nIC <- configuration$simParams["nIC"]
+            numConvergenceIter <- configuration$simParams["numConvergenceIter"]
+            numExprx <- numModels #Check RacipeSE() constructor for why this is true
+            lc <- configuration$options["limitcycles"]
+
+            #Initialize proportions
+            convergedProportions <- numeric(numConvergenceIter)
+
+            if(plotToFile){
+              fileName <- paste0(annotation(.object),"_ConvergDist.pdf")
+              pdf(fileName) #Opens graphics object to store file in
+            }
+
+            #Getting rid of non-converged models
+            convergedICs <- converging[converging[, 1] == 1, ]
+            testScores <- convergedICs[,2]
+
+            #Removing limit cycles from consideration
+            if(lc){
+              numLCICs <- length(which(converging[,1] == 2))
+              numExprx <- numExprx - numLCICs
+            }
+
+            #Removing models with NaN values
+            if(!all(converging[, 1] != 3)){
+              numNaN <- sum(converging[, 1] == 3)
+              numExprx <- numExprx - numNaN
+            }
+
+            for (i in 1:numConvergenceIter){
+              convergedProportions[i] <- sum(testScores <= i) / numExprx
+            }
+
+            title = paste0("Ratio of stable ", annotation(.object), " expressions over number of simulation iterations")
+            plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
+                 xlab="# Convergence Tests", ylab = "Fraction Converged Expressions",
+                 main = title)
+
+            if(plotToFile){
+              message("Plot saved as pdf files in the working directory.")
+              dev.off() #closes graphics object and send it to working directory
+            }
+
+            metadataTmp$stableProportion <- convergedProportions[numConvergenceIter]
+            if(convergedProportions[numConvergenceIter] > 0.99){
+              ninetyNineIndex <- which(convergedProportions > 0.99)[1]
+              metadataTmp$ninetyNineConvergedNum <- ninetyNineIndex
+            }
+            metadata(.object) <- metadataTmp
+
+            return(.object)
+          }
+
+)
+
+#' @export
+#' @rdname sracipeCombineRacipeSE
+#' @aliases sracipeCombineRacipeSE
+setMethod(f="sracipeCombineRacipeSE",
+          signature = "list",
+          definition = function(.object){
+            #Validate sameness of objects using first element
+            validationConfig <- sracipeConfig(.object[[1]])
+            validCircuit <- sracipeCircuit(.object[[1]])
+
+            #Can't use full config for validation b/c threshold vals are expected
+            #to be different, so use param vectors instead
+            validSim <- validationConfig$simParams
+            validStoch <- validationConfig$stochParams
+            validHyper <- validationConfig$hyperParams
+            validOptions <- validationConfig$options
+            validLC <- validationConfig$LCParams
+
+            nIC <- validSim["nIC"]
+            numModels <- validSim["numModels"] / nIC
+
+            #Create lists for storing values
+            statesList <- list()
+            paramsList <- list()
+            icList <- list()
+            if(validOptions["convergTesting"]){
+              convergList <- list()
+              if(nIC > 1){uniqueCountList <- list()}
+              if(validOptions["limitcycles"]){
+                LCList <- list()
+                LCNum <- 0
+              }
+            }
+
+            objIdx <- 1
+            for(racipeObj in .object){
+              #validation
+              objConfig <- sracipeConfig(racipeObj)
+              if(!all(sracipeCircuit(racipeObj) == validCircuit,
+                      objConfig$simParams == validSim, objConfig$stochParams == validStoch,
+                      objConfig$hyperParams == validHyper, objConfig$options == validOptions,
+                      objConfig$LCParams == validLC)){
+                message("One of the provided RacipeSE objects has different params or topo
+                        from the first object")
+                return()
+              }
+
+              statesList <- c(statesList, list(assay(racipeObj)))
+              paramsList <- c(paramsList, list(sracipeParams(racipeObj)))
+              icList <- c(icList, list(sracipeIC(racipeObj)))
+              if(validOptions["convergTesting"]){
+                objMetadata <- metadata(racipeObj)
+                convergList <- c(convergList, list(sracipeConverge(racipeObj)))
+                if(nIC > 1){
+                  uniqueCountList <- c(uniqueCountList, list(objMetadata$uniqueStateCounts))
+                }
+                if(validOptions["limitcycles"]){
+                  if(!("LCData" %in% names(objMetadata))){
+                    next
+                  }
+                  objLC <- objMetadata$LCData
+
+                  #Adjusting modelCount info in LCData for each object
+                  if(objIdx > 1){
+                    objLC[,1] <- objLC[,1]+(objIdx-1)*numModels
+                  }
+                  LCList <- c(LCList, list(objLC))
+
+                  #totalNumofLCs is a list with length 1
+                  LCNum <- LCNum + objMetadata["totalNumofLCs"][[1]]
+                }
+              }
+              objIdx <- objIdx + 1
+            }
+
+            #Gluing things together
+            combinedStates <- do.call(cbind, statesList)
+            combinedParams <- do.call(rbind, paramsList)
+            combinedICs <- do.call(cbind, icList)
+
+            col <- cbind(combinedParams, t(combinedICs))
+
+            metadataTmp <- metadata(.object[[1]])
+            if(validOptions["convergTesting"]){
+              combinedConverge <- do.call(rbind, convergList)
+              col <- cbind(col, combinedConverge)
+              if(nIC > 1){
+                combinedUniqueCounts <- do.call(rbind, uniqueCountList)
+                combinedUniqueCounts[,1] <- seq_len(numModels*(length(.object)))
+                metadataTmp$uniqueStateCounts <- combinedUniqueCounts
+              }
+              if(validOptions["limitcycles"]){
+                metadataTmp$LCData <- do.call(rbind, LCList)
+              }
+            }
+
+
+            rSet <- RacipeSE(rowData = rowData(.object[[1]]), colData = col,
+                             assays = combinedStates, metadata = metadataTmp)
+
+            return(rSet)
+
+          }
+)
+
+#' @export
+#' @rdname sracipeUniqueStates
+#' @aliases sracipeUniqueStates
+setMethod(f="sracipeUniqueStates",
+          signature = "RacipeSE",
+          definition = function(.object){
+            geneExpression <- assay(.object)
+            objMetadata <- metadata(.object)
+            configuration <- sracipeConfig(.object)
+            if(!(configuration$options["convergTesting"])){
+              message("This method is only valid for simulations with convergence
+                      testing")
+              return()
+            }
+            converge <- sracipeConverge(.object)
+            nIC <- configuration$simParams["nIC"]
+            uniqueDigits <- configuration$simParams["uniqueDigits"]
+            numModels <- configuration$simParams["numModels"]/nIC #See RacipeSE constructor for explanation
+
+            uniqueExprxList <- list() #stores unique expressions in a list
+
+            for(modelCount in seq_len(numModels)){
+              modelStates <- data.frame()
+              #grab ICs and convergence data for each model
+              startIdx <- (modelCount - 1)*nIC + 1
+              endIdx <- modelCount*nIC
+
+              finalModelExpressions <- geneExpression[, startIdx:endIdx]
+              #filters out non-converging states
+              ICconvergences <- converge[startIdx:endIdx, 1]
+              convergedICs <- finalModelExpressions[, as.logical(ICconvergences)]
+
+              if(!is.null(ncol(convergedICs))){
+                #Taking unique states up until uniqueDigits
+                uniqueIdx <- which(!(duplicated(round(convergedICs, digits = uniqueDigits), MARGIN = 2)))
+                uniqueExprx <- convergedICs[,uniqueIdx]
+                uniqueExprxList[[modelCount]] <- as.data.frame(uniqueExprx)
+              }else{
+                uniqueExprxList[[modelCount]] <- data.frame()
+              }
+            }
+            return(uniqueExprxList)
+          }
 )

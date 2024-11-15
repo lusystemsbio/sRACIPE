@@ -1,6 +1,6 @@
 # sRACIPE 
 
-*Stochastic analysis for Random Circuit Perturbation*
+*Suite for Random Circuit Perturbation Analysis*
 
 
 sRACIPE implements a randomization-based method for gene circuit modeling. It allows us to study the effect of both the gene expression noise and the parametric variation on any gene regulatory circuit (GRC) using only its topology, and simulates an ensemble of models with random kinetic parameters at multiple noise levels. Statistical analysis of the generated gene expressions reveals the basin of attraction and stability of various phenotypic states and their changes associated with intrinsic and extrinsic noises. sRACIPE provides a holistic picture to evaluate the effects of both the stochastic nature of cellular processes and the parametric variation.   
@@ -17,7 +17,7 @@ BiocManager::install("sRACIPE")
 Or install the development version of the package from Github.
 ```
 library(devtools)
-install_github(“vivekkohar/sRACIPE”)
+install_github(“lusystemsbio/sRACIPE”)
 ```
 ## Tutorials ##
 More tutorials and applications are available [here](https://vivekkohar.github.io/sRACIPE/) 

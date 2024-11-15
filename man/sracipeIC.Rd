@@ -20,7 +20,7 @@ The initial conditions of each of the models.
 }
 \examples{
 data("demoCircuit")
-rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 integrate=FALSE)
 ics <- sracipeIC(rSet)
 rm(rSet,ics)

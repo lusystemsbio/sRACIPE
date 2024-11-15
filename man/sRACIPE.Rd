@@ -2,6 +2,7 @@
 % Please edit documentation in R/sRACIPE.R
 \docType{package}
 \name{sRACIPE}
+\alias{sRACIPE-package}
 \alias{sRACIPE}
 \title{sRACIPE: A package for stochastic random circuit perturbation.}
 \description{
@@ -42,3 +43,23 @@ knockout simulations.
 \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/lusystemsbio/sRACIPE}
+  \item \url{https://geneex.jax.org/}
+  \item \url{https://vivekkohar.github.io/sRACIPE/}
+}
+
+}
+\author{
+\strong{Maintainer}: Mingyang Lu \email{m.lu@northeastern.edu} (\href{https://orcid.org/0000-0001-8158-0593}{ORCID})
+
+Authors:
+\itemize{
+  \item Vivek Kohar
+  \item Aidan Tillman
+  \item Daniel Ramirez
+}
+
+}

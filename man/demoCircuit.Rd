@@ -4,7 +4,9 @@
 \name{demoCircuit}
 \alias{demoCircuit}
 \title{A toggle switch circuit for demonstrations}
-\format{A data frame with 4 rows and 3 variables}
+\format{
+A data frame with 4 rows and 3 variables
+}
 \usage{
 demoCircuit
 }

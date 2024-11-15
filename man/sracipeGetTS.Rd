@@ -23,7 +23,7 @@ method will return the simulated time series.
 data("demoCircuit")
 RacipeSet <- RacipeSE()
 sracipeCircuit(RacipeSet) <- demoCircuit
-RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE, 
+RacipeSet <- sracipeSimulate(demoCircuit, timeSeries = TRUE,
 simulationTime = 2)
 trajectories <- sracipeGetTS(RacipeSet)
 rm(RacipeSet)

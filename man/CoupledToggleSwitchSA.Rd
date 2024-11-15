@@ -4,7 +4,9 @@
 \name{CoupledToggleSwitchSA}
 \alias{CoupledToggleSwitchSA}
 \title{Five coupled toggle switches}
-\format{A data frame with 18 rows and 3 variables}
+\format{
+A data frame with 18 rows and 3 variables
+}
 \usage{
 CoupledToggleSwitchSA
 }

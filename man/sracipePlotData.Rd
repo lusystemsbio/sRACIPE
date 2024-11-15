@@ -49,7 +49,7 @@ data and the the models will be colored in UMAP and PCA plots according to
 these clustering results. The clusters can be also supplied using
 \code{assignedClusters}.}
 
-\item{heatmapPlot}{(optional) logical. Default \code{TRUE}. Whether to plot 
+\item{heatmapPlot}{(optional) logical. Default \code{TRUE}. Whether to plot
 hierarchichal clustering.}
 
 \item{pcaPlot}{(optional) logical. Default \code{TRUE}. Whether to plot PCA

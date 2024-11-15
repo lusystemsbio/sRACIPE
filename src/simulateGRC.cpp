@@ -200,6 +200,25 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
       case 1:
         gene_min_multiplier=1./geneLambda;
         break;
+
+      case 3:
+        geneLambda=1./geneLambda;
+        gene_min_multiplier=geneLambda;
+        break;
+
+      case 4:
+        gene_min_multiplier=1./geneLambda;
+        break;
+
+      case 6:
+        geneLambda=1./geneLambda;
+        gene_min_multiplier=geneLambda;
+        break;
+
+      case 5:
+        gene_min_multiplier=1./geneLambda;
+        break;
+
       default :
         Rcout << "Invalid Interation code for Gene"<<geneCount1
         <<" and gene"<<geneCount2<<" interaction"<<"\n";
@@ -216,11 +235,15 @@ void selectIcRange(const int numberGene, IntegerMatrix geneInteraction,
 }
 
 
+
 // [[Rcpp::export]]
 
 int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                 Rcpp::List config, String outFileGE, String outFileParams,
-                String outFileIC,
+                String outFileIC, String outFileConverge,
+                Rcpp::NumericVector geneTypes,
+                Rcpp::NumericMatrix signalVals,
+                Rcpp::NumericVector signalingTypes,
               const int stepper = 1)
 
 {
@@ -239,6 +262,10 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   NumericVector hyperParameters =
     as<NumericVector>(config["hyperParams"]);
   LogicalVector options = as<LogicalVector>(config["options"]);
+  NumericVector clampedGenes =
+    as<NumericVector>(config["clampedGenes"]);
+  NumericMatrix clampVals =
+    as<NumericMatrix>(config["clampVals"]);
 
   size_t numModels = static_cast<size_t>(simulationParameters[0]);
   double simulationTime = simulationParameters[1];
@@ -249,11 +276,15 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   double rkTolerance = simulationParameters[6];
   // double paramRange = simulationParameters[7];
   double printInterval = simulationParameters[8];
+  long double convergThresh = simulationParameters[9];
+  int numStepsConverge = simulationParameters[10];
+  int numConvergenceIter = simulationParameters[11];
   // Rcout<<printInterval<<"\t"<<printStart<<"\n";
   size_t nNoise = 1 + static_cast<size_t>(stochasticParameters[0]);
   double noiseScalingFactor = stochasticParameters[1];
   double initialNoise = stochasticParameters[2];
   double shotNoise = static_cast<double>(stochasticParameters[4]);
+  double ou_tcorr = static_cast<double>(stochasticParameters[5]);
 
   double gMin = hyperParameters[0];
   double gMax = hyperParameters[1];
@@ -266,6 +297,7 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   size_t interactionTypes = static_cast<size_t>(hyperParameters[8]);
   // size_t thresholdModels = static_cast<size_t>(hyperParameters[9]);
   double sdFactor = hyperParameters[10];
+  double signalRate = hyperParameters[11];
 
   NumericVector thresholdGene = as<NumericVector>(config["thresholds"]);
 
@@ -274,15 +306,18 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   bool genIC = options[2];
   bool genParams = options[3];
   bool integrate = options[4];
-  bool simDet = options[5];
+  bool simDet = options[6];
   // bool useBoost = options[5];
   // bool useBoost = true;
+
+  double testTime = h*numStepsConverge; //For adaptive step methods
 
   // size_t maxSteps = static_cast<size_t>(simulationTime/h);
 
   std::string fileNameGE = outFileGE;
   std::string fileNameParam = outFileParams;
   std::string fileNameIC = outFileIC;
+  std::string fileNameConverge = outFileConverge;
 
 
 
@@ -313,6 +348,10 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     //Create output files if not there already
     std::ofstream outGE(fileNameGE, std::ios::out);
     if(!outGE.is_open()) {     Rcout << "Cannot open output file.\n";
+      return 1;}
+    
+    std::ofstream outConv(fileNameConverge, std::ios::out);
+    if(!outConv.is_open()) {     Rcout << "Cannot open output file.\n";
       return 1;}
 
     std::ifstream inParams;
@@ -346,6 +385,39 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
     std::vector<size_t> tgtGeneTmp;
     //vector containing source and type of nth interaction
     std::vector<std::pair<size_t,size_t> > intSrcTypeTmp;
+
+  // Check if parameters are being time-varied, and load time points if so
+  bool isTimeVarying = false;
+  int nVals = signalVals.nrow();
+  std::vector<double> timePoints(nVals);
+  if(signalVals( 0 , 0 ) > -1){
+    isTimeVarying = true;
+    for(int t = 0; t<nVals; t++){
+      timePoints[t] = signalVals( t , 0 );
+    }
+  }
+
+  //Check for gene clamping and set it up
+  bool noClamps = std::all_of(clampedGenes.begin(), 
+                  clampedGenes.end(), [](int i) { return i==0; });
+  std::unordered_map<int, std::vector<double>> clampMap;
+  if(!noClamps) {
+    int clampIdx = 0;
+    for(size_t i = 0; i < numberGene; i++) {
+      if(clampedGenes[i] == 1) {
+        // Create a vector to store the row elements
+        std::vector<double> colVec(clampVals.nrow());
+        // Copy the elements from the matrix row to the vector
+        for (int j = 0; j < clampVals.nrow(); ++j) {
+          colVec[j] = clampVals(j, clampIdx);
+        }
+        
+        clampMap[i] = colVec;
+        clampIdx++;
+      }
+    }
+    
+  }
 
   //  size_t  nInteractions = convertAdjMatToVector(geneInteraction,
   //                                                tgtGeneTmp, intSrcTypeTmp);
@@ -440,10 +512,15 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
           {
             for(size_t geneCount1=0;geneCount1<numberGene;geneCount1++)
             {
-              expressionGene0[geneCount1]=exp(std::log(minGene[geneCount1]) +
-                (std::log(maxGene[geneCount1]) -
-                std::log(minGene[geneCount1]))*u_distribution(u_generator));
-
+              //If clamped, set it to clamped value
+              auto it = clampMap.find(geneCount1);
+              if (it != clampMap.end()){
+                expressionGene0[geneCount1] = it->second[modelCount];
+              } else{
+                expressionGene0[geneCount1]=exp(std::log(minGene[geneCount1]) +
+                  (std::log(maxGene[geneCount1]) -
+                  std::log(minGene[geneCount1]))*u_distribution(u_generator));
+              }
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -495,7 +572,9 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                     numberGene, geneInteraction, gGene, kGene, nGene,
                     lambdaGene, threshGeneLog, interactionTypes,
                     sdFactor, shotNoise, Darray,
-                    outputPrecision, printStart, printInterval, D, h);
+                    outputPrecision, printStart, printInterval, D, h, 
+                    signalRate, geneTypes, isTimeVarying, timePoints,
+                    signalVals, signalingTypes, noClamps, clampMap, modelCount);
               break;
             case 4:
               //fourth order Runge-Kutta
@@ -505,7 +584,10 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                        threshGeneLog, interactionTypes,
                        sdFactor,
                        outputPrecision,
-                       printStart,  printInterval, h);
+                       printStart,  printInterval, h,
+                       signalRate, geneTypes, isTimeVarying,
+                       timePoints, signalVals, signalingTypes,
+                       noClamps, clampMap, modelCount);
               break;
 
             case 5:
@@ -516,7 +598,60 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                       threshGeneLog,interactionTypes,
                       sdFactor,
                       outputPrecision,printStart, printInterval,h,
-                      rkTolerance);
+                      rkTolerance,
+                      signalRate, geneTypes, isTimeVarying,
+                      timePoints, signalVals, signalingTypes,
+                      noClamps, clampMap, modelCount);
+              break;
+
+            case 6:
+//              Rcout<<"EM_OU";
+              // EM with OU noise
+              stepEM_OU( expressionGene, outGE, simulationTime,
+                    numberGene, geneInteraction, gGene, kGene, nGene,
+                    lambdaGene, threshGeneLog, interactionTypes,
+                    sdFactor, shotNoise, Darray,
+                    outputPrecision, printStart, printInterval, D, h,
+                    ou_tcorr, signalRate, geneTypes, isTimeVarying,
+                    timePoints, signalVals, signalingTypes,
+                    noClamps, clampMap, modelCount);
+              break;
+
+            case 11:
+              // Euler Maruyama method with convergence testing
+              stepEMconv( expressionGene, outGE, outConv,
+                    numberGene, geneInteraction, gGene, kGene, nGene,
+                    lambdaGene, threshGeneLog, interactionTypes,
+                    sdFactor, outputPrecision, h, 
+                    signalRate, geneTypes, convergThresh, 
+                    numStepsConverge, numConvergenceIter,
+                    noClamps, clampMap, modelCount);
+              break;
+            case 41:
+              //fourth order Runge-Kutta with convergence testing
+//              Rcout<<"RK4";
+              stepRK4conv( expressionGene, outGE, outConv, numberGene,
+                      geneInteraction, gGene, kGene, nGene, lambdaGene,
+                       threshGeneLog, interactionTypes,
+                       sdFactor,
+                       outputPrecision,
+                       h, signalRate, geneTypes, convergThresh,
+                       numStepsConverge, numConvergenceIter,
+                       noClamps, clampMap, modelCount);
+              break;
+
+            case 51:
+//              Rcout<<"DP";
+              // adaptive Dormand Prince with convergence testing
+              stepDPconv( expressionGene,outGE,outConv,numberGene,
+                      geneInteraction,gGene,kGene,nGene,lambdaGene,
+                      threshGeneLog,interactionTypes,
+                      sdFactor,
+                      outputPrecision,h,
+                      rkTolerance,
+                      signalRate, geneTypes, convergThresh,
+                      numStepsConverge, numConvergenceIter,
+                      testTime, noClamps, clampMap, modelCount);
               break;
 
             default:

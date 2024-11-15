@@ -13,7 +13,8 @@ sracipeParams(.object) <- value
 \arguments{
 \item{.object}{RacipeSE object}
 
-\item{value}{DataFrame containing the parameteres}
+\item{value}{DataFrame containing the parameters. Dimensions should be
+(numModels) rows by (# of parameters) columns.}
 }
 \value{
 A RacipeSE object
@@ -23,7 +24,7 @@ Set the parameters
 }
 \examples{
 data("demoCircuit")
-rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20, 
+rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
 integrate = FALSE)
 parameters <- sracipeParams(rSet)
 sracipeParams(rSet) <- parameters

@@ -27,6 +27,7 @@ sracipeSimulate(
   initialNoise = 50,
   noiseScalingFactor = 0.5,
   shotNoise = 0,
+  ouNoise_t = 1,
   scaledNoise = FALSE,
   outputPrecision = 12L,
   printStart = 50,
@@ -40,21 +41,39 @@ sracipeSimulate(
   integrate = TRUE,
   rkTolerance = 0.01,
   timeSeries = FALSE,
+  signalRate = 10,
+  uniqueDigits = 4,
+  convergThresh = 1e-12,
+  numStepsConverge = 500,
+  numConvergenceIter = 25,
+  limitcycles = FALSE,
+  LCSimTime = 10,
+  LCSimStepSize = 0.01,
+  maxLCs = 10,
+  LCIter = 20,
+  MaxPeriods = 100,
+  NumSampledPeriods = 3,
+  AllowedPeriodError = 3,
+  SamePointProximity = 0.1,
+  LCStepper = "RK4",
+  paramSignalVals = data.frame(),
+  geneClamping = data.frame(),
+  nCores = 1L,
   ...
 )
 }
 \arguments{
 \item{circuit}{data.frame or character. The file containing the circuit or}
 
-\item{config}{(optional) List. It contains simulation parameters 
+\item{config}{(optional) List. It contains simulation parameters
 like integration method
-(stepper) and other lists or vectors like simParams, 
-stochParams, hyperParams, options, thresholds etc. 
-The list simParams contains values for parameters like the 
-number of models (numModels), 
-simulation time (simulationTime), step size for simulations 
-(integrateStepSize), when to start recording the gene expressions 
-(printStart), time interval between recordings (printInterval), number of 
+(stepper) and other lists or vectors like simParams,
+stochParams, hyperParams, options, thresholds etc.
+The list simParams contains values for parameters like the
+number of models (numModels),
+simulation time (simulationTime), step size for simulations
+(integrateStepSize), when to start recording the gene expressions
+(printStart), time interval between recordings (printInterval), number of
 initial conditions (nIC), output precision (outputPrecision), tolerance for
 adaptive runge kutta method (rkTolerance), parametric variation (paramRange).
 The list stochParams contains the parameters for stochastic simulations like
@@ -62,13 +81,13 @@ the number of noise levels to be simulated (nNoise), the ratio of subsequent
 noise levels (noiseScalingFactor), maximum noise (initialNoise), whether to
 use same noise for all genes or to scale it as per the median expression of
 the genes (scaledNoise), ratio of shot noise to additive noise (shotNoise).
-The list hyperParams contains the parameters like the minimum and maximum 
+The list hyperParams contains the parameters like the minimum and maximum
 production and degration of the genes, fold change, hill coefficient etc.
-The list options includes logical values like annealing (anneal), scaling of 
+The list options includes logical values like annealing (anneal), scaling of
 noise (scaledNoise), generation of new initial conditions (genIC), parameters
 (genParams) and whether to integrate or not (integrate). The user
-modifiable simulation options can be specified as other arguments. This 
-list should be used if one wants to modify many settings for multiple 
+modifiable simulation options can be specified as other arguments. This
+list should be used if one wants to modify many settings for multiple
 simulations.}
 
 \item{anneal}{(optional) Logical. Default FALSE. Whether to use annealing
@@ -107,7 +126,9 @@ interactions.}
 \item{integrateStepSize}{(optional) numeric. Default 0.02. step size for
 integration using "EM" and "RK4" steppers.}
 
-\item{simulationTime}{(optional) numeric. Total simulation time.}
+\item{simulationTime}{(optional) numeric. Default 50. Total simulation time.
+Only used for stochastic and time series simulations. For adjusting
+deterministic simulation run times, see numConvergenceIter.}
 
 \item{nIC}{(optional) integer. Default 1. Number of initial conditions to be
 simulated for each model.}
@@ -143,8 +164,8 @@ TRUE the noise in each gene will be proportional to its expression levels.}
 The decimal point precison of
 the output.}
 
-\item{printStart}{(optional) numeric (0-\code{simulationTime}). 
-Default \code{simulationTime}. To be used only when \code{timeSeries} is 
+\item{printStart}{(optional) numeric (0-\code{simulationTime}).
+Default \code{simulationTime}. To be used only when \code{timeSeries} is
 \code{TRUE}.
 The time from which the output should be recorded. Useful for time series
 analysis and studying the dynamics of a model for a particular initial
@@ -152,8 +173,8 @@ condition.}
 
 \item{printInterval}{(optional) numeric (\code{integrateStepSize}-
 \code{simulationTime - printStart}). Default 10. The separation between
-two recorded time points for a given trajectory. 
-To be used only when \code{timeSeries} is 
+two recorded time points for a given trajectory.
+To be used only when \code{timeSeries} is
 \code{TRUE}.}
 
 \item{stepper}{(optional) Character. Stepper to be used for integrating the
@@ -193,17 +214,91 @@ rate and initial condition to zero.}
 \item{rkTolerance}{(optional) numeric. Default \code{0.01}. Error tolerance
 for adaptive integration method.}
 
-\item{timeSeries}{(optional) logical. Default \code{FALSE}. 
+\item{timeSeries}{(optional) logical. Default \code{FALSE}.
 Whether to generate time series for a single model instead of performing
 RACIPE simulations.}
 
+\item{signalRate}{(optional) numeric. Default \code{10}. The factor by which
+the differential equations for fast genes are multiplied by. Fast genes only
+have inward signaling interactions of types 5 or 6}
+
+\item{uniqueDigits}{(optional) integer. Default \code{4}. Deterministic
+simulations with nIC > 1 count the number of unique steady states per model
+by truncating the expression by this many digits and counting the number of
+unique expressions}
+
+\item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
+for convergence to a steady state for deterministic simulations.}
+
+\item{numConvergenceIter}{(optional) integer. Default \code{25}. The total
+number of convergence test iterations to run per model
+initial condition in deterministic simulations.}
+
+\item{limitcycles}{(optional) logical. Default \code{FALSE}. Whether to check
+for limit cycles in deterministic simulations.}
+
+\item{LCSimTime}{(optional) numeric. Default \code{10}. The length of each
+iteration for the secondary limit cycle simulation}
+
+\item{LCSimStepSize}{(optional) numeric. Default \code{0.01}. The integration
+step size for the secondary limit cycle simulation.}
+
+\item{maxLCs}{(optional) integer. Default \code{10}. The maximum allowable
+number of limit cycles that can be detected for each model.}
+
+\item{LCIter}{(optional) integer. Default \code{20}. The number of iterations
+to run in the secondary limit cycle simulation}
+
+\item{MaxPeriods}{(optional) integer. Default \code{100}. The number of periods
+to count in the distance function constructed by the limit cycle detection
+algorithm}
+
+\item{NumSampledPeriods}{(optional) integer. Default \code{3}. The number of
+times the limit cycle detection algorithm tries to calculate the period of the
+simulated trajectory using the local minima in a constructed distance function.}
+
+\item{AllowedPeriodError}{(optional) integer. Default \code{3}. The allowed
+difference in the sampled periods for a trajectory from the limit cycle
+detection algorithm. Decrease this value to make for more stringent limit
+cycle detection}
+
+\item{SamePointProximity}{(optional) numeric. Default \code{0.1}. The max
+allowed square euclidean difference between two minima of the distance function
+constructed by the limit cycle detection algorithm before they are considered
+different points in phase space.}
+
+\item{LCStepper}{(optional) Character. Default \code{"RK4"} The integration
+method used for the limit cycle simulation. The options include \code{"E"}
+for first order Euler and \code{"RK4"} for fourth order Runge Kutta. Any other
+input will cause the simulation to use the Euler method}
+
+\item{paramSignalVals}{(optional) Data Frame. Default data.frame(). The
+first column must be a vector of time values with the first element as 0 and
+the last element as simulationTime. The other column names must be valid
+production or degradation parameter names for the circuit. Use
+sracipeGenParamNames() to generate valid parameter names. The
+first column must be a vector of time values with the first element as 0 and
+the last element as simulationTime.}
+
+\item{geneClamping}{(optional) Data Frame. Default data.frame(). The column
+names must be genes in the circuit. The number of columns must either be one
+or equal to numModels. If the number of columns is one, the selected genes
+are clamped to those values for every model. Otherwise, the gene is clamped
+to the value of the corresponding row for a particular model.
+ @param nCores (optional) integer. Default \code{1}
+Number of cores to be used for computation. Utilizes \code{multisession} from
+\code{doFuture} pacakge, as well and \code{doRNG} package.}
+
 \item{...}{Other arguments}
+
+\item{numStepConverge}{(optional) integer Default \code{500}. The number of
+integration steps between convergence tests for deterministic simulations.}
 }
 \value{
-\code{RacipeSE} object. RacipeSE class inherits 
-\code{SummarizedExperiment} and contains the circuit, parameters, 
+\code{RacipeSE} object. RacipeSE class inherits
+\code{SummarizedExperiment} and contains the circuit, parameters,
 initial conditions,
-simulated gene expressions, and simulation configuration. These can be 
+simulated gene expressions, and simulation configuration. These can be
 accessed using correponding getters.
 }
 \description{
