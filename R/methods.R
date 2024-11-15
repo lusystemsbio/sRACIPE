@@ -158,8 +158,10 @@ setMethod(f="sracipeIC",
           signature="RacipeSE",
           definition=function(.object)
           {
-            return(t(as.data.frame(colData(.object)[,(2*length(names(.object)) +
-              3*metadata(.object)$nInteractions+1):(dim(colData(.object))[2]-2)])))
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
+            return(t(as.data.frame(colData(.object)[,(numParams+1):
+                                                      (numParams + length(names(.object)))])))
           }
 )
 #' @rdname sracipeIC-set
@@ -168,10 +170,11 @@ setMethod(f="sracipeIC<-",
           signature="RacipeSE",
           definition=function(.object, value)
           {
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
             value <- t(value)
-            colData(.object)[,(2*length(names(.object)) +
-        3*metadata(.object)$nInteractions +1):
-            (dim(colData(.object))[2]-2)] <- S4Vectors::DataFrame(value)
+            colData(.object)[,(numParams + 1):
+            (numParams + length(names(.object)))] <- S4Vectors::DataFrame(value)
             return(.object)
           }
 )
@@ -186,7 +189,11 @@ setMethod(f="sracipeConverge",
               message("Convergence Testing not done for this object")
               return()
             }
-            return(as.data.frame(colData(.object)[,(dim(colData(.object))[2]-1):(dim(colData(.object))[2])]))
+            numParams <- 2*length(names(.object)) +
+              3*metadata(.object)$nInteractions
+            return(as.data.frame(colData(.object)[,(numParams +
+                                                      length(names(.object))) + 1)
+                                                  :(dim(colData(.object))[2])]))
           }
 )
 #' @export

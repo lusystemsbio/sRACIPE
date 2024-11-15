@@ -1037,16 +1037,14 @@ if(missing(nNoise)){
 
           if(convergTesting){
             convTmp <- utils::read.table(outFileConverge, header = FALSE)
-            colnames(convTmp)<-c("Model Convergence", "Tests Done")
+            colnames(convTmp)<-c(paste0(ko, " Model Convergence"),paste0(ko, " Tests Done"))
             knockOutDataConv[[ko]] <- convTmp
           }
 
         }
         #Collects convergence data for every knockout simulation
         if(convergTesting){
-          converge <- rbind(converge, do.call(rbind, knockOutDataConv))
-          parameters <- do.call(rbind, replicate(length(knockOut)+1, parameters, simplify = FALSE))
-          ic <- do.call(rbind, replicate(length(knockOut)+1, ic, simplify = FALSE))
+          converge <- cbind(converge, do.call(cbind, knockOutDataConv))
         }
         knockOutData <- lapply(knockOutData, t)
         assayDataTmp <- c(assayDataTmp,knockOutData)
