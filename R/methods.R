@@ -192,8 +192,8 @@ setMethod(f="sracipeConverge",
             numParams <- 2*length(names(.object)) +
               3*metadata(.object)$nInteractions
             return(as.data.frame(colData(.object)[,(numParams +
-                                                      length(names(.object))) + 1)
-                                                  :(dim(colData(.object))[2])]))
+                                                      length(names(.object)) + 1)
+                                                  :(dim(colData(.object))[2])])))
           }
 )
 #' @export
