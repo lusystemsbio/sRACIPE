@@ -78,6 +78,8 @@
 #' @param shotNoise (optional) numeric. Default 0.
 #' The ratio of shot noise to additive
 #' noise.
+#' @param ouNoise_t (optional) numeric. Default 1. Correlation time parameter
+#' for OU noise. Only used when "EM_OU" stepper is selected
 #' @param scaledNoise (optional) logical. Default FALSE. Whether to scale the
 #' noise in each gene by its expected median expression across all models. If
 #' TRUE the noise in each gene will be proportional to its expression levels.
@@ -183,7 +185,7 @@
 #' or equal to numModels. If the number of columns is one, the selected genes
 #' are clamped to those values for every model. Otherwise, the gene is clamped
 #' to the value of the corresponding row for a particular model.
-#'  @param nCores (optional) integer. Default \code{1}
+#' @param nCores (optional) integer. Default \code{1}
 #' Number of cores to be used for computation. Utilizes \code{multisession} from
 #' \code{doFuture} pacakge, as well and \code{doRNG} package.
 #' @return \code{RacipeSE} object. RacipeSE class inherits

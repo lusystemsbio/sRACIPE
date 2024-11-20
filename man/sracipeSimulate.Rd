@@ -51,10 +51,10 @@ sracipeSimulate(
   LCSimStepSize = 0.01,
   maxLCs = 10,
   LCIter = 20,
-  MaxPeriods = 100,
-  NumSampledPeriods = 3,
-  AllowedPeriodError = 3,
-  SamePointProximity = 0.1,
+  maxPeriods = 100,
+  numSampledPeriods = 3,
+  allowedPeriodError = 3,
+  samePointProximity = 0.1,
   LCStepper = "RK4",
   paramSignalVals = data.frame(),
   geneClamping = data.frame(),
@@ -156,6 +156,9 @@ will be decreased when nNoise > 1.}
 The ratio of shot noise to additive
 noise.}
 
+\item{ouNoise_t}{(optional) numeric. Default 1. Correlation time parameter
+for OU noise. Only used when "EM_OU" stepper is selected}
+
 \item{scaledNoise}{(optional) logical. Default FALSE. Whether to scale the
 noise in each gene by its expected median expression across all models. If
 TRUE the noise in each gene will be proportional to its expression levels.}
@@ -249,20 +252,20 @@ number of limit cycles that can be detected for each model.}
 \item{LCIter}{(optional) integer. Default \code{20}. The number of iterations
 to run in the secondary limit cycle simulation}
 
-\item{MaxPeriods}{(optional) integer. Default \code{100}. The number of periods
+\item{maxPeriods}{(optional) integer. Default \code{100}. The number of periods
 to count in the distance function constructed by the limit cycle detection
 algorithm}
 
-\item{NumSampledPeriods}{(optional) integer. Default \code{3}. The number of
+\item{numSampledPeriods}{(optional) integer. Default \code{3}. The number of
 times the limit cycle detection algorithm tries to calculate the period of the
 simulated trajectory using the local minima in a constructed distance function.}
 
-\item{AllowedPeriodError}{(optional) integer. Default \code{3}. The allowed
+\item{allowedPeriodError}{(optional) integer. Default \code{3}. The allowed
 difference in the sampled periods for a trajectory from the limit cycle
 detection algorithm. Decrease this value to make for more stringent limit
 cycle detection}
 
-\item{SamePointProximity}{(optional) numeric. Default \code{0.1}. The max
+\item{samePointProximity}{(optional) numeric. Default \code{0.1}. The max
 allowed square euclidean difference between two minima of the distance function
 constructed by the limit cycle detection algorithm before they are considered
 different points in phase space.}
@@ -284,8 +287,9 @@ the last element as simulationTime.}
 names must be genes in the circuit. The number of columns must either be one
 or equal to numModels. If the number of columns is one, the selected genes
 are clamped to those values for every model. Otherwise, the gene is clamped
-to the value of the corresponding row for a particular model.
- @param nCores (optional) integer. Default \code{1}
+to the value of the corresponding row for a particular model.}
+
+\item{nCores}{(optional) integer. Default \code{1}
 Number of cores to be used for computation. Utilizes \code{multisession} from
 \code{doFuture} pacakge, as well and \code{doRNG} package.}
 
