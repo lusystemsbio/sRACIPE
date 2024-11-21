@@ -1074,10 +1074,13 @@ setMethod(f="sracipeConvergeDist",
               convergedProportions[i] <- sum(testScores <= i) / numExprx
             }
 
-            title = paste0("Ratio of stable ", annotation(.object), " expressions over number of simulation iterations")
+            title = paste0("Ratio of stable ", annotation(.object), " expressions over number of iterations")
             plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
-                 xlab="# Convergence Tests", ylab = "Fraction Converged Expressions",
+                 xlab="# Iterations", ylab = "Fraction Converged Expressions",
                  main = title)
+            polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter))),
+                    c(convergedProportions, rep(0, length(convergedProportions))),
+                    col = rgb(0, 0, 1, 0.5), border = NA)
 
             if(plotToFile){
               message("Plot saved as pdf files in the working directory.")
