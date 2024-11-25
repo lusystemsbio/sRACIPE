@@ -320,7 +320,8 @@ setMethod(f="sracipeNormalize",
 #' @aliases sracipePlotCircuit
 setMethod(f="sracipePlotCircuit",
           signature="RacipeSE",
-          definition=function(.object, plotToFile = TRUE, physics = TRUE)
+          definition=function(.object, plotToFile = TRUE, physics = TRUE,
+                              namedNodes = TRUE)
           {
   topology <- sracipeCircuit(.object)
 
@@ -344,6 +345,9 @@ setMethod(f="sracipePlotCircuit",
       font.size = 50,
       value = c(rep(1, length(node_list)))
     )
+  if(!namedNodes){
+    nodes$label <- ""
+  }
   edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
                          c("blue", "darkred", "cyan", "deeppink",
                            "blueviolet", "darkorange"))
