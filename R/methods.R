@@ -345,8 +345,8 @@ setMethod(f="sracipePlotCircuit",
       value = c(rep(1, length(node_list)))
     )
   edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
-                         c("blue", "darkred", "cyan", "deeppink",
-                           "blueviolet", "darkorange"))
+                         c("black", "black", "red", "red",
+                           "green", "green"))
   arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6),
                            c("arrow", "circle", "arrow",
                              "circle", "arrow", "circle"))

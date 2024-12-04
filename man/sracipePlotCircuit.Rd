@@ -24,8 +24,8 @@ circuit plot
 }
 \description{
 Plot Gene Regulatory Circuit to a file or output device using
-visNetwork. Edge color coding: 1-"blue", 2-"darkred", 3-"cyan", 4-"deeppink",
-5-"blueviolet", 6-"darkorange"
+visNetwork. Edge color coding: Transcription-"black", Protein
+Degradation-"red", Signaling Interaction-"green".
 }
 \section{Related Functions}{
 
