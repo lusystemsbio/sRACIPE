@@ -5,9 +5,19 @@
 \alias{sracipePlotCircuit,RacipeSE-method}
 \title{Plot Gene Regulatory Circuit}
 \usage{
-sracipePlotCircuit(.object, plotToFile = FALSE, physics = TRUE)
+sracipePlotCircuit(
+  .object,
+  plotToFile = FALSE,
+  physics = TRUE,
+  namedNodes = TRUE
+)
 
-\S4method{sracipePlotCircuit}{RacipeSE}(.object, plotToFile = TRUE, physics = TRUE)
+\S4method{sracipePlotCircuit}{RacipeSE}(
+  .object,
+  plotToFile = TRUE,
+  physics = TRUE,
+  namedNodes = TRUE
+)
 }
 \arguments{
 \item{.object}{RacipeSE object
@@ -18,6 +28,9 @@ plots to a file.}
 
 \item{physics}{(optional) logical. Default \code{TRUE}. Whether or not to
 enable physics in the nodes of the visNetwork graph.}
+
+\item{namedNodes}{(optional) logical. Default \code{TRUE}. Whether or not to
+display gene names in the circuit visualization}
 }
 \value{
 circuit plot

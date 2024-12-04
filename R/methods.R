@@ -320,7 +320,8 @@ setMethod(f="sracipeNormalize",
 #' @aliases sracipePlotCircuit
 setMethod(f="sracipePlotCircuit",
           signature="RacipeSE",
-          definition=function(.object, plotToFile = TRUE, physics = TRUE)
+          definition=function(.object, plotToFile = TRUE, physics = TRUE,
+                              namedNodes = TRUE)
           {
   topology <- sracipeCircuit(.object)
 
@@ -344,6 +345,9 @@ setMethod(f="sracipePlotCircuit",
       font.size = 50,
       value = c(rep(1, length(node_list)))
     )
+  if(!namedNodes){
+    nodes$label <- ""
+  }
   edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
                          c("black", "black", "red", "red",
                            "green", "green"))
@@ -1077,7 +1081,7 @@ setMethod(f="sracipeConvergeDist",
             title = paste0("Ratio of stable ", annotation(.object), " expressions over number of iterations")
             plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
                  xlab="# Iterations", ylab = "Fraction Converged Expressions",
-                 main = title)
+                 main = title, ylim = c(0,1))
             polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter))),
                     c(convergedProportions, rep(0, length(convergedProportions))),
                     col = rgb(0, 0, 1, 0.5), border = NA)

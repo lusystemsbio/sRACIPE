@@ -279,6 +279,8 @@ setGeneric("sracipeNormalize",
 #' plots to a file.
 #' @param physics (optional) logical. Default \code{TRUE}. Whether or not to
 #' enable physics in the nodes of the visNetwork graph.
+#' @param namedNodes (optional) logical. Default \code{TRUE}. Whether or not to
+#' display gene names in the circuit visualization
 #' @examples
 #' data("demoCircuit")
 #' \dontrun{
@@ -293,7 +295,8 @@ setGeneric("sracipeNormalize",
 #' \code{\link{sracipeSimulate}},  \code{\link{sracipeKnockDown}},
 #' \code{\link{sracipeOverExp}},  \code{\link{sracipePlotData}}
 setGeneric("sracipePlotCircuit",
-           def = function(.object, plotToFile = FALSE, physics = TRUE)
+           def = function(.object, plotToFile = FALSE, physics = TRUE,
+                          namedNodes = TRUE)
            {
              standardGeneric("sracipePlotCircuit")
            }
