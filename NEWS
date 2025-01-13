@@ -1,4 +1,4 @@
-Changes in version 1.99.0 (2024-12-)
+Changes in version 1.99.0 (2024-12-09)
 + New allowed gene Interaction types (signaling and degradation)
 + Limit Cycle detection for deterministic simulations
 
