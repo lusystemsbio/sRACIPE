@@ -520,7 +520,7 @@ setGeneric("sracipeKnockDown",
 
 #' @export
 #' @import SummarizedExperiment
-#' @importFrom graphics barplot hist image layout par
+#' @importFrom graphics barplot hist image layout par polygon
 #' @import ggplot2
 #' @title  A method to visualize convergence distributions
 #' @description When convergence tests are done (deterministic systems with time

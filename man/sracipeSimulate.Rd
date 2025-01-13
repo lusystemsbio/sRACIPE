@@ -233,6 +233,9 @@ unique expressions}
 \item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
 for convergence to a steady state for deterministic simulations.}
 
+\item{numStepsConverge}{(optional) integer Default \code{500}. The number of
+integration steps between convergence tests for deterministic simulations.}
+
 \item{numConvergenceIter}{(optional) integer. Default \code{25}. The total
 number of convergence test iterations to run per model
 initial condition in deterministic simulations.}
@@ -294,9 +297,6 @@ Number of cores to be used for computation. Utilizes \code{multisession} from
 \code{doFuture} pacakge, as well and \code{doRNG} package.}
 
 \item{...}{Other arguments}
-
-\item{numStepConverge}{(optional) integer Default \code{500}. The number of
-integration steps between convergence tests for deterministic simulations.}
 }
 \value{
 \code{RacipeSE} object. RacipeSE class inherits

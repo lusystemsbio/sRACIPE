@@ -140,7 +140,7 @@
 #' unique expressions
 #' @param convergThresh (optional) numeric. Default \code{1e-12}. The threshold
 #' for convergence to a steady state for deterministic simulations.
-#' @param numStepConverge (optional) integer Default \code{500}. The number of
+#' @param numStepsConverge (optional) integer Default \code{500}. The number of
 #' integration steps between convergence tests for deterministic simulations.
 #' @param numConvergenceIter (optional) integer. Default \code{25}. The total
 #' number of convergence test iterations to run per model
@@ -680,7 +680,7 @@ if(missing(nNoise)){
                                              paramSignalTypes, stepperInt)
         configuration$options["integrate"] <- TRUE
         requireNamespace("doFuture")
-        registerDoFuture()
+        doFuture::registerDoFuture()
         plan(multisession)
 
         configList <- list()

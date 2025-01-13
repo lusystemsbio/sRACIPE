@@ -11,11 +11,12 @@ A data frame with 4 rows and 3 variables
 demoCircuit
 }
 \description{
-This data contains the topology of a 
+This data contains the topology of a
 circuit with two genes A and B both of which inhibit each
-other and have self activations. For further details,
-see Kohar, V. and Lu, M., Role of noise and parametric 
-variation in the dynamics of gene regulatory circuits, 
+other and have self activations. The interactions are transcription factor
+interactions. For further details,
+see Kohar, V. and Lu, M., Role of noise and parametric
+variation in the dynamics of gene regulatory circuits,
 npj Systems Biology and Applications 4, Article number: 40 (2018)
 }
 \keyword{datasets}
