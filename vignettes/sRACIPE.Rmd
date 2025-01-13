@@ -123,7 +123,7 @@ conditions for each model and collect the unique steady states of each model
 for multistability analysis. This is done in sRACIPE by the sracipeUniqueStates
 method, which takes in a RacipeSE object and returns a list of the steady states
 for each model. Since the method only considers converged expressions, the 
-following code may not produce anything, so consider trying it with larger 
+following code may not produce any steady states, so consider trying it with larger 
 simulations
 
 ```{r eval=FALSE}
