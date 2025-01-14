@@ -4,6 +4,8 @@
 #' @import SummarizedExperiment
 #' @import doRNG
 #' @import doFuture
+#' @import foreach
+#' @import future
 #' @importFrom utils read.table write.table data
 #' @importFrom S4Vectors metadata
 #' @description Simulate a gene regulatory circuit using its topology as the
@@ -681,7 +683,7 @@ if(missing(nNoise)){
         configuration$options["integrate"] <- TRUE
         requireNamespace("doFuture")
         doFuture::registerDoFuture()
-        plan(multisession)
+        future::plan(future::multisession)
 
         configList <- list()
         parModel <- floor(configuration$simParams["numModels"]/nCores)
@@ -732,7 +734,11 @@ if(missing(nNoise)){
 
         }
 
-        x <- foreach(configurationTmp = configList,outFileGETmp = gEFileList,
+        utils::globalVariables(c("configurationTmp", "outFileGETmp",
+                                 "outFileParamsTmp", "outFileICTmp",
+                                 "outFileConvergeTmp"))
+
+        x <- foreach::foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
                      .export = c("geneInteraction","metadataTmp",
