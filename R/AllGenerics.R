@@ -6,8 +6,9 @@
 #' @description The circuit file should contain three columns with headers,
 #' "Source" "Target" "Type"
 #' Here "Source" and "Target" are the names of the genes and "Type" refers to
-#' the regulation, "1" if source activates target and "2" if source inhibits
-#' target.
+#' the regulation, "1" for TF activation and "2" for TF inhibition, "3" for
+#' degradation inhibition, "4" for degradation activation, "5" for signaling
+#' activation, and "6" for signaling inhibition.
 #' @param .object RacipeSE object
 #'
 #' @return A dataframe
@@ -38,8 +39,12 @@ setGeneric(name="sracipeCircuit",
 #'   geneB \tab geneC \tab 1 \cr
 #'   geneB \tab geneA \tab 2
 #' }
-#' Here the regulation type is specified by number - activation: \code{1},
-#'  inhibition: \code{2}
+#' Here the regulation type is specified by number - TF activation: \code{1},
+#'  TF inhibition: \code{2}
+#'  degradation inhibition: \code{3}
+#'  degradation activation: \code{4}
+#'  signaling activation: \code{5}
+#'  signaling inhibition: \code{6}
 #' @param .object RacipeSE object
 #' @param value data.frame containing the circuit information
 #' @return data.frame
@@ -230,7 +235,7 @@ setGeneric("sracipeIC<-",
 #' @examples
 #' data("demoCircuit")
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20)
-#' cd <- sracipeIC(rSet)
+#' cd <- sracipeConverge(rSet)
 #' rm(rSet, cd)
 #' @return DataFrame
 
@@ -540,7 +545,7 @@ setGeneric("sracipeKnockDown",
 #' data("demoCircuit")
 #' \dontrun{
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
-#' integrateStepSize = 0.1, numConvergenceTests = 30)
+#' integrateStepSize = 0.1, numConvergenceIter = 30)
 #' rSet <- sracipeConvergeDist(rSet)
 #' }
 #' @return \code{RacipeSE} object
@@ -577,7 +582,7 @@ setGeneric("sracipeConvergeDist",
 #'   data(democircuit)
 #'   for(i in 1:5){
 #'     rSet <- sracipeSimulate(demoCircuit, numModels = 100,
-#'                                numConvergenceTests = 20, nIC = 2)
+#'                                numConvergenceIter = 20, nIC = 2)
 #'     racipeList <- c(racipeList, results)
 #'   }
 #'
@@ -610,9 +615,9 @@ setGeneric("sracipeCombineRacipeSE",
 #' data("demoCircuit")
 #' \dontrun{
 #' rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
-#' integrateStepSize = 0.1, numConvergenceTests = 30)
+#' integrateStepSize = 0.1, numConvergenceIter = 30)
 #' stateList <- sracipeUniqueStates(rSet)
-#' comginedStates <- do.call(cbind, stateList)
+#' combinedStates <- do.call(cbind, stateList)
 #' }
 #' @return \code{list} object. Element i of the list is a data frame containing
 #' the unique expressions of model i in the input RacipeSE object

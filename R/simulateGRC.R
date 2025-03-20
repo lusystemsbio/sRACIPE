@@ -275,7 +275,7 @@ if(!missing(config)){
  }
 
  if(nCores<1) {
-   warning("Number of cores, nCores, is less than 1 or not an interger.
+   warning("Number of cores, nCores, is less than 1 or not an integer.
           Using nCores=1")
    nCores=1
  }
