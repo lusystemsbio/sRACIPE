@@ -186,7 +186,9 @@
 #' names must be genes in the circuit. The number of columns must either be one
 #' or equal to numModels. If the number of columns is one, the selected genes
 #' are clamped to those values for every model. Otherwise, the gene is clamped
-#' to the value of the corresponding row for a particular model.
+#' to the value of the corresponding row for a particular model. If genIC is
+#' set to \code{FALSE} while geneClamping is provided, the provided clamps will
+#' override the original initial conditions.
 #' @param nCores (optional) integer. Default \code{1}
 #' Number of cores to be used for computation. Utilizes \code{multisession} from
 #' \code{doFuture} pacakge, as well and \code{doRNG} package.
@@ -633,6 +635,13 @@ if(missing(nNoise)){
     clampedIdx <- match(colnames(geneClamping), geneNames)
     clampedGenes[clampedIdx] <- 1
     message(paste0("clamped genes: ",paste0(clampedGenes, collapse = ",")))
+
+    #Clamping overrides provided ICs
+    if(!genIC){
+      oldICs <- sracipeIC(rSet)
+      oldICs[clampedGenes == 1, ] <- t(geneClamping[, clampedGenes == 1, drop = FALSE])
+      sracipeIC(rSet) <- oldICs
+    }
 
     if(nrow(geneClamping) == 1){
       clampVals <- as.matrix(do.call(rbind, replicate(numModels, geneClamping, simplify = FALSE)))

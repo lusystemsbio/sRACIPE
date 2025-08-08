@@ -28,12 +28,8 @@ A typical topology file looks like
   geneB \tab geneC \tab 1 \cr
   geneB \tab geneA \tab 2
 }
-Here the regulation type is specified by number - TF activation: \code{1},
- TF inhibition: \code{2}
- degradation inhibition: \code{3}
- degradation activation: \code{4}
- signaling activation: \code{5}
- signaling inhibition: \code{6}
+Here the regulation type is specified by number - activation: \code{1},
+ inhibition: \code{2}
 }
 \section{Related Functions}{
 
