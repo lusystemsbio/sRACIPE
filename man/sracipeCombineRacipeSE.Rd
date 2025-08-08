@@ -39,7 +39,7 @@ data("demoCircuit")
   data(democircuit)
   for(i in 1:5){
     rSet <- sracipeSimulate(demoCircuit, numModels = 100,
-                               numConvergenceTests = 20, nIC = 2)
+                               numConvergenceIter = 20, nIC = 2)
     racipeList <- c(racipeList, results)
   }
 
