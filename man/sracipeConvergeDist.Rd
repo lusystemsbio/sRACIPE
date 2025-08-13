@@ -41,7 +41,7 @@ at least 99 percent of models converged is also reported.
 data("demoCircuit")
 \dontrun{
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
-integrateStepSize = 0.1, numConvergenceIter = 30)
+integrateStepSize = 0.1, numConvergenceIter  = 30)
 rSet <- sracipeConvergeDist(rSet)
 }
 }
