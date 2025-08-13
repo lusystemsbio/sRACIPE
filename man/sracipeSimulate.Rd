@@ -287,8 +287,8 @@ first column must be a vector of time values with the first element as 0 and
 the last element as simulationTime.}
 
 \item{geneClamping}{(optional) Data Frame. Default data.frame(). The column
-names must be genes in the circuit. The number of columns must either be one
-or equal to numModels. If the number of columns is one, the selected genes
+names must be genes in the circuit. The number of rows must either be one
+or equal to numModels. If the number of rows is one, the selected genes
 are clamped to those values for every model. Otherwise, the gene is clamped
 to the value of the corresponding row for a particular model.}
 
