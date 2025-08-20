@@ -639,7 +639,7 @@ if(missing(nNoise)){
     #Clamping overrides provided ICs
     if(!genIC){
       oldICs <- sracipeIC(rSet)
-      oldICs[clampedGenes == 1, ] <- t(geneClamping[, clampedGenes == 1, drop = FALSE])
+      oldICs[clampedGenes == 1, ] <- t(geneClamping)
       sracipeIC(rSet) <- oldICs
     }
 
