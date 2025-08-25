@@ -1082,7 +1082,7 @@ setMethod(f="sracipeConvergeDist",
             plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
                  xlab="# Iterations", ylab = "Fraction Converged Expressions",
                  main = title, ylim = c(0,1))
-            graphics::polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter))),
+            graphics::polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter)))
                     c(convergedProportions, rep(0, length(convergedProportions))),
                     col = rgb(0, 0, 1, 0.5), border = NA)
 
@@ -1213,7 +1213,7 @@ setMethod(f="sracipeCombineRacipeSE",
 #' @aliases sracipeUniqueStates
 setMethod(f="sracipeUniqueStates",
           signature = "RacipeSE",
-          definition = function(.object){
+          definition = function(.object, uniqueDigits = NULL){
             geneExpression <- assay(.object)
             objMetadata <- metadata(.object)
             configuration <- sracipeConfig(.object)
@@ -1224,7 +1224,9 @@ setMethod(f="sracipeUniqueStates",
             }
             converge <- sracipeConverge(.object)
             nIC <- configuration$simParams["nIC"]
-            uniqueDigits <- configuration$simParams["uniqueDigits"]
+            if(is.null(uniqueDigits)){
+              uniqueDigits <- configuration$simParams["uniqueDigits"]
+            }
             numModels <- configuration$simParams["numModels"]/nIC #See RacipeSE constructor for explanation
 
             uniqueExprxList <- list() #stores unique expressions in a list
