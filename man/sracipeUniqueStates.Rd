@@ -39,8 +39,8 @@ used for deterministic simulations with nIC > 1.
 data("demoCircuit")
 \dontrun{
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20,
-integrateStepSize = 0.1, numConvergenceTests = 30)
+integrateStepSize = 0.1, numConvergenceIter = 30)
 stateList <- sracipeUniqueStates(rSet)
-comginedStates <- do.call(cbind, stateList)
+combinedStates <- do.call(cbind, stateList)
 }
 }

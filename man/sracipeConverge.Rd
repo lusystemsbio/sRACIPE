@@ -22,6 +22,6 @@ and condition for deterministic simulations
 \examples{
 data("demoCircuit")
 rSet <- sRACIPE::sracipeSimulate(circuit = demoCircuit, numModels = 20)
-cd <- sracipeIC(rSet)
+cd <- sracipeConverge(rSet)
 rm(rSet, cd)
 }

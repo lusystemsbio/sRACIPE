@@ -11,13 +11,13 @@ A data frame with 18 rows and 3 variables
 CoupledToggleSwitchSA
 }
 \description{
-This data contains the topology of a 
-circuit with ten genes A1...A5 and B1...B5. 
-Genes with different alphabet inhibit each other 
+This data contains the topology of a
+circuit with ten genes A1...A5 and B1...B5.
+Genes with different alphabet inhibit each other
 whereas genes from different groups activate the other.
 For further details,
-see Kohar, V. and Lu, M., Role of noise and parametric 
-variation in the dynamics of gene regulatory circuits, 
+see Kohar, V. and Lu, M., Role of noise and parametric
+variation in the dynamics of gene regulatory circuits,
 npj Systems Biology and Applications 4, Article number: 40 (2018)
 }
 \keyword{datasets}

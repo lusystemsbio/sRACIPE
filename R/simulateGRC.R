@@ -4,6 +4,8 @@
 #' @import SummarizedExperiment
 #' @import doRNG
 #' @import doFuture
+#' @import foreach
+#' @import future
 #' @importFrom utils read.table write.table data
 #' @importFrom S4Vectors metadata
 #' @description Simulate a gene regulatory circuit using its topology as the
@@ -78,6 +80,8 @@
 #' @param shotNoise (optional) numeric. Default 0.
 #' The ratio of shot noise to additive
 #' noise.
+#' @param ouNoise_t (optional) numeric. Default 1. Correlation time parameter
+#' for OU noise. Only used when "EM_OU" stepper is selected
 #' @param scaledNoise (optional) logical. Default FALSE. Whether to scale the
 #' noise in each gene by its expected median expression across all models. If
 #' TRUE the noise in each gene will be proportional to its expression levels.
@@ -138,7 +142,7 @@
 #' unique expressions
 #' @param convergThresh (optional) numeric. Default \code{1e-12}. The threshold
 #' for convergence to a steady state for deterministic simulations.
-#' @param numStepConverge (optional) integer Default \code{500}. The number of
+#' @param numStepsConverge (optional) integer Default \code{500}. The number of
 #' integration steps between convergence tests for deterministic simulations.
 #' @param numConvergenceIter (optional) integer. Default \code{25}. The total
 #' number of convergence test iterations to run per model
@@ -179,11 +183,13 @@
 #' first column must be a vector of time values with the first element as 0 and
 #' the last element as simulationTime.
 #' @param geneClamping (optional) Data Frame. Default data.frame(). The column
-#' names must be genes in the circuit. The number of columns must either be one
-#' or equal to numModels. If the number of columns is one, the selected genes
+#' names must be genes in the circuit. The number of rows must either be one
+#' or equal to numModels. If the number of rows is one, the selected genes
 #' are clamped to those values for every model. Otherwise, the gene is clamped
-#' to the value of the corresponding row for a particular model.
-#'  @param nCores (optional) integer. Default \code{1}
+#' to the value of the corresponding row for a particular model. If genIC is
+#' set to \code{FALSE} while geneClamping is provided, the provided clamps will
+#' override the original initial conditions.
+#' @param nCores (optional) integer. Default \code{1}
 #' Number of cores to be used for computation. Utilizes \code{multisession} from
 #' \code{doFuture} pacakge, as well and \code{doRNG} package.
 #' @return \code{RacipeSE} object. RacipeSE class inherits
@@ -271,7 +277,7 @@ if(!missing(config)){
  }
 
  if(nCores<1) {
-   warning("Number of cores, nCores, is less than 1 or not an interger.
+   warning("Number of cores, nCores, is less than 1 or not an integer.
           Using nCores=1")
    nCores=1
  }
@@ -630,6 +636,13 @@ if(missing(nNoise)){
     clampedGenes[clampedIdx] <- 1
     message(paste0("clamped genes: ",paste0(clampedGenes, collapse = ",")))
 
+    #Clamping overrides provided ICs
+    if(!genIC){
+      oldICs <- sracipeIC(rSet)
+      oldICs[clampedGenes == 1, ] <- t(geneClamping)
+      sracipeIC(rSet) <- oldICs
+    }
+
     if(nrow(geneClamping) == 1){
       clampVals <- as.matrix(do.call(rbind, replicate(numModels, geneClamping, simplify = FALSE)))
       configuration$clampVals <- clampVals
@@ -678,8 +691,8 @@ if(missing(nNoise)){
                                              paramSignalTypes, stepperInt)
         configuration$options["integrate"] <- TRUE
         requireNamespace("doFuture")
-        registerDoFuture()
-        plan(multisession)
+        doFuture::registerDoFuture()
+        future::plan(future::multisession)
 
         configList <- list()
         parModel <- floor(configuration$simParams["numModels"]/nCores)
@@ -730,7 +743,11 @@ if(missing(nNoise)){
 
         }
 
-        x <- foreach(configurationTmp = configList,outFileGETmp = gEFileList,
+        utils::globalVariables(c("configurationTmp", "outFileGETmp",
+                                 "outFileParamsTmp", "outFileICTmp",
+                                 "outFileConvergeTmp"))
+
+        x <- foreach::foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
                      .export = c("geneInteraction","metadataTmp",

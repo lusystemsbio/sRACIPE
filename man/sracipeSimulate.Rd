@@ -156,6 +156,9 @@ will be decreased when nNoise > 1.}
 The ratio of shot noise to additive
 noise.}
 
+\item{ouNoise_t}{(optional) numeric. Default 1. Correlation time parameter
+for OU noise. Only used when "EM_OU" stepper is selected}
+
 \item{scaledNoise}{(optional) logical. Default FALSE. Whether to scale the
 noise in each gene by its expected median expression across all models. If
 TRUE the noise in each gene will be proportional to its expression levels.}
@@ -230,6 +233,9 @@ unique expressions}
 \item{convergThresh}{(optional) numeric. Default \code{1e-12}. The threshold
 for convergence to a steady state for deterministic simulations.}
 
+\item{numStepsConverge}{(optional) integer Default \code{500}. The number of
+integration steps between convergence tests for deterministic simulations.}
+
 \item{numConvergenceIter}{(optional) integer. Default \code{25}. The total
 number of convergence test iterations to run per model
 initial condition in deterministic simulations.}
@@ -281,18 +287,18 @@ first column must be a vector of time values with the first element as 0 and
 the last element as simulationTime.}
 
 \item{geneClamping}{(optional) Data Frame. Default data.frame(). The column
-names must be genes in the circuit. The number of columns must either be one
-or equal to numModels. If the number of columns is one, the selected genes
+names must be genes in the circuit. The number of rows must either be one
+or equal to numModels. If the number of rows is one, the selected genes
 are clamped to those values for every model. Otherwise, the gene is clamped
-to the value of the corresponding row for a particular model.
- @param nCores (optional) integer. Default \code{1}
+to the value of the corresponding row for a particular model. If genIC is
+set to \code{FALSE} while geneClamping is provided, the provided clamps will
+override the original initial conditions.}
+
+\item{nCores}{(optional) integer. Default \code{1}
 Number of cores to be used for computation. Utilizes \code{multisession} from
 \code{doFuture} pacakge, as well and \code{doRNG} package.}
 
 \item{...}{Other arguments}
-
-\item{numStepConverge}{(optional) integer Default \code{500}. The number of
-integration steps between convergence tests for deterministic simulations.}
 }
 \value{
 \code{RacipeSE} object. RacipeSE class inherits

@@ -349,8 +349,8 @@ setMethod(f="sracipePlotCircuit",
     nodes$label <- ""
   }
   edge_col <- data.frame(c(1, 2, 3, 4, 5, 6),
-                         c("blue", "darkred", "cyan", "deeppink",
-                           "blueviolet", "darkorange"))
+                         c("black", "black", "red", "red",
+                           "green", "green"))
   arrow_type <- data.frame(c(1, 2, 3, 4, 5, 6),
                            c("arrow", "circle", "arrow",
                              "circle", "arrow", "circle"))
@@ -1082,7 +1082,7 @@ setMethod(f="sracipeConvergeDist",
             plot(seq(1,numConvergenceIter), convergedProportions, type="l", col="blue",
                  xlab="# Iterations", ylab = "Fraction Converged Expressions",
                  main = title, ylim = c(0,1))
-            polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter))),
+            graphics::polygon(c(seq(1,numConvergenceIter), rev(seq(1,numConvergenceIter)))
                     c(convergedProportions, rep(0, length(convergedProportions))),
                     col = rgb(0, 0, 1, 0.5), border = NA)
 

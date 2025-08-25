@@ -160,12 +160,10 @@ void stepEM( std::vector <double> &exprxGene,
       double growthMultiplier=1;
       double degMultiplier=1;
 
-      if(!noClamps){
-        auto it = clamps.find(geneCount1);
-        if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH[geneCount1] = it->second[modelNo];
-        }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH[geneCount1] = it->second[modelNo];
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {
@@ -296,12 +294,10 @@ void stepEM_OU( std::vector <double> &exprxGene,
       currNoise[geneCount1] = prevNoise[geneCount1] * exp(-h/ouNoise_t) + 
         D*Darray[geneCount1] * sqrt(1-exp(-2*h/ouNoise_t)) * g_distribution(g_generator);
 
-      if(!noClamps){
-        auto it = clamps.find(geneCount1);
-        if (it != clamps.end()){
-          // If clamped, set to the clamped value
-          exprxGeneH[geneCount1] = it->second[modelNo];
-        }
+      auto it = clamps.find(geneCount1);
+      if (it != clamps.end()){
+        // If clamped, set to the clamped value
+        exprxGeneH[geneCount1] = it->second[modelNo];
       }else{
         for(int geneCount2=0;geneCount2<numberGene;geneCount2++)
         {

@@ -11,15 +11,16 @@ list
 configData
 }
 \description{
-It contains simulation parameters 
+It contains simulation parameters
 like integration method
-(stepper) and other lists or vectors like simParams, 
-stochParams, hyperParams, options, thresholds etc. 
-The list simParams contains values for parameters like the 
-number of models (numModels), 
-simulation time (simulationTime), step size for simulations 
-(integrateStepSize), when to start recording the gene expressions 
-(printStart), time interval between recordings (printInterval), number of 
+(stepper) and other lists or vectors like simParams,
+stochParams, hyperParams, options, thresholds etc.
+The list simParams contains values for parameters like the
+number of models (numModels), number of convergence iterations to run for
+simulations with convergence tests (numConvergenceIter),
+simulation time (simulationTime), step size for simulations
+(integrateStepSize), when to start recording the gene expressions
+(printStart), time interval between recordings (printInterval), number of
 initial conditions (nIC), output precision (outputPrecision), tolerance for
 adaptive runge kutta method (rkTolerance), parametric variation (paramRange).
 The list stochParams contains the parameters for stochastic simulations like
@@ -27,13 +28,14 @@ the number of noise levels to be simulated (nNoise), the ratio of subsequent
 noise levels (noiseScalingFactor), maximum noise (initialNoise), whether to
 use same noise for all genes or to scale it as per the median expression of
 the genes (scaledNoise), ratio of shot noise to additive noise (shotNoise).
-The list hyperParams contains the parameters like the minimum and maximum 
+The list hyperParams contains the parameters like the minimum and maximum
 production and degration of the genes, fold change, hill coefficient etc.
-The list options includes logical values like annealing (anneal), scaling of 
+The list options includes logical values like annealing (anneal), scaling of
 noise (scaledNoise), generation of new initial conditions (genIC), parameters
-(genParams) and whether to integrate or not (integrate). The user
-modifiable simulation options can be specified as other arguments. This 
-list should be used if one wants to modify many settings for multiple 
+(genParams), whether to integrate or not (integrate), and whether or not to
+check for limitcycles (limitcycles). The user
+modifiable simulation options can be specified as other arguments. This
+list should be used if one wants to modify many settings for multiple
 simulations.
 }
 \keyword{datasets}

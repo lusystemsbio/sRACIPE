@@ -3,7 +3,7 @@
 \docType{data}
 \name{EMT2}
 \alias{EMT2}
-\title{A circuit for epithelial to mesenchymal transition 
+\title{A circuit for epithelial to mesenchymal transition
 including microRNAs}
 \format{
 A data frame with 82 rows and 3 variables
@@ -12,12 +12,12 @@ A data frame with 82 rows and 3 variables
 EMT2
 }
 \description{
-This data contains the topology of a 
+This data contains the topology of a
 circuit with twenty two nodes including
-micro RNAs invovled in EMT. 
+micro RNAs invovled in EMT.
 For further details,
-see Huang et al.,Interrogating the topological robustness 
-of gene regulatory circuits by randomization, 
+see Huang et al.,Interrogating the topological robustness
+of gene regulatory circuits by randomization,
 PLoS computational biology 13 (3), e1005456
 }
 \keyword{datasets}

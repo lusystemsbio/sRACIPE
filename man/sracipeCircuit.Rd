@@ -19,8 +19,9 @@ A dataframe
 The circuit file should contain three columns with headers,
 "Source" "Target" "Type"
 Here "Source" and "Target" are the names of the genes and "Type" refers to
-the regulation, "1" if source activates target and "2" if source inhibits
-target.
+the regulation, "1" for TF activation and "2" for TF inhibition, "3" for
+degradation inhibition, "4" for degradation activation, "5" for signaling
+activation, and "6" for signaling inhibition.
 }
 \examples{
 rs <- RacipeSE()
