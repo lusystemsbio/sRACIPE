@@ -761,7 +761,7 @@ int limitcyclesGRC(Rcpp::IntegerMatrix geneInteraction,
     double signalRate = hyperParameters[11];
     double LCSimTime = LCParameters[0];
     double LCSimStepSize = LCParameters[1];
-    int maxLCs = LCParameters[2];
+    int maxLCs = LCParameters[2] + 1; //Handles logic in find_limitcycles
     int LCIter = LCParameters[3];
     int MaxPeriods = LCParameters[4];
     int NumSampledPeriods = LCParameters[5];
