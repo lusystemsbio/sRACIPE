@@ -1232,7 +1232,6 @@ setMethod(f="sracipeUniqueStates",
             uniqueExprxList <- list() #stores unique expressions in a list
 
             for(modelCount in seq_len(numModels)){
-              modelStates <- data.frame()
               #grab ICs and convergence data for each model
               startIdx <- (modelCount - 1)*nIC + 1
               endIdx <- modelCount*nIC
@@ -1240,7 +1239,7 @@ setMethod(f="sracipeUniqueStates",
               finalModelExpressions <- geneExpression[, startIdx:endIdx]
               #filters out non-converging states
               ICconvergences <- converge[startIdx:endIdx, 1]
-              convergedICs <- finalModelExpressions[, as.logical(ICconvergences)]
+              convergedICs <- finalModelExpressions[, ICconvergences == 1]
 
               if(!is.null(ncol(convergedICs))){
                 #Taking unique states up until uniqueDigits
