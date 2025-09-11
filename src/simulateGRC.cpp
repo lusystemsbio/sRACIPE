@@ -105,7 +105,8 @@ void selectParameters(Rcpp::IntegerMatrix geneInteraction,
                       const double kMin, const double kMax,
                       const int interactionTypes,
                       const double lambdaMin,
-                       const double lambdaMax, const int nMin, const int nMax,
+                       const double lambdaMax, const double lambdaMinDeg,
+                       const double lambdaMaxDeg, const int nMin, const int nMax,
                        const double sdFactor, int numberGene,
                        std::vector<double> &gGene,
                        std::vector<double> &kGene,
@@ -139,6 +140,10 @@ void selectParameters(Rcpp::IntegerMatrix geneInteraction,
       if(geneInteraction(geneCount1,geneCount2)==0)
       {
         lambdaGene[geneCount1][geneCount2]=0;
+      } else if(geneInteraction(geneCount1,geneCount2)==3 || 
+                geneInteraction(geneCount1,geneCount2)==4){
+         lambdaGene[geneCount1][geneCount2]=
+        (lambdaMaxDeg-lambdaMinDeg)*u_distribution(u_generator)+lambdaMinDeg; 
       } else {
         lambdaGene[geneCount1][geneCount2]=
         (lambdaMax-lambdaMin)*u_distribution(u_generator)+lambdaMin;}
@@ -298,6 +303,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
   // size_t thresholdModels = static_cast<size_t>(hyperParameters[9]);
   double sdFactor = hyperParameters[10];
   double signalRate = hyperParameters[11];
+  double lambdaMinDeg = hyperParameters[12];
+  double lambdaMaxDeg = hyperParameters[13];
 
   NumericVector thresholdGene = as<NumericVector>(config["thresholds"]);
 
@@ -464,7 +471,8 @@ int simulateGRCCpp(Rcpp::IntegerMatrix geneInteraction,
                             gMin,  gMax,
                             kMin,  kMax,  interactionTypes,
                             lambdaMin,
-                            lambdaMax,  nMin,  nMax,
+                            lambdaMax, lambdaMinDeg,
+                            lambdaMaxDeg,  nMin,  nMax,
                             sdFactor,  numberGene,
                             gGene,
                             kGene, nGene,

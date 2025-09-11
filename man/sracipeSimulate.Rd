@@ -17,6 +17,8 @@ sracipeSimulate(
   degRateMax = 1,
   foldChangeMin = 1,
   foldChangeMax = 100,
+  foldChangeMinDeg = 1,
+  foldChangeMaxDeg = 10,
   hillCoeffMin = 1L,
   hillCoeffMax = 6L,
   integrateStepSize = 0.02,
@@ -114,10 +116,16 @@ range of parameters (production rate, degradation rate, fold change).}
 \item{degRateMax}{(optional) numeric. Default 1. Maximum degradation rate.}
 
 \item{foldChangeMin}{(optional) numeric. Default 1. Minimum fold change for
-interactions.}
+TF and signaling interactions (types 1,2,5,6).}
 
 \item{foldChangeMax}{(optional) numeric. Default 100. Maximum fold change for
-interactions.}
+TF and signaling interactions (types 1,2,5,6).}
+
+\item{foldChangeMinDeg}{(optional) numeric. Default 1. Minimum fold change for
+degradation interactions (types 3,4).}
+
+\item{foldChangeMaxDeg}{(optional) numeric. Default 100. Maximum fold change for
+degradation interactions (types 3,4).}
 
 \item{hillCoeffMin}{(optional) integer. Default 1. Minimum hill coefficient.}
 

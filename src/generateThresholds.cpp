@@ -31,6 +31,8 @@ size_t generateThresholds(
   size_t interactionTypes = static_cast<size_t>(hyperParameters[8]);
   size_t thresholdMax = static_cast<size_t>(hyperParameters[9]);
   double sdFactor = hyperParameters[10];
+  double lambdaMinDeg = hyperParameters[12];
+  double lambdaMaxDeg = hyperParameters[13];
 
 // Generate Thresholds
   size_t numberGene=geneInteraction.nrow();
@@ -104,7 +106,7 @@ size_t generateThresholds(
 
         size_t nBA= static_cast<size_t>(u_distribution(u_generator)*
         (nMax-nMin))+nMin;
-        double geneLambda=1./((lambdaMax-lambdaMin)*u_distribution(u_generator)+lambdaMin);
+        double geneLambda=1./((lambdaMaxDeg-lambdaMinDeg)*u_distribution(u_generator)+lambdaMinDeg);
         Af[modelCount]=Af[modelCount]/Hs_Racipe(gB/kB, BA0, nBA,
                                                   geneLambda);
       }
@@ -121,8 +123,8 @@ size_t generateThresholds(
 
         size_t nBA=static_cast<size_t>(u_distribution(u_generator)*
         (nMax-nMin))+nMin;
-        double geneLambda=(lambdaMax-lambdaMin)*u_distribution(u_generator) +
-          lambdaMin;
+        double geneLambda=(lambdaMaxDeg-lambdaMinDeg)*u_distribution(u_generator) +
+          lambdaMinDeg;
         double hillEval=Hs_Racipe(gB/kB, BA0, nBA, geneLambda);
         Af[modelCount] = Af[modelCount]/hillEval;
       }

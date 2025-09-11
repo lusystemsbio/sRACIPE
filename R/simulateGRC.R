@@ -49,9 +49,13 @@
 #' @param degRateMin (optional) numeric. Default 0.1. Minimum degradation rate.
 #' @param degRateMax (optional) numeric. Default 1. Maximum degradation rate.
 #' @param foldChangeMin (optional) numeric. Default 1. Minimum fold change for
-#' interactions.
+#' TF and signaling interactions (types 1,2,5,6).
 #' @param foldChangeMax (optional) numeric. Default 100. Maximum fold change for
-#' interactions.
+#' TF and signaling interactions (types 1,2,5,6).
+#' @param foldChangeMinDeg (optional) numeric. Default 1. Minimum fold change for
+#' degradation interactions (types 3,4).
+#' @param foldChangeMaxDeg (optional) numeric. Default 100. Maximum fold change for
+#' degradation interactions (types 3,4).
 #' @param hillCoeffMin (optional) integer. Default 1. Minimum hill coefficient.
 #' @param hillCoeffMax (optional) integer. Default 6. Maximum hill coefficient.
 #' @param integrateStepSize (optional) numeric. Default 0.02. step size for
@@ -211,6 +215,7 @@ sracipeSimulate <- function( circuit="inputs/test.tpo", config = config,
                       paramRange=100,
                       prodRateMin=1.,prodRateMax=100, degRateMin=0.1,
                       degRateMax=1.,foldChangeMin=1,foldChangeMax=100,
+                      foldChangeMinDeg = 1, foldChangeMaxDeg = 10,
                       hillCoeffMin=1L,hillCoeffMax=6L,integrateStepSize=0.02,
                       simulationTime=50.0,nIC=1L,nNoise=0L,simDet = TRUE,
                       initialNoise=50.0,noiseScalingFactor=0.5,shotNoise=0,
@@ -312,6 +317,12 @@ if(!missing(config)){
   }
   if(!missing(foldChangeMax)){
     configuration$hyperParams["foldChangeMax"] <- foldChangeMax
+  }
+  if(!missing(foldChangeMinDeg)){
+    configuration$hyperParams["foldChangeMinDeg"] <- foldChangeMinDeg
+  }
+  if(!missing(foldChangeMaxDeg)){
+    configuration$hyperParams["foldChangeMaxDeg"] <- foldChangeMaxDeg
   }
   if(!missing(hillCoeffMin)){
     configuration$hyperParams["hillCoeffMin"] <- hillCoeffMin
