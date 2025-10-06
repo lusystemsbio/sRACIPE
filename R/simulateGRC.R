@@ -743,16 +743,16 @@ if(missing(nNoise)){
 
         }
 
-        utils::globalVariables(c("configurationTmp", "outFileGETmp",
-                                 "outFileParamsTmp", "outFileICTmp",
-                                 "outFileConvergeTmp"))
+
 
         x <- foreach::foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
                      .export = c("geneInteraction","metadataTmp",
                                  "paramSignalValsTmp", "paramSignalTypes",
-                                 "stepperInt")) %dorng% {
+                                 "stepperInt"),
+                     .packages = "sRACIPE",
+                     .options.future = list(seed = TRUE)) %dorng% {
 
                        simulateGRCCpp(
                          geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
