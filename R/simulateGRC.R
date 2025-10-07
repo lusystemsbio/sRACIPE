@@ -706,6 +706,8 @@ if(missing(nNoise)){
 
         for(i in seq(1,nCores)){
           parConfig <- configuration
+          parConfig$options["genParams"] <- FALSE
+          parConfig$options["genIC"] <- FALSE
 
           gEFileList[i] <- tempfile(fileext = ".txt")
           paramFileList[i] <- tempfile(fileext = ".txt")
