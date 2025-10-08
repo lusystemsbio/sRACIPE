@@ -588,7 +588,7 @@ if(missing(nNoise)){
     paramName <- sracipeGenParamNames(rSet)
     prodParams <- paramName[1:nGenes]
     degParams <- paramName[(nGenes+1):(2*nGenes)]
-    variedParams <- colnames(paramSignalVals[,2:ncol(paramSignalVals)]) #First column is time  points
+    variedParams <- colnames(paramSignalVals)[2:ncol(paramSignalVals)] #First column is time  points
 
     if(paramSignalVals[1,1] != 0 | paramSignalVals[nrow(paramSignalVals), 1] != simulationTime){
       message("The first and last time points for parameter variation must be 0 and simulationTime respectively")
@@ -717,6 +717,8 @@ if(missing(nNoise)){
 
         for(i in seq(1,nCores)){
           parConfig <- configuration
+          parConfig$options["genParams"] <- FALSE
+          parConfig$options["genIC"] <- FALSE
 
           gEFileList[i] <- tempfile(fileext = ".txt")
           paramFileList[i] <- tempfile(fileext = ".txt")
@@ -754,16 +756,16 @@ if(missing(nNoise)){
 
         }
 
-        utils::globalVariables(c("configurationTmp", "outFileGETmp",
-                                 "outFileParamsTmp", "outFileICTmp",
-                                 "outFileConvergeTmp"))
+
 
         x <- foreach::foreach(configurationTmp = configList,outFileGETmp = gEFileList,
                      outFileParamsTmp=paramFileList, outFileICTmp=iCFileList,
                      outFileConvergeTmp=convFileList,
                      .export = c("geneInteraction","metadataTmp",
                                  "paramSignalValsTmp", "paramSignalTypes",
-                                 "stepperInt")) %dorng% {
+                                 "stepperInt"),
+                     .packages = "sRACIPE",
+                     .options.future = list(seed = TRUE)) %dorng% {
 
                        simulateGRCCpp(
                          geneInteraction, configurationTmp,outFileGETmp, outFileParamsTmp,
