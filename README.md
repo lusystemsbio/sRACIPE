@@ -20,7 +20,7 @@ library(devtools)
 install_github(“lusystemsbio/sRACIPE”)
 ```
 ## Tutorials ##
-More tutorials and applications are available [here](https://lusystemsbio.github.io/sRACIPE/) 
+More tutorials and applications are available [here](https://lusystemsbio.github.io/sRACIPE/docs/articles/sRACIPE.html) 
 
 
 ## Webserver ##
